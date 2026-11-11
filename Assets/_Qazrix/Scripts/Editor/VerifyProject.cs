@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Qazrix.Input;
 using Qazrix.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -115,6 +116,10 @@ namespace Qazrix.EditorTools
                 ? new Check("Archivos .meta", Level.Ok, "Visibles.")
                 : new Check("Archivos .meta", Level.Error, $"Modo «{VersionControlSettings.mode}»; debe ser Visible Meta Files."));
 
+            checks.Add(File.Exists(InputActionsBuilder.AssetPath)
+                ? new Check("Input Actions", Level.Ok, InputActionsBuilder.AssetPath)
+                : new Check("Input Actions", Level.Error, $"Falta {InputActionsBuilder.AssetPath}. Se genera al crear la escena Prototype."));
+
             checks.AddRange(CheckScene());
             checks.Add(CheckDocs());
             checks.AddRange(CheckLicenses());
@@ -173,6 +178,7 @@ namespace Qazrix.EditorTools
             bool hasOrbit = roots.Any(r => r.GetComponentInChildren<PrototypeOrbitCamera>(true) != null);
             bool hasCamera = roots.Any(r => r.GetComponentInChildren<Camera>(true) != null);
             bool hasLight = roots.Any(r => r.GetComponentInChildren<Light>(true) != null);
+            QazrixInput reader = roots.Select(r => r.GetComponentInChildren<QazrixInput>(true)).FirstOrDefault(c => c != null);
 
             var problems = new List<string>();
             if (missingScripts > 0) problems.Add($"{missingScripts} script(s) perdidos");
@@ -180,9 +186,11 @@ namespace Qazrix.EditorTools
             if (!hasOrbit) problems.Add("sin PrototypeOrbitCamera");
             if (!hasCamera) problems.Add("sin cámara");
             if (!hasLight) problems.Add("sin luz");
+            if (reader == null) problems.Add("sin QazrixInput");
+            else if (reader.Actions == null) problems.Add("QazrixInput sin Input Actions asignadas");
 
             yield return problems.Count == 0
-                ? new Check("Contenido de escena", Level.Ok, "Jugador, cámara orbital y luz presentes; ningún script perdido.")
+                ? new Check("Contenido de escena", Level.Ok, "Jugador, cámara orbital, luz y entrada presentes; ningún script perdido.")
                 : new Check("Contenido de escena", Level.Error, string.Join("; ", problems) + ".");
         }
 

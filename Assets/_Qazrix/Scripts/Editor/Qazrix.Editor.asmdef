@@ -3,7 +3,8 @@
     "rootNamespace": "Qazrix.EditorTools",
     "references": [
         "Qazrix.Simulation",
-        "Qazrix.Runtime"
+        "Qazrix.Runtime",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [
         "Editor"

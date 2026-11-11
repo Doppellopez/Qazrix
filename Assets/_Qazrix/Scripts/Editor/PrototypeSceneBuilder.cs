@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Qazrix.Input;
 using Qazrix.Prototype;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -105,13 +106,14 @@ namespace Qazrix.EditorTools
             // Pared alta para comprobar que la cámara no la atraviesa.
             Box("Pared_alta", level, block, new Vector3(0f, 2.5f, -8f), new Vector3(10f, 5f, 0.5f));
 
+            QazrixInput input = CreateInput();
             PrototypePlayerController player = CreatePlayer(body, accent);
-            Transform cameraRig = CreateCamera(player.transform);
-            player.Configure(cameraRig, player.transform.Find("Visual"));
+            Transform cameraRig = CreateCamera(player.transform, input);
+            player.Configure(cameraRig, player.transform.Find("Visual"), input);
             EditorUtility.SetDirty(player);
 
             var hud = new GameObject("HUD").AddComponent<PrototypeHud>();
-            hud.Configure(player);
+            hud.Configure(player, input);
             EditorUtility.SetDirty(hud);
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
@@ -167,7 +169,18 @@ namespace Qazrix.EditorTools
             return go.AddComponent<PrototypePlayerController>();
         }
 
-        internal static Transform CreateCamera(Transform target)
+        /// <summary>Objeto «Entrada»: lector de Input Actions y panel de reasignación de teclas.</summary>
+        internal static QazrixInput CreateInput()
+        {
+            var go = new GameObject("Entrada");
+            var reader = go.AddComponent<QazrixInput>();
+            reader.Configure(InputActionsBuilder.Ensure());
+            go.AddComponent<ControlsPanel>().Configure(reader);
+            EditorUtility.SetDirty(go);
+            return reader;
+        }
+
+        internal static Transform CreateCamera(Transform target, QazrixInput input)
         {
             var go = new GameObject("Camara") { tag = "MainCamera" };
             var cam = go.AddComponent<Camera>();
@@ -179,7 +192,7 @@ namespace Qazrix.EditorTools
             go.transform.rotation = Quaternion.Euler(18f, 0f, 0f);
 
             var orbit = go.AddComponent<PrototypeOrbitCamera>();
-            orbit.Configure(target);
+            orbit.Configure(target, input);
             EditorUtility.SetDirty(orbit);
             return go.transform;
         }

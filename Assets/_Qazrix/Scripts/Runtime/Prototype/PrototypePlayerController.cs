@@ -1,3 +1,4 @@
+using Qazrix.Input;
 using UnityEngine;
 
 namespace Qazrix.Prototype
@@ -12,6 +13,7 @@ namespace Qazrix.Prototype
         [Header("Referencias (las asigna PrototypeSceneBuilder)")]
         [SerializeField] private Transform cameraTransform;
         [SerializeField] private Transform visual;
+        [SerializeField] private QazrixInput inputReader;
 
         [Header("Velocidad (m/s)")]
         [SerializeField] private float walkSpeed = 2.2f;
@@ -48,8 +50,9 @@ namespace Qazrix.Prototype
         public bool IsCrouching { get; private set; }
         public float HorizontalSpeed => _horizontalVelocity.magnitude;
 
-        public void Configure(Transform cameraRig, Transform visualRoot)
+        public void Configure(Transform cameraRig, Transform visualRoot, QazrixInput reader)
         {
+            inputReader = reader;
             cameraTransform = cameraRig;
             visual = visualRoot;
         }
@@ -64,7 +67,7 @@ namespace Qazrix.Prototype
 
         private void Update()
         {
-            PrototypeInputFrame input = PrototypeInput.Read();
+            InputFrame input = inputReader != null ? inputReader.Read() : default;
             float dt = Time.deltaTime;
 
             UpdateCrouch(input.Crouch);
@@ -97,7 +100,7 @@ namespace Qazrix.Prototype
             }
         }
 
-        private void UpdateHorizontal(PrototypeInputFrame input, float dt)
+        private void UpdateHorizontal(InputFrame input, float dt)
         {
             Vector3 wished = Vector3.zero;
             if (input.Move.sqrMagnitude > 0.0001f)
@@ -121,7 +124,7 @@ namespace Qazrix.Prototype
             }
         }
 
-        private void UpdateVertical(PrototypeInputFrame input, float dt)
+        private void UpdateVertical(InputFrame input, float dt)
         {
             _sinceGrounded = IsGrounded ? 0f : _sinceGrounded + dt;
             _sinceJumpPressed = input.JumpPressed ? 0f : _sinceJumpPressed + dt;

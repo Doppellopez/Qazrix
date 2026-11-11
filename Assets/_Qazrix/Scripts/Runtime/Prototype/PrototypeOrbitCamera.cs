@@ -1,3 +1,4 @@
+using Qazrix.Input;
 using UnityEngine;
 
 namespace Qazrix.Prototype
@@ -10,6 +11,7 @@ namespace Qazrix.Prototype
     {
         [Header("Referencia (la asigna PrototypeSceneBuilder)")]
         [SerializeField] private Transform target;
+        [SerializeField] private QazrixInput inputReader;
 
         [Header("Encuadre")]
         [SerializeField] private float pivotHeight = 1.5f;
@@ -37,8 +39,9 @@ namespace Qazrix.Prototype
         private Vector3 _pivot;
         private Vector3 _pivotVelocity;
 
-        public void Configure(Transform followTarget)
+        public void Configure(Transform followTarget, QazrixInput reader)
         {
+            inputReader = reader;
             target = followTarget;
         }
 
@@ -56,12 +59,13 @@ namespace Qazrix.Prototype
         {
             if (target == null) return;
 
-            PrototypeInputFrame input = PrototypeInput.Read();
-            UpdateCursor(input);
+            InputFrame input = inputReader != null ? inputReader.Read() : default;
+            bool blocked = inputReader != null && inputReader.GameplayBlocked;
+            if (!blocked) UpdateCursor(input); // con un panel abierto el cursor lo gestiona el panel
 
             float dt = Time.deltaTime;
             Vector2 look = input.LookStick * (stickDegreesPerSecond * dt);
-            if (Cursor.lockState == CursorLockMode.Locked) look += input.LookMouse * mouseDegreesPerPixel;
+            if (Cursor.lockState == CursorLockMode.Locked) look += input.LookPointer * mouseDegreesPerPixel;
 
             _yaw += look.x;
             _pitch = Mathf.Clamp(_pitch + (invertY ? look.y : -look.y), minPitch, maxPitch);
@@ -89,14 +93,14 @@ namespace Qazrix.Prototype
             transform.SetPositionAndRotation(_pivot + back * _currentDistance, rotation);
         }
 
-        private static void UpdateCursor(PrototypeInputFrame input)
+        private static void UpdateCursor(InputFrame input)
         {
             if (input.ReleaseCursorPressed)
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
-            else if (input.ClickPressed && Cursor.lockState != CursorLockMode.Locked)
+            else if (input.CaptureCursorPressed && Cursor.lockState != CursorLockMode.Locked)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;

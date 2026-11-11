@@ -1,161 +1,212 @@
 <?xml version="1.0" encoding="utf-8"?>
-<test-run id="2" testcasecount="23" result="Passed" total="23" passed="23" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0,0671336">
-  <test-suite type="TestSuite" id="1000" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="23" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.067134" total="23" passed="23" failed="0" inconclusive="0" skipped="0" asserts="0">
+<test-run id="2" testcasecount="31" result="Passed" total="31" passed="31" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0,1003346">
+  <test-suite type="TestSuite" id="1000" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="31" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.100335" total="31" passed="31" failed="0" inconclusive="0" skipped="0" asserts="0">
     <properties>
       <property name="platform" value="EditMode" />
     </properties>
-    <test-suite type="Assembly" id="1027" name="Qazrix.Tests.EditMode.dll" fullname="C:/Users/Propietario/Qazrix/Library/ScriptAssemblies/Qazrix.Tests.EditMode.dll" runstate="Runnable" testcasecount="23" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.059687" total="23" passed="23" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <test-suite type="Assembly" id="1036" name="Qazrix.Tests.EditMode.dll" fullname="C:/Users/Propietario/Qazrix/Library/ScriptAssemblies/Qazrix.Tests.EditMode.dll" runstate="Runnable" testcasecount="31" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.091555" total="31" passed="31" failed="0" inconclusive="0" skipped="0" asserts="0">
       <properties>
-        <property name="_PID" value="16952" />
+        <property name="_PID" value="21052" />
         <property name="_APPDOMAIN" value="Unity Child Domain" />
         <property name="platform" value="EditMode" />
         <property name="EditorOnly" value="True" />
       </properties>
-      <test-suite type="TestSuite" id="1028" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="23" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.058998" total="23" passed="23" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <test-suite type="TestSuite" id="1037" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="31" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.090384" total="31" passed="31" failed="0" inconclusive="0" skipped="0" asserts="0">
         <properties />
-        <test-suite type="TestSuite" id="1029" name="Tests" fullname="Qazrix.Tests" runstate="Runnable" testcasecount="23" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.058429" total="23" passed="23" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <test-suite type="TestSuite" id="1038" name="Tests" fullname="Qazrix.Tests" runstate="Runnable" testcasecount="31" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.089594" total="31" passed="31" failed="0" inconclusive="0" skipped="0" asserts="0">
           <properties />
-          <test-suite type="TestFixture" id="1001" name="AlertStateMachineTests" fullname="Qazrix.Tests.AlertStateMachineTests" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.037364" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1001" name="AlertStateMachineTests" fullname="Qazrix.Tests.AlertStateMachineTests" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" testcasecount="11" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.037371" total="11" passed="11" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1009" name="Alert_LosingContact_Searches_ThenGivesUp" fullname="Qazrix.Tests.AlertStateMachineTests.Alert_LosingContact_Searches_ThenGivesUp" methodname="Alert_LosingContact_Searches_ThenGivesUp" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="2119991128" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.014033" asserts="0">
+            <test-case id="1009" name="Alert_LosingContact_Searches_ThenGivesUp" fullname="Qazrix.Tests.AlertStateMachineTests.Alert_LosingContact_Searches_ThenGivesUp" methodname="Alert_LosingContact_Searches_ThenGivesUp" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="1087710571" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.014353" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1006" name="BriefGlimpse_DecaysBackToZero" fullname="Qazrix.Tests.AlertStateMachineTests.BriefGlimpse_DecaysBackToZero" methodname="BriefGlimpse_DecaysBackToZero" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="2020696420" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000377" asserts="0">
+            <test-case id="1006" name="BriefGlimpse_DecaysBackToZero" fullname="Qazrix.Tests.AlertStateMachineTests.BriefGlimpse_DecaysBackToZero" methodname="BriefGlimpse_DecaysBackToZero" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="1874394749" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000293" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1004" name="FullView_GoesThroughSuspicious_BeforeAlert" fullname="Qazrix.Tests.AlertStateMachineTests.FullView_GoesThroughSuspicious_BeforeAlert" methodname="FullView_GoesThroughSuspicious_BeforeAlert" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="2142400585" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.002105" asserts="0">
+            <test-case id="1004" name="FullView_GoesThroughSuspicious_BeforeAlert" fullname="Qazrix.Tests.AlertStateMachineTests.FullView_GoesThroughSuspicious_BeforeAlert" methodname="FullView_GoesThroughSuspicious_BeforeAlert" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="121037993" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.001421" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1008" name="NoiseOutOfSight_Investigates_ThenReturnsToPatrol" fullname="Qazrix.Tests.AlertStateMachineTests.NoiseOutOfSight_Investigates_ThenReturnsToPatrol" methodname="NoiseOutOfSight_Investigates_ThenReturnsToPatrol" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="552659199" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000575" asserts="0">
+            <test-case id="1008" name="NoiseOutOfSight_Investigates_ThenReturnsToPatrol" fullname="Qazrix.Tests.AlertStateMachineTests.NoiseOutOfSight_Investigates_ThenReturnsToPatrol" methodname="NoiseOutOfSight_Investigates_ThenReturnsToPatrol" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="1418587185" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000292" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1005" name="PartialExposure_RaisesAwarenessSlower" fullname="Qazrix.Tests.AlertStateMachineTests.PartialExposure_RaisesAwarenessSlower" methodname="PartialExposure_RaisesAwarenessSlower" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="950895677" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.001300" asserts="0">
+            <test-case id="1005" name="PartialExposure_RaisesAwarenessSlower" fullname="Qazrix.Tests.AlertStateMachineTests.PartialExposure_RaisesAwarenessSlower" methodname="PartialExposure_RaisesAwarenessSlower" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="2077708165" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000754" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1012" name="Percept_ClampsVisibility" fullname="Qazrix.Tests.AlertStateMachineTests.Percept_ClampsVisibility" methodname="Percept_ClampsVisibility" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="779691137" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000827" asserts="0">
+            <test-case id="1012" name="Percept_ClampsVisibility" fullname="Qazrix.Tests.AlertStateMachineTests.Percept_ClampsVisibility" methodname="Percept_ClampsVisibility" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="2108593668" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000447" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1011" name="SameInputs_ProduceSameResult" fullname="Qazrix.Tests.AlertStateMachineTests.SameInputs_ProduceSameResult" methodname="SameInputs_ProduceSameResult" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="1070124058" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000714" asserts="0">
+            <test-case id="1011" name="SameInputs_ProduceSameResult" fullname="Qazrix.Tests.AlertStateMachineTests.SameInputs_ProduceSameResult" methodname="SameInputs_ProduceSameResult" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="943360354" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000366" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1010" name="Search_SeeingTargetAgain_ReturnsToAlertAtOnce" fullname="Qazrix.Tests.AlertStateMachineTests.Search_SeeingTargetAgain_ReturnsToAlertAtOnce" methodname="Search_SeeingTargetAgain_ReturnsToAlertAtOnce" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="1178684406" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000398" asserts="0">
+            <test-case id="1010" name="Search_SeeingTargetAgain_ReturnsToAlertAtOnce" fullname="Qazrix.Tests.AlertStateMachineTests.Search_SeeingTargetAgain_ReturnsToAlertAtOnce" methodname="Search_SeeingTargetAgain_ReturnsToAlertAtOnce" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="531431874" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000209" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1002" name="Starts_InPatrol_WithoutAwareness" fullname="Qazrix.Tests.AlertStateMachineTests.Starts_InPatrol_WithoutAwareness" methodname="Starts_InPatrol_WithoutAwareness" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="1520170440" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000334" asserts="0">
+            <test-case id="1002" name="Starts_InPatrol_WithoutAwareness" fullname="Qazrix.Tests.AlertStateMachineTests.Starts_InPatrol_WithoutAwareness" methodname="Starts_InPatrol_WithoutAwareness" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="1625226199" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000163" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1007" name="Suspicious_LosingSight_GoesToInvestigate" fullname="Qazrix.Tests.AlertStateMachineTests.Suspicious_LosingSight_GoesToInvestigate" methodname="Suspicious_LosingSight_GoesToInvestigate" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="2129736847" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000332" asserts="0">
+            <test-case id="1007" name="Suspicious_LosingSight_GoesToInvestigate" fullname="Qazrix.Tests.AlertStateMachineTests.Suspicious_LosingSight_GoesToInvestigate" methodname="Suspicious_LosingSight_GoesToInvestigate" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="197929493" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000182" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1003" name="TargetBehindWall_NeverRaisesAlert" fullname="Qazrix.Tests.AlertStateMachineTests.TargetBehindWall_NeverRaisesAlert" methodname="TargetBehindWall_NeverRaisesAlert" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="1214900293" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000316" asserts="0">
+            <test-case id="1003" name="TargetBehindWall_NeverRaisesAlert" fullname="Qazrix.Tests.AlertStateMachineTests.TargetBehindWall_NeverRaisesAlert" methodname="TargetBehindWall_NeverRaisesAlert" classname="Qazrix.Tests.AlertStateMachineTests" runstate="Runnable" seed="743255877" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000176" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
           </test-suite>
-          <test-suite type="TestFixture" id="1013" name="GeoOriginTests" fullname="Qazrix.Tests.GeoOriginTests" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.011575" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1013" name="GeoOriginTests" fullname="Qazrix.Tests.GeoOriginTests" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.007374" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1015" name="Axes_AreEastUpNorth" fullname="Qazrix.Tests.GeoOriginTests.Axes_AreEastUpNorth" methodname="Axes_AreEastUpNorth" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="1175854865" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000597" asserts="0">
+            <test-case id="1015" name="Axes_AreEastUpNorth" fullname="Qazrix.Tests.GeoOriginTests.Axes_AreEastUpNorth" methodname="Axes_AreEastUpNorth" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="35982346" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000332" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1018" name="HorizontalError_IgnoresHeight" fullname="Qazrix.Tests.GeoOriginTests.HorizontalError_IgnoresHeight" methodname="HorizontalError_IgnoresHeight" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="586033850" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000372" asserts="0">
+            <test-case id="1018" name="HorizontalError_IgnoresHeight" fullname="Qazrix.Tests.GeoOriginTests.HorizontalError_IgnoresHeight" methodname="HorizontalError_IgnoresHeight" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="542855723" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000206" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1017" name="LocalValues_StaySmallEnoughForFloat" fullname="Qazrix.Tests.GeoOriginTests.LocalValues_StaySmallEnoughForFloat" methodname="LocalValues_StaySmallEnoughForFloat" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="2075347041" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.002639" asserts="0">
+            <test-case id="1017" name="LocalValues_StaySmallEnoughForFloat" fullname="Qazrix.Tests.GeoOriginTests.LocalValues_StaySmallEnoughForFloat" methodname="LocalValues_StaySmallEnoughForFloat" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="1912132608" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.001686" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1019" name="NaN_IsRejected" fullname="Qazrix.Tests.GeoOriginTests.NaN_IsRejected" methodname="NaN_IsRejected" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="1463291057" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.003838" asserts="0">
+            <test-case id="1019" name="NaN_IsRejected" fullname="Qazrix.Tests.GeoOriginTests.NaN_IsRejected" methodname="NaN_IsRejected" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="1994568969" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.002565" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1014" name="Origin_MapsToZero" fullname="Qazrix.Tests.GeoOriginTests.Origin_MapsToZero" methodname="Origin_MapsToZero" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="737035917" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000327" asserts="0">
+            <test-case id="1014" name="Origin_MapsToZero" fullname="Qazrix.Tests.GeoOriginTests.Origin_MapsToZero" methodname="Origin_MapsToZero" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="424620068" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000208" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1016" name="RoundTrip_KeepsMillimetres" fullname="Qazrix.Tests.GeoOriginTests.RoundTrip_KeepsMillimetres" methodname="RoundTrip_KeepsMillimetres" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="513657238" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000341" asserts="0">
+            <test-case id="1016" name="RoundTrip_KeepsMillimetres" fullname="Qazrix.Tests.GeoOriginTests.RoundTrip_KeepsMillimetres" methodname="RoundTrip_KeepsMillimetres" classname="Qazrix.Tests.GeoOriginTests" runstate="Runnable" seed="199532601" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000220" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
           </test-suite>
-          <test-suite type="TestFixture" id="1020" name="HeightGridTests" fullname="Qazrix.Tests.HeightGridTests" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.007333" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestFixture" id="1020" name="HeightGridTests" fullname="Qazrix.Tests.HeightGridTests" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.004751" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-case id="1026" name="BadInput_IsRejected" fullname="Qazrix.Tests.HeightGridTests.BadInput_IsRejected" methodname="BadInput_IsRejected" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="1569077481" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.001998" asserts="0">
+            <test-case id="1026" name="BadInput_IsRejected" fullname="Qazrix.Tests.HeightGridTests.BadInput_IsRejected" methodname="BadInput_IsRejected" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="342991891" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.001319" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1024" name="Extent_MinAndMax" fullname="Qazrix.Tests.HeightGridTests.Extent_MinAndMax" methodname="Extent_MinAndMax" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="1292499235" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000631" asserts="0">
+            <test-case id="1024" name="Extent_MinAndMax" fullname="Qazrix.Tests.HeightGridTests.Extent_MinAndMax" methodname="Extent_MinAndMax" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="498873585" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000394" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1021" name="FirstRasterRow_IsNorth" fullname="Qazrix.Tests.HeightGridTests.FirstRasterRow_IsNorth" methodname="FirstRasterRow_IsNorth" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="1550273715" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000397" asserts="0">
+            <test-case id="1021" name="FirstRasterRow_IsNorth" fullname="Qazrix.Tests.HeightGridTests.FirstRasterRow_IsNorth" methodname="FirstRasterRow_IsNorth" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="1818102030" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000249" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1025" name="NearestIndex_IsClamped" fullname="Qazrix.Tests.HeightGridTests.NearestIndex_IsClamped" methodname="NearestIndex_IsClamped" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="1265104235" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000764" asserts="0">
+            <test-case id="1025" name="NearestIndex_IsClamped" fullname="Qazrix.Tests.HeightGridTests.NearestIndex_IsClamped" methodname="NearestIndex_IsClamped" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="1895672761" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000501" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1023" name="Sample_InterpolatesBetweenSamples" fullname="Qazrix.Tests.HeightGridTests.Sample_InterpolatesBetweenSamples" methodname="Sample_InterpolatesBetweenSamples" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="696752641" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000336" asserts="0">
+            <test-case id="1023" name="Sample_InterpolatesBetweenSamples" fullname="Qazrix.Tests.HeightGridTests.Sample_InterpolatesBetweenSamples" methodname="Sample_InterpolatesBetweenSamples" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="867463379" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000189" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />
               </properties>
             </test-case>
-            <test-case id="1022" name="Sample_UsesEastAsX_AndNorthAsZ" fullname="Qazrix.Tests.HeightGridTests.Sample_UsesEastAsX_AndNorthAsZ" methodname="Sample_UsesEastAsX_AndNorthAsZ" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="142543297" result="Passed" start-time="2026-11-11 10:07:30Z" end-time="2026-11-11 10:07:30Z" duration="0.000323" asserts="0">
+            <test-case id="1022" name="Sample_UsesEastAsX_AndNorthAsZ" fullname="Qazrix.Tests.HeightGridTests.Sample_UsesEastAsX_AndNorthAsZ" methodname="Sample_UsesEastAsX_AndNorthAsZ" classname="Qazrix.Tests.HeightGridTests" runstate="Runnable" seed="1182252224" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.000188" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1027" name="QazrixControlsTests" fullname="Qazrix.Tests.QazrixControlsTests" classname="Qazrix.Tests.QazrixControlsTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.037866" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1028" name="Defaults_ContainEveryAction" fullname="Qazrix.Tests.QazrixControlsTests.Defaults_ContainEveryAction" methodname="Defaults_ContainEveryAction" classname="Qazrix.Tests.QazrixControlsTests" runstate="Runnable" seed="818758069" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.006224" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1030" name="EveryBinding_BelongsToAControlScheme" fullname="Qazrix.Tests.QazrixControlsTests.EveryBinding_BelongsToAControlScheme" methodname="EveryBinding_BelongsToAControlScheme" classname="Qazrix.Tests.QazrixControlsTests" runstate="Runnable" seed="644140685" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.003304" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1029" name="GameplayButtons_WorkOnKeyboardAndGamepad" fullname="Qazrix.Tests.QazrixControlsTests.GameplayButtons_WorkOnKeyboardAndGamepad" methodname="GameplayButtons_WorkOnKeyboardAndGamepad" classname="Qazrix.Tests.QazrixControlsTests" runstate="Runnable" seed="1728352285" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.005770" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1034" name="Json_RoundTrip_KeepsActionsAndBindings" fullname="Qazrix.Tests.QazrixControlsTests.Json_RoundTrip_KeepsActionsAndBindings" methodname="Json_RoundTrip_KeepsActionsAndBindings" classname="Qazrix.Tests.QazrixControlsTests" runstate="Runnable" seed="702477615" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.007425" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1032" name="Override_SurvivesSaveAndLoad" fullname="Qazrix.Tests.QazrixControlsTests.Override_SurvivesSaveAndLoad" methodname="Override_SurvivesSaveAndLoad" classname="Qazrix.Tests.QazrixControlsTests" runstate="Runnable" seed="135240388" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.006686" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1035" name="ProjectAsset_HasEveryActionTheCodeReads" fullname="Qazrix.Tests.QazrixControlsTests.ProjectAsset_HasEveryActionTheCodeReads" methodname="ProjectAsset_HasEveryActionTheCodeReads" classname="Qazrix.Tests.QazrixControlsTests" runstate="Runnable" seed="228622200" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.002261" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1031" name="RebindableActions_HaveAKeyboardBinding" fullname="Qazrix.Tests.QazrixControlsTests.RebindableActions_HaveAKeyboardBinding" methodname="RebindableActions_HaveAKeyboardBinding" classname="Qazrix.Tests.QazrixControlsTests" runstate="Runnable" seed="222365423" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.001912" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1033" name="ResetOverrides_RestoresDefaults" fullname="Qazrix.Tests.QazrixControlsTests.ResetOverrides_RestoresDefaults" methodname="ResetOverrides_RestoresDefaults" classname="Qazrix.Tests.QazrixControlsTests" runstate="Runnable" seed="424184304" result="Passed" start-time="2026-11-11 17:04:05Z" end-time="2026-11-11 17:04:05Z" duration="0.001218" asserts="0">
               <properties>
                 <property name="retryIteration" value="0" />
                 <property name="repeatIteration" value="0" />

@@ -4,7 +4,7 @@ Aventura de sigilo y acción en tercera persona ambientada en Cáceres (Qazrix),
 Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 
 **Versión:** 0.1 · **Fase actual:** F0-A rehecha tras el reinicio del 2026-11-11 (D31), con **URP provisional** como en el paquete original (D32). F0-B hecha: relieve real de Z01 con tres puntos de control (D33); aún sin edificios.
-**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 23/23 tests EditMode en headless. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
+**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 31/31 tests EditMode en headless. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
 
 ---
 
@@ -13,7 +13,7 @@ Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 1. Unity Hub → abrir esta carpeta con **Unity 6000.3.6f1** (D05).
 2. Menú **Qazrix → Prototipo → Crear o abrir escena Prototype**.
 3. Menú **Qazrix → Verificar proyecto**. Objetivo: **0 errores**. El aviso de render pipeline es normal mientras D06 siga abierta.
-4. **Window → General → Test Runner → EditMode → Run All.** Deben pasar 23 tests.
+4. **Window → General → Test Runner → EditMode → Run All.** Deben pasar 31 tests.
 5. Pulsa **Play** y haz clic en la ventana Game para capturar el ratón.
 
 | Acción | Teclado / ratón | Mando |
@@ -25,6 +25,7 @@ Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 | Cámara | ratón (clic captura, Esc suelta) | stick derecho |
 | Zoom | rueda | cruceta arriba/abajo |
 | Ocultar panel | F1 | Select |
+| Cambiar teclas | F2 | Start |
 
 Qué probar en el circuito:
 
@@ -33,7 +34,8 @@ Qué probar en el circuito:
 - pasar agachado por el túnel: dentro no debes poder levantarte;
 - subir la rampa hasta el mirador;
 - pegar la cámara a la pared alta: no debe atravesarla;
-- tirarte fuera del suelo: debes reaparecer en el punto de salida.
+- tirarte fuera del suelo: debes reaparecer en el punto de salida;
+- pulsar F2, cambiar «Saltar» a otra tecla, cerrar y comprobar que salta con la nueva; parar, volver a Play y ver que se conserva.
 
 ## Mapa Z01 (F0-B)
 
@@ -75,6 +77,12 @@ echo $LASTEXITCODE
 & $Unity -batchmode -projectPath $Proj -executeMethod Qazrix.EditorTools.PrototypePreview.CaptureBatch -logFile "$Proj\Reports\QA\preview.log" | Out-Null
 ```
 
+Pruebas en Play (abre una ventana de Unity durante medio minuto; sin `-batchmode` porque las capturas la necesitan):
+
+```powershell
+& $Unity -projectPath $Proj -runTests -testPlatform PlayMode -testResults "$Proj\Reports\QA\playmode-results.xml" -logFile "$Proj\Reports\QA\playmode.log" | Out-Null
+```
+
 No añadas `-quit`: los métodos cierran Unity con su propio código de salida y `-runTests` también.
 
 ## Qué hay en el código (`Assets/_Qazrix`)
@@ -82,17 +90,19 @@ No añadas `-quit`: los métodos cierran Unity con su propio código de salida y
 | Ruta | Contenido |
 |---|---|
 | `Scripts/Simulation/` | Lógica pura sin Unity (`noEngineReferences`): máquina de alerta de guardias, origen geográfico local y rejilla de cotas |
-| `Scripts/Runtime/Prototype/` | Controlador del jugador, cámara orbital con colisión, panel de depuración, entrada temporal (D13) |
+| `Scripts/Runtime/Prototype/` | Controlador del jugador, cámara orbital con colisión, panel de depuración |
+| `Scripts/Runtime/Input/` | Input Actions de fábrica, lector único de entrada y panel de reasignación de teclas (D36) |
 | `Scripts/Runtime/World/` | Puente entre coordenadas `double` y `Vector3` |
 | `Scripts/Editor/` | `PrototypeSceneBuilder`, `VerifyProject`, `PrototypePreview`, `ProjectInfo`, `Z01GeoBuilder`, `Z01GeoReport`; `Urp/UrpSetup` (solo compila con URP instalado) |
-| `Tests/EditMode/` | 23 tests de la lógica pura |
+| `Tests/EditMode/` | 31 tests: lógica pura y acciones de entrada |
+| `Tests/PlayMode/` | 4 pruebas en Play de la escena Prototype con teclado simulado; dejan capturas en `Reports/QA` |
 | `Settings/URP/` | Assets del pipeline URP provisional (D06, D32) |
 
 Fuera de `Assets`: `Design/DecisionLog.md`, `Research/Datasets.md`, `Research/ASSET_LICENSES.csv`, datos fuente en `Research/Source/` e informes en `Reports/`.
 
 ## Git
 
-Repositorio con Git LFS (`git lfs install` una vez por máquina). Los datos fuente del CNIG de `Research/Source` (≈1,4 GB), las imágenes y los derivados binarios van por LFS (D35). El remoto `origin` apunta a GitHub; todavía no se ha subido nada.
+Repositorio con Git LFS (`git lfs install` una vez por máquina). Los datos fuente del CNIG de `Research/Source` (≈1,4 GB), las imágenes y los derivados binarios van por LFS (D35). El remoto `origin` apunta a GitHub; `main` se subió el 2026-11-11.
 
 ---
 

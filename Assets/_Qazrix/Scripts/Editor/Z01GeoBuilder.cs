@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Qazrix.Input;
 using Qazrix.Prototype;
 using Qazrix.Simulation.World;
 using Qazrix.World;
@@ -80,16 +81,17 @@ namespace Qazrix.EditorTools
 
             // El jugador nace en el origen local, medio metro por encima del relieve.
             float groundY = (float)(terrainGrid.Sample(0, 0) - meta.originHeight);
+            QazrixInput input = PrototypeSceneBuilder.CreateInput();
             PrototypePlayerController player = PrototypeSceneBuilder.CreatePlayer(body, pole);
             player.transform.position = new Vector3(0f, groundY + 0.5f, 0f);
-            Transform cameraRig = PrototypeSceneBuilder.CreateCamera(player.transform);
+            Transform cameraRig = PrototypeSceneBuilder.CreateCamera(player.transform, input);
             cameraRig.position = player.transform.position + new Vector3(0f, 2.9f, -4.3f);
             cameraRig.GetComponent<Camera>().farClipPlane = 3000f;
-            player.Configure(cameraRig, player.transform.Find("Visual"));
+            player.Configure(cameraRig, player.transform.Find("Visual"), input);
             EditorUtility.SetDirty(player);
 
             var hud = new GameObject("HUD").AddComponent<PrototypeHud>();
-            hud.Configure(player);
+            hud.Configure(player, input);
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.MarkSceneDirty(scene);

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="4" result="Passed" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-11 17:03:09Z" end-time="2026-11-11 17:03:12Z" duration="3,2625665">
+  <test-suite type="TestSuite" id="1013" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-11 17:03:09Z" end-time="2026-11-11 17:03:12Z" duration="3.262567" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1006" name="Qazrix.Tests.PlayMode.dll" fullname="C:/Users/Propietario/Qazrix/Library/ScriptAssemblies/Qazrix.Tests.PlayMode.dll" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-11 17:03:09Z" end-time="2026-11-11 17:03:12Z" duration="3.251181" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="2980" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1007" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-11 17:03:09Z" end-time="2026-11-11 17:03:12Z" duration="3.248048" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1008" name="Tests" fullname="Qazrix.Tests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-11 17:03:09Z" end-time="2026-11-11 17:03:12Z" duration="3.244806" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1009" name="PlayMode" fullname="Qazrix.Tests.PlayMode" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-11 17:03:09Z" end-time="2026-11-11 17:03:12Z" duration="3.241891" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1001" name="PrototypeSceneTests" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-11 17:03:09Z" end-time="2026-11-11 17:03:12Z" duration="3.238238" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1005" name="F1_TogglesTheHud" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.F1_TogglesTheHud" methodname="F1_TogglesTheHud" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="574192247" result="Passed" start-time="2026-11-11 17:03:09Z" end-time="2026-11-11 17:03:10Z" duration="0.831938" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1004" name="F2_OpensAndClosesTheControlsPanel_AndBlocksMovement" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.F2_OpensAndClosesTheControlsPanel_AndBlocksMovement" methodname="F2_OpensAndClosesTheControlsPanel_AndBlocksMovement" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="120003847" result="Passed" start-time="2026-11-11 17:03:10Z" end-time="2026-11-11 17:03:11Z" duration="0.833633" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1003" name="Space_MakesThePlayerJump" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.Space_MakesThePlayerJump" methodname="Space_MakesThePlayerJump" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="1020621185" result="Passed" start-time="2026-11-11 17:03:11Z" end-time="2026-11-11 17:03:12Z" duration="0.706063" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1002" name="W_MovesThePlayerForward" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.W_MovesThePlayerForward" methodname="W_MovesThePlayerForward" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="2023621183" result="Passed" start-time="2026-11-11 17:03:12Z" end-time="2026-11-11 17:03:12Z" duration="0.850303" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: C:/Users/Propietario/AppData/LocalLow/DefaultCompany/Qazrix\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
