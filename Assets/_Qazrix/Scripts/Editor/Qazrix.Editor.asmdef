@@ -1,0 +1,19 @@
+{
+    "name": "Qazrix.Editor",
+    "rootNamespace": "Qazrix.EditorTools",
+    "references": [
+        "Qazrix.Simulation",
+        "Qazrix.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

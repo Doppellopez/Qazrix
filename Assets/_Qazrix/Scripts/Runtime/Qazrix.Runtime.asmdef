@@ -1,0 +1,17 @@
+{
+    "name": "Qazrix.Runtime",
+    "rootNamespace": "Qazrix",
+    "references": [
+        "Qazrix.Simulation",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

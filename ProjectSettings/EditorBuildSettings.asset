@@ -8,5 +8,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Qazrix/Scenes/Prototype/Prototype.unity
     guid: 6f0ee42e4df0218418f5952b66dc5077
+  - enabled: 1
+    path: Assets/_Qazrix/Scenes/Z01/Z01_Relieve.unity
+    guid: 8669528c26a55564184482efb7466fb3
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

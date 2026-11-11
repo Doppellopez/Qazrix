@@ -1,0 +1,4 @@
+id,name,easting,northing,unity_x,unity_y,unity_z,conversion_error_m,gdal_height,unity_height,vertical_error_m,surface_minus_terrain_at_point,volume_height,confidence,result
+GCP-01,Torre de Bujaco,726137.290,4372809.510,43.290,-6.098,77.510,0.0000,433.902,433.899,-0.003,18.24,20.77,alta,en tolerancia
+GCP-02,Concatedral de Santa Maria (nave),726218.500,4372741.500,124.500,1.524,9.500,0.0000,441.524,441.523,-0.001,19.00,19.74,alta,en tolerancia
+GCP-03,Iglesia de San Francisco Javier,726215.830,4372622.160,121.830,12.411,-109.840,0.0000,452.411,452.410,-0.001,3.38,17.37,alta,en tolerancia

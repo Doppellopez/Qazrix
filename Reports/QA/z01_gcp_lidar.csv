@@ -1,0 +1,4 @@
+id,name,easting,northing,confidence,hag_at_point,dist_built,dist_tall,tall_area,tall_max,tall_e,tall_n,dist_centroid,bearing
+GCP-01,Torre de Bujaco,726126.766,4372814.919,media,0.000,4.243,5.099,173.000,21.257,726137.292,4372809.506,11.836,117.216
+GCP-02,Arco de la Estrella,726137.590,4372780.054,media,0.000,5.000,5.000,88.000,17.216,726147.614,4372781.250,10.095,83.196
+GCP-03,Concatedral de Santa Maria,726223.881,4372758.811,baja,16.516,0.000,0.000,838.000,29.027,726218.501,4372741.499,18.129,197.263

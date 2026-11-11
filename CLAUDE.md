@@ -1,14 +1,15 @@
 # CLAUDE.md — instrucciones para Claude Code en Qazrix
 
 ## Antes de tocar nada
-1. Lee `QAZRIX_SPEC_v0.1.md` (al menos §0, §10, §13.2, §14), este archivo, `README.md` y `Design/DecisionLog.md`.
+1. Lee `QAZRIX_SPEC_v1.md` (al menos §0, §10, §13.2, §14), este archivo, `README.md` y `Design/DecisionLog.md`.
 2. Comprueba la versión real del editor en `ProjectSettings/ProjectVersion.txt`. No crees un segundo proyecto.
 3. Identifica la fase y el gate actuales (abajo). No empieces la campaña ni modeles Cáceres sin orden de fase.
 
 ## Estado
-- **Fase:** F0 (verificada en headless sobre copia el 2026-11-10: VerifyProject 0 errores, 20/20 tests EditMode; **falta probar Play a mano** en la escena Z01). F0-B en curso: mapa Z01 jugable (relieve, edificios LiDAR 1 m, calles transitables, ciudadano en 3.ª persona con trepada). Último informe: `Reports/F0B_Z01_incremento_2026-11-10.md`. Dirección de juego: acción-sigilo tipo AC (D27).
+- **Fase:** F0, con F0-A y F0-B rehechas tras el **reinicio del 2026-11-11 (D31)**. F0-A: escena `Prototype`, `VerifyProject`, tests. F0-B (D33, D34): relieve real de Z01, tres volúmenes y tres puntos de control sacados del LiDAR e identificados por Jorge. Verificado en headless sobre el proyecto real: VerifyProject 0 errores, 23/23 tests EditMode, puntos de control en tolerancia. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general, antes del cambio de puntos de control). Pendiente del gate F0: benchmark URP vs HDRP (D06), PC de referencia (D18), carta al CNIG/SIG, licencias de DATA-001..003. Git: historial en `main` con LFS (D35), sin subir a `origin`; no hacer push ni borrar la rama `respaldo-initial-checkin` sin que Jorge lo pida. Siguiente: F1. Carpeta del proyecto: `C:\Users\Propietario\Qazrix`. Último informe: `Reports/F0-B_Z01_relieve_2026-11-11.md`. Dirección de juego: acción-sigilo tipo AC (D27).
+- **Copia previa al reinicio:** `C:\Users\Propietario\Kazrix_backup_2026-11-11` (mapa Z01, ciudadano, trepada, informes). Es referencia, no fuente: no copiar código de ahí sin que Jorge lo pida.
 - **Editor:** 6000.3.6f1 en `E:\Utilities\Unity\6000.3.6f1\Editor\Unity.exe`. Git 2.55 y Git LFS 3.7.1 presentes; Blender 5.0/5.2 presentes; QGIS 3.44.15 instalado (GDAL/PDAL en `C:\Program Files\QGIS 3.44.15\bin`).
-- **Pipeline:** HDRP 17.3.0 provisional (D20, espacio de color Linear; menú Qazrix → Configurar HDRP provisional); D06 abierta hasta benchmark URP vs HDRP.
+- **Pipeline:** URP 17.3.0 provisional (D32, vuelve al paquete original y sustituye al HDRP de D20; menú Qazrix → Configurar URP provisional); D06 abierta hasta benchmark URP vs HDRP.
 - **Hardware objetivo:** sin definir (pregunta abierta §17).
 
 ## Reglas

@@ -1,0 +1,20 @@
+{
+  "zone": "Z01",
+  "crs": "EPSG:25829",
+  "originEasting": 726094,
+  "originNorthing": 4372732,
+  "originHeight": 440,
+  "samples": 513,
+  "cellSize": 2,
+  "rowOrder": "north-to-south",
+  "format": "float32 little-endian, sin cabecera",
+  "terrainFile": "z01_mdt_513.bin",
+  "surfaceFile": "z01_mds_513.bin",
+  "terrainMin": 382.141,
+  "terrainMax": 473.951,
+  "surfaceMin": 384.325,
+  "surfaceMax": 502.655,
+  "terrainSource": "MDT02-ETRS89-HU29-0704-1-COB2.tif (DATA-001)",
+  "surfaceSource": "MDS02_WGS84_PM-2_0704-1.tif (DATA-003)",
+  "tool": "GDAL 3.13.3 'Iowa City', released 2026/08/13"
+}
