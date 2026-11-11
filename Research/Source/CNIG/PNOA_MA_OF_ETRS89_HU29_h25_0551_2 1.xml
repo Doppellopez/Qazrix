@@ -1,0 +1,869 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Metadata generated with CatMDEdit version 4.6.6-->
+<gmd:MD_Metadata xmlns:gco="http://www.isotc211.org/2005/gco"
+    xmlns:gmd="http://www.isotc211.org/2005/gmd"
+    xmlns:gml="http://www.opengis.net/gml"
+    xmlns:gts="http://www.isotc211.org/2005/gts"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <gmd:fileIdentifier>
+        <gco:CharacterString>260125_PNOA_MA_OF_ETRS89_HU29_h25_0551_2</gco:CharacterString>
+    </gmd:fileIdentifier>
+    <gmd:language>
+        <gmd:LanguageCode
+            codeList="./resources/codeList.xml#LanguageCode" codeListValue="spa">spa</gmd:LanguageCode>
+    </gmd:language>
+    <gmd:characterSet>
+        <gmd:MD_CharacterSetCode
+            codeList="./resources/codeList.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+    </gmd:characterSet>
+    <gmd:hierarchyLevel>
+        <gmd:MD_ScopeCode
+            codeList="./resources/codeList.xml#MD_ScopeCode" codeListValue="tile">tile</gmd:MD_ScopeCode>
+    </gmd:hierarchyLevel>
+    <gmd:contact>
+        <gmd:CI_ResponsibleParty>
+            <gmd:individualName gco:nilReason="missing"/>
+            <gmd:organisationName>
+                <gco:CharacterString>Instituto Geográfico Nacional (IGN)</gco:CharacterString>
+            </gmd:organisationName>
+            <gmd:positionName gco:nilReason="missing"/>
+            <gmd:contactInfo>
+                <gmd:CI_Contact>
+                    <gmd:address>
+                        <gmd:CI_Address>
+                            <gmd:electronicMailAddress>
+                                <gco:CharacterString>ign@mitma.es</gco:CharacterString>
+                            </gmd:electronicMailAddress>
+                        </gmd:CI_Address>
+                    </gmd:address>
+                </gmd:CI_Contact>
+            </gmd:contactInfo>
+            <gmd:role>
+                <gmd:CI_RoleCode
+                    codeList="./resources/codeList.xml#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+            </gmd:role>
+        </gmd:CI_ResponsibleParty>
+    </gmd:contact>
+    <gmd:dateStamp>
+        <gco:Date>2026-02-09</gco:Date>
+    </gmd:dateStamp>
+    <gmd:metadataStandardName>
+        <gco:CharacterString>NEM: ISO 19115:2003 + Reglamento (CE) Nº 1205/2008 de Inspire</gco:CharacterString>
+    </gmd:metadataStandardName>
+    <gmd:metadataStandardVersion>
+        <gco:CharacterString>1.1</gco:CharacterString>
+    </gmd:metadataStandardVersion>
+    <gmd:spatialRepresentationInfo>
+        <gmd:MD_GridSpatialRepresentation>
+            <gmd:numberOfDimensions>
+                <gco:Integer>2</gco:Integer>
+            </gmd:numberOfDimensions>
+            <gmd:cellGeometry>
+                <gmd:MD_CellGeometryCode
+                    codeList="./resources/codeList.xml#MD_CellGeometryCode" codeListValue="area">area</gmd:MD_CellGeometryCode>
+            </gmd:cellGeometry>
+            <gmd:transformationParameterAvailability>
+                <gco:Boolean>false</gco:Boolean>
+            </gmd:transformationParameterAvailability>
+        </gmd:MD_GridSpatialRepresentation>
+    </gmd:spatialRepresentationInfo>
+    <gmd:referenceSystemInfo>
+        <gmd:MD_ReferenceSystem>
+            <gmd:referenceSystemIdentifier>
+                <gmd:RS_Identifier>
+                    <gmd:code>
+                                <gco:CharacterString>http://www.opengis.net/def/crs/EPSG/0/25829</gco:CharacterString>
+                     </gmd:code>
+                </gmd:RS_Identifier>
+            </gmd:referenceSystemIdentifier>
+        </gmd:MD_ReferenceSystem>
+    </gmd:referenceSystemInfo>
+    <gmd:identificationInfo>
+        <gmd:MD_DataIdentification>
+            <gmd:citation>
+                <gmd:CI_Citation>
+                    <gmd:title>
+                        <gco:CharacterString>Mosaico a escala 1:25.000 de máxima actualidad de la hoja 0551_2 de ortofotografía del Plan Nacional de Ortofotografía Aérea de España</gco:CharacterString>
+                    </gmd:title>
+                    <gmd:alternateTitle>
+                        <gco:CharacterString>Mosaico MA 1:25.000 PNOA hoja 0551_2</gco:CharacterString>
+                    </gmd:alternateTitle>
+                    <gmd:date>
+                        <gmd:CI_Date>
+                            <gmd:date>
+                                <gco:Date>2026-01-25</gco:Date>
+                            </gmd:date>
+                            <gmd:dateType>
+                                <gmd:CI_DateTypeCode
+                                    codeList="./resources/codeList.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                            </gmd:dateType>
+                        </gmd:CI_Date>
+                    </gmd:date>
+                    <gmd:identifier>
+                        <gmd:RS_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>PNOA_MA_H29_0551_2</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>http://www.ign.es</gco:CharacterString>
+                            </gmd:codeSpace>
+                        </gmd:RS_Identifier>
+                    </gmd:identifier>
+                    <gmd:presentationForm>
+                        <gmd:CI_PresentationFormCode
+                            codeList="./resources/codeList.xml#CI_PresentationFormCode" codeListValue="imageDigital">imageDigital</gmd:CI_PresentationFormCode>
+                    </gmd:presentationForm>
+                </gmd:CI_Citation>
+            </gmd:citation>
+            <gmd:abstract>
+                <gco:CharacterString>Mosaico de máxima actualidad de ortofotografías correspondientes a la hoja 0551_2 del MTN25 (que cubre parte de las Comunidades Autónomas de Castilla y León y de Extremadura). El tamaño del píxel es de 25cm y los años de captura de los datos son el 2025 y el 2023. El mosaico es YCBCR y está comprimido por hojas MTN25 en ETRS89 (formato COG). La unidad de distribución y descarga es la hoja del MTN25 (Mapa Topográfico Nacional 1:25.000): resultado de componer un mosaico con las ortofotos correspondientes a cada hoja del MTN25. Un mosaico de Máxima Actualidad por hoja MTN25 se forma seleccionando de entre toda la información de ortofotografía PNOA disponible aquellas que tenga una fecha de referencia más reciente y en caso de coincidencia se seleccionará las que tenga un tamaño de píxel menor. Cada mosaico va acompañado de un archivo de metadatos (xml) y un archivo shape (comprimido en formato zip) formado por recintos que indican (para cada píxel del mosaico) la resolución geométrica y la fecha de toma de la ortofotografía</gco:CharacterString>
+            </gmd:abstract>
+            <gmd:purpose>
+                <gco:CharacterString>Facilitar a la sociedad española información geográfica de alta precisión</gco:CharacterString>
+            </gmd:purpose>
+            <gmd:credit>
+                <gco:CharacterString>Producto integrante del Plan Nacional de Ortofotografía Aérea de España (PNOA)- Distribuido por el Centro Nacional de Información Geográfica – Proyecto coordinado por el Instituto Geográfico Nacional - Financiado por la Administración Pública Española</gco:CharacterString>
+            </gmd:credit>
+            <gmd:pointOfContact>
+                <gmd:CI_ResponsibleParty>
+                    <gmd:individualName gco:nilReason="missing"/>
+                    <gmd:organisationName>
+                        <gco:CharacterString>Instituto Geográfico Nacional (IGN)</gco:CharacterString>
+                    </gmd:organisationName>
+                    <gmd:positionName gco:nilReason="missing"/>
+                    <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                            <gmd:address>
+                                <gmd:CI_Address>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>ign@mitma.es</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                </gmd:CI_Address>
+                            </gmd:address>
+                        </gmd:CI_Contact>
+                    </gmd:contactInfo>
+                    <gmd:role>
+                        <gmd:CI_RoleCode
+                            codeList="./resources/codeList.xml#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+                    </gmd:role>
+                </gmd:CI_ResponsibleParty>
+            </gmd:pointOfContact>
+            <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                    <gmd:keyword>
+                        <gco:CharacterString>Ortoimágenes</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:type>
+                        <gmd:MD_KeywordTypeCode
+                            codeList="./resources/codeList.xml#MD_KeywordTypeCode" codeListValue="theme">theme</gmd:MD_KeywordTypeCode>
+                    </gmd:type>
+                    <gmd:thesaurusName>
+                        <gmd:CI_Citation>
+                            <gmd:title>
+                                <gco:CharacterString>GEMET – INSPIRE themes</gco:CharacterString>
+                            </gmd:title>
+                            <gmd:date>
+                                <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2008-12-05</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="./resources/codeList.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                </gmd:CI_Date>
+                            </gmd:date>
+                        </gmd:CI_Citation>
+                    </gmd:thesaurusName>
+                </gmd:MD_Keywords>
+            </gmd:descriptiveKeywords>
+            <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                    <gmd:keyword>
+                        <gco:CharacterString>IGN</gco:CharacterString>
+                    </gmd:keyword>
+                </gmd:MD_Keywords>
+            </gmd:descriptiveKeywords>
+            <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                    <gmd:keyword>
+                        <gco:CharacterString>ESPAÑA</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:type>
+                        <gmd:MD_KeywordTypeCode
+                            codeList="./resources/codeList.xml#MD_KeywordTypeCode" codeListValue="place">place</gmd:MD_KeywordTypeCode>
+                    </gmd:type>
+                    <gmd:thesaurusName>
+                        <gmd:CI_Citation>
+                            <gmd:title>
+                                <gco:CharacterString>EuropeanTerritorialUnits</gco:CharacterString>
+                            </gmd:title>
+                            <gmd:date>
+                                <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2005-01-01</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="./resources/codeList.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                </gmd:CI_Date>
+                            </gmd:date>
+                        </gmd:CI_Citation>
+                    </gmd:thesaurusName>
+                </gmd:MD_Keywords>
+            </gmd:descriptiveKeywords>
+            <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                    <gmd:keyword>
+                        <gco:CharacterString>ESPAÑA.CASTILLA Y LEÓN</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:keyword>
+                        <gco:CharacterString>ESPAÑA.EXTREMADURA</gco:CharacterString>
+                    </gmd:keyword>
+                    <gmd:type>
+                        <gmd:MD_KeywordTypeCode
+                            codeList="./resources/codeList.xml#MD_KeywordTypeCode" codeListValue="place">place</gmd:MD_KeywordTypeCode>
+                    </gmd:type>
+                    <gmd:thesaurusName>
+                        <gmd:CI_Citation>
+                            <gmd:title>
+                                <gco:CharacterString>EuropeanTerritorialUnits</gco:CharacterString>
+                            </gmd:title>
+                            <gmd:date>
+                                <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2005</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="./resources/codeList.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                </gmd:CI_Date>
+                            </gmd:date>
+                        </gmd:CI_Citation>
+                    </gmd:thesaurusName>
+                </gmd:MD_Keywords>
+            </gmd:descriptiveKeywords>
+            <gmd:descriptiveKeywords>
+                <gmd:MD_Keywords>
+                    <gmd:keyword>
+                        <gco:CharacterString>PNOA MA</gco:CharacterString>
+                    </gmd:keyword>
+                </gmd:MD_Keywords>
+            </gmd:descriptiveKeywords>
+            <gmd:resourceSpecificUsage>
+                <gmd:MD_Usage>
+                    <gmd:specificUsage>
+                        <gco:CharacterString>Las ortoimágenes se visualizan a través del servicio WMS del PNOA (https://www.ign.es/wms-inspire/pnoa-ma) y del servicio teselado WMTS del PNOA (https://www.ign.es/wmts/pnoa-ma) y se descargan desde el Centro de Descargas del CNIG </gco:CharacterString>
+                    </gmd:specificUsage>
+                    <gmd:userContactInfo>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:individualName gco:nilReason="missing"/>
+                            <gmd:organisationName>
+                                <gco:CharacterString>Instituto Geográfico Nacional (IGN)</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:positionName gco:nilReason="missing"/>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>ign@mitma.es</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="./resources/codeList.xml#CI_RoleCode" codeListValue="pointOfContact">pointOfContact</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:userContactInfo>
+                </gmd:MD_Usage>
+            </gmd:resourceSpecificUsage>
+            <gmd:resourceConstraints>
+                <gmd:MD_LegalConstraints>
+                    <gmd:useLimitation>
+                        <gco:CharacterString>http://www.ign.es/resources/licencia/Condiciones_licenciaUso_IGN.pdf</gco:CharacterString>
+                    </gmd:useLimitation>
+                    <gmd:accessConstraints>
+                        <gmd:MD_RestrictionCode
+                            codeList="./resources/codeList.xml#MD_RestrictionCode" codeListValue="license">license</gmd:MD_RestrictionCode>
+                    </gmd:accessConstraints>
+                    <gmd:otherConstraints>
+                        <gco:CharacterString>Dicha licencia (compatible con CC-BY 4.0) ampara el uso libre y gratuito para cualquier propósito legítimo. Siendo la única estricta obligación la de reconocer y mencionar el origen y propiedad de los productos y servicios de información geográfica licenciados como del IGN según se indica en la citada licencia.</gco:CharacterString>
+                    </gmd:otherConstraints>
+                </gmd:MD_LegalConstraints>
+            </gmd:resourceConstraints>
+            <gmd:spatialRepresentationType>
+                <gmd:MD_SpatialRepresentationTypeCode
+                    codeList="./resources/codeList.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">grid</gmd:MD_SpatialRepresentationTypeCode>
+            </gmd:spatialRepresentationType>
+            <gmd:spatialResolution>
+                <gmd:MD_Resolution>
+                    <gmd:distance>
+                        <gco:Distance uom="meter">0.25</gco:Distance>
+                    </gmd:distance>
+                </gmd:MD_Resolution>
+            </gmd:spatialResolution>
+            <gmd:language>
+                <gmd:LanguageCode
+                    codeList="./resources/codeList.xml#LanguageCode" codeListValue="spa">spa</gmd:LanguageCode>
+            </gmd:language>
+            <gmd:characterSet>
+                <gmd:MD_CharacterSetCode
+                    codeList="./resources/codeList.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+            </gmd:characterSet>
+            <gmd:topicCategory>
+                <gmd:MD_TopicCategoryCode>imageryBaseMapsEarthCover</gmd:MD_TopicCategoryCode>
+            </gmd:topicCategory>
+            <gmd:extent>
+                <gmd:EX_Extent>
+                    <gmd:geographicElement>
+                        <gmd:EX_GeographicBoundingBox>
+                            <gmd:westBoundLongitude>
+                                <gco:Decimal>-6.3580922321</gco:Decimal>
+                            </gmd:westBoundLongitude>
+                            <gmd:eastBoundLongitude>
+                                <gco:Decimal>-6.1833435525</gco:Decimal>
+                            </gmd:eastBoundLongitude>
+                            <gmd:southBoundLatitude>
+                                <gco:Decimal>40.412208881</gco:Decimal>
+                            </gmd:southBoundLatitude>
+                            <gmd:northBoundLatitude>
+                                <gco:Decimal>40.5044420603</gco:Decimal>
+                            </gmd:northBoundLatitude>
+                        </gmd:EX_GeographicBoundingBox>
+                    </gmd:geographicElement>
+                    <gmd:temporalElement>
+                        <gmd:EX_TemporalExtent>
+                            <gmd:extent>
+                                <gml:TimePeriod gml:id="INTERVALO_DE_TIEMPO">
+                                    <gml:begin>
+                                    <gml:TimeInstant gml:id="FechaInicio">
+                                    <gml:timePosition>2026-01-01</gml:timePosition>
+                                    </gml:TimeInstant>
+                                    </gml:begin>
+                                    <gml:end>
+                                    <gml:TimeInstant gml:id="FechaFinal">
+                                    <gml:timePosition>2029-12-31</gml:timePosition>
+                                    </gml:TimeInstant>
+                                    </gml:end>
+                                </gml:TimePeriod>
+                            </gmd:extent>
+                        </gmd:EX_TemporalExtent>
+                    </gmd:temporalElement>
+                </gmd:EX_Extent>
+            </gmd:extent>
+        </gmd:MD_DataIdentification>
+    </gmd:identificationInfo>
+    <gmd:contentInfo>
+        <gmd:MD_ImageDescription>
+            <gmd:attributeDescription>
+                <gco:RecordType>Se han realizado las siguientes medidas sobre las ortofotos que componen el mosaico de máxima actualidad: - Puntos de control sobre puntos con coordenadas obtenidas por GNSS/ - Control radiométrico. Se comprueba el uso efectivo de todos los bits y la saturación en los bordes del histograma.</gco:RecordType>
+            </gmd:attributeDescription>
+            <gmd:contentType>
+                <gmd:MD_CoverageContentTypeCode
+                    codeList="./resources/codeList.xml#MD_CoverageContentTypeCode" codeListValue="image">image</gmd:MD_CoverageContentTypeCode>
+            </gmd:contentType>
+            <gmd:radiometricCalibrationDataAvailability>
+                <gco:Boolean>true</gco:Boolean>
+            </gmd:radiometricCalibrationDataAvailability>
+            <gmd:cameraCalibrationInformationAvailability>
+                <gco:Boolean>true</gco:Boolean>
+            </gmd:cameraCalibrationInformationAvailability>
+            <gmd:filmDistortionInformationAvailability>
+                <gco:Boolean>true</gco:Boolean>
+            </gmd:filmDistortionInformationAvailability>
+            <gmd:lensDistortionInformationAvailability>
+                <gco:Boolean>true</gco:Boolean>
+            </gmd:lensDistortionInformationAvailability>
+        </gmd:MD_ImageDescription>
+    </gmd:contentInfo>
+    <gmd:distributionInfo>
+        <gmd:MD_Distribution>
+            <gmd:distributionFormat>
+                <gmd:MD_Format>
+                    <gmd:name>
+                        <gco:CharacterString>COG</gco:CharacterString>
+                    </gmd:name>
+                    <gmd:version>
+                        <gco:CharacterString>GDAL 3.4.3</gco:CharacterString>
+                    </gmd:version>
+                </gmd:MD_Format>
+            </gmd:distributionFormat>
+            <gmd:distributor>
+                <gmd:MD_Distributor>
+                    <gmd:distributorContact>
+                        <gmd:CI_ResponsibleParty>
+                            <gmd:organisationName>
+                                <gco:CharacterString>Centro Nacional de Información Geográfica (España)</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:contactInfo>
+                                <gmd:CI_Contact>
+                                    <gmd:address>
+                                    <gmd:CI_Address>
+                                    <gmd:electronicMailAddress>
+                                    <gco:CharacterString>consultas@cnig.es</gco:CharacterString>
+                                    </gmd:electronicMailAddress>
+                                    </gmd:CI_Address>
+                                    </gmd:address>
+                                </gmd:CI_Contact>
+                            </gmd:contactInfo>
+                            <gmd:role>
+                                <gmd:CI_RoleCode
+                                    codeList="./resources/codeList.xml#CI_RoleCode" codeListValue="distributor">distributor</gmd:CI_RoleCode>
+                            </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                    </gmd:distributorContact>
+                </gmd:MD_Distributor>
+            </gmd:distributor>
+            <gmd:transferOptions>
+                <gmd:MD_DigitalTransferOptions>
+                    <gmd:transferSize>
+                        <gco:Real>594.08</gco:Real>
+                    </gmd:transferSize>
+                    <gmd:onLine>
+                        <gmd:CI_OnlineResource>
+                            <gmd:linkage>
+                                <gmd:URL>http://centrodedescargas.cnig.es/CentroDescargas/busquedaRedirigida.do?ruta=PNOA/PNOA_MA_H29/PNOA_MA_OF_ETRS89_HU29_h25_0551_2.tif</gmd:URL>
+                            </gmd:linkage>
+                            <gmd:description>
+                                <gco:CharacterString>Enlace de descarga</gco:CharacterString>
+                            </gmd:description>
+                        </gmd:CI_OnlineResource>
+                    </gmd:onLine>
+                </gmd:MD_DigitalTransferOptions>
+            </gmd:transferOptions>
+        </gmd:MD_Distribution>
+    </gmd:distributionInfo>
+    <gmd:dataQualityInfo>
+        <gmd:DQ_DataQuality>
+            <gmd:scope>
+                <gmd:DQ_Scope>
+                    <gmd:level>
+                        <gmd:MD_ScopeCode
+                            codeList="./resources/codeList.xml#MD_ScopeCode" codeListValue="dataset">dataset</gmd:MD_ScopeCode>
+                       </gmd:level>
+                    <gmd:extent>
+                        <gmd:EX_Extent>
+                            <gmd:geographicElement>
+                                <gmd:EX_GeographicBoundingBox>
+                                    <gmd:westBoundLongitude>
+                                    <gco:Decimal>-6.3580922321</gco:Decimal>
+                                    </gmd:westBoundLongitude>
+                                    <gmd:eastBoundLongitude>
+                                    <gco:Decimal>-6.1833435525</gco:Decimal>
+                                    </gmd:eastBoundLongitude>
+                                    <gmd:southBoundLatitude>
+                                    <gco:Decimal>40.412208881</gco:Decimal>
+                                    </gmd:southBoundLatitude>
+                                    <gmd:northBoundLatitude>
+                                    <gco:Decimal>40.5044420603</gco:Decimal>
+                                    </gmd:northBoundLatitude>
+                                </gmd:EX_GeographicBoundingBox>
+                            </gmd:geographicElement>   
+                        </gmd:EX_Extent>
+                    </gmd:extent>
+                </gmd:DQ_Scope>
+            </gmd:scope>
+            <gmd:report>
+                <gmd:DQ_DomainConsistency>
+                    <gmd:result>
+                        <gmd:DQ_ConformanceResult>
+                            <gmd:specification>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>REGLAMENTO (UE) N o 1089/2010 DE LA COMISIÓN de 23 de noviembre de 2010 por el que se aplica la Directiva 2007/2/CE del Parlamento Europeo y del Consejo en lo que se refiere a la interoperabilidad de los conjuntos y los servicios de datos espaciales</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2010-12-08</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="./resources/codeList.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                </gmd:CI_Citation>
+                            </gmd:specification>
+                            <gmd:explanation>
+                                <gco:CharacterString>Consultar el reglamento mencionado</gco:CharacterString>
+                            </gmd:explanation>
+                            <gmd:pass>
+                                <gco:Boolean>false</gco:Boolean>
+                            </gmd:pass>
+                        </gmd:DQ_ConformanceResult>
+                    </gmd:result>
+                </gmd:DQ_DomainConsistency>
+            </gmd:report>
+            <gmd:report>
+                <gmd:DQ_DomainConsistency>
+                    <gmd:result>
+                        <gmd:DQ_ConformanceResult>
+                            <gmd:specification>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>REGLAMENTO (CE) Nº 1205/2008 DE LA COMISIÓN de 3 de diciembre de  2008 por el que se ejecuta la Directiva 2007/2/CE del Parlamento Europeo y del Consejo en lo que se refiere a los metadatos</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2008-12-04</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="./resources/codeList.xml#CI_DateTypeCode" codeListValue="publication">publication</gmd:CI_DateTypeCode>
+                                    </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                </gmd:CI_Citation>
+                            </gmd:specification>
+                            <gmd:explanation>
+                                <gco:CharacterString>Consultar el reglamento mencionado</gco:CharacterString>
+                            </gmd:explanation>
+                            <gmd:pass>
+                                <gco:Boolean>true</gco:Boolean>
+                            </gmd:pass>
+                        </gmd:DQ_ConformanceResult>
+                    </gmd:result>
+                </gmd:DQ_DomainConsistency>
+            </gmd:report>
+            <gmd:report>
+                <gmd:DQ_ConceptualConsistency>
+                    <gmd:nameOfMeasure>
+                        <gco:CharacterString>01 Control de mosaicado según el criterio de máxima actualización establecido</gco:CharacterString>
+                    </gmd:nameOfMeasure>
+                    <gmd:measureDescription>
+                        <gco:CharacterString>En función de las fechas de las ortofotos que intervienen en el mosaico se establecen dos criterios: 1.- Para ortofotos de distinta fecha prevalece la más actual. 2.- Para ortofotos de igual fecha prevalece la de más resolución</gco:CharacterString>
+                    </gmd:measureDescription>
+                    <gmd:evaluationMethodType>
+                        <gmd:DQ_EvaluationMethodTypeCode
+                            codeList="./resources/codeList.xml#DQ_EvaluationMethodTypeCode" codeListValue="directExternal">directExternal</gmd:DQ_EvaluationMethodTypeCode>
+                    </gmd:evaluationMethodType>
+                    <gmd:evaluationMethodDescription>
+                        <gco:CharacterString>Análisis de la documentación</gco:CharacterString>
+                    </gmd:evaluationMethodDescription>
+                    <gmd:result>
+                        <gmd:DQ_ConformanceResult>
+                            <gmd:specification>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>Control de Calidad de los mosaicos a escala 1:25.000 de máxima actualidad de 2026</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:alternateTitle>
+                                    <gco:CharacterString>Control de Calidad de los mosaicos MA 1:25.000 2026</gco:CharacterString>
+                                    </gmd:alternateTitle>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2026-02-04</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="./resources/codeList.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                                       </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                    <gmd:presentationForm>
+                                    <gmd:CI_PresentationFormCode
+                                    codeList="./resources/codeList.xml#CI_PresentationFormCode" codeListValue="documentDigital">documentDigital</gmd:CI_PresentationFormCode>
+                                    </gmd:presentationForm>
+                                </gmd:CI_Citation>
+                            </gmd:specification>
+                            <gmd:explanation>
+                                <gco:CharacterString>Se analiza la documentación completa</gco:CharacterString>
+                            </gmd:explanation>
+                            <gmd:pass>
+                                <gco:Boolean>true</gco:Boolean>
+                            </gmd:pass>
+                        </gmd:DQ_ConformanceResult>
+                    </gmd:result>
+                </gmd:DQ_ConceptualConsistency>
+            </gmd:report>
+            <gmd:report>
+                <gmd:DQ_ConceptualConsistency>
+                    <gmd:nameOfMeasure>
+                        <gco:CharacterString>02 Control de compresión - integridad – legibilidad</gco:CharacterString>
+                    </gmd:nameOfMeasure>
+                    <gmd:measureDescription>
+                        <gco:CharacterString>Se comprueba que el fichero cumple con los criterios de integridad y legibilidad. Se comprueba que el fichero GeoTIFF cumple con los criterios de validación COG.</gco:CharacterString>
+                    </gmd:measureDescription>
+                    <gmd:evaluationMethodType>
+                        <gmd:DQ_EvaluationMethodTypeCode
+                            codeList="./resources/codeList.xml#DQ_EvaluationMethodTypeCode" codeListValue="directInternal">directInternal</gmd:DQ_EvaluationMethodTypeCode>
+                    </gmd:evaluationMethodType>
+                    <gmd:evaluationMethodDescription>
+                        <gco:CharacterString>Test de Control</gco:CharacterString>
+                    </gmd:evaluationMethodDescription>
+                    <gmd:result>
+                        <gmd:DQ_ConformanceResult>
+                            <gmd:specification>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>Control de Calidad de los mosaicos a escala 1:25.000 de máxima actualidad de 2026</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:alternateTitle>
+                                    <gco:CharacterString>Control de Calidad de los mosaicos MA 1:25.000 2026</gco:CharacterString>
+                                    </gmd:alternateTitle>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2026-02-04</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="./resources/codeList.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                                       </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                    <gmd:presentationForm>
+                                    <gmd:CI_PresentationFormCode
+                                    codeList="./resources/codeList.xml#CI_PresentationFormCode" codeListValue="documentDigital">documentDigital</gmd:CI_PresentationFormCode>
+                                    </gmd:presentationForm>
+                                </gmd:CI_Citation>
+                            </gmd:specification>
+                            <gmd:explanation>
+                                <gco:CharacterString>El test se realiza al fichero comprimido en formato COG por hojas MTN25 rectangulares</gco:CharacterString>
+                            </gmd:explanation>
+                            <gmd:pass>
+                                <gco:Boolean>true</gco:Boolean>
+                            </gmd:pass>
+                        </gmd:DQ_ConformanceResult>
+                    </gmd:result>
+                </gmd:DQ_ConceptualConsistency>
+            </gmd:report>
+            <gmd:report>
+                <gmd:DQ_ConceptualConsistency>
+                    <gmd:nameOfMeasure>
+                        <gco:CharacterString>03 Control de la información de georreferenciación</gco:CharacterString>
+                    </gmd:nameOfMeasure>
+                    <gmd:measureDescription>
+                        <gco:CharacterString>Se comprueba los aspectos relacionados con la georreferenciación: la proyección cartográfica - sistema de referencia - coordenadas del corte y resolución. Así como la exactitud posicional mediante puntos de control</gco:CharacterString>
+                    </gmd:measureDescription>
+                    <gmd:evaluationMethodType>
+                        <gmd:DQ_EvaluationMethodTypeCode
+                            codeList="./resources/codeList.xml#DQ_EvaluationMethodTypeCode" codeListValue="directInternal">directInternal</gmd:DQ_EvaluationMethodTypeCode>
+                    </gmd:evaluationMethodType>
+                    <gmd:evaluationMethodDescription>
+                        <gco:CharacterString>Test de Control</gco:CharacterString>
+                    </gmd:evaluationMethodDescription>
+                    <gmd:result>
+                        <gmd:DQ_ConformanceResult>
+                            <gmd:specification>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>Control de Calidad de los mosaicos a escala 1:25.000 de máxima actualidad de 2026</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:alternateTitle>
+                                    <gco:CharacterString>Control de Calidad de los mosaicos MA 1:25.000 2026</gco:CharacterString>
+                                    </gmd:alternateTitle>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2026-02-04</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="./resources/codeList.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                                       </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                    <gmd:presentationForm>
+                                    <gmd:CI_PresentationFormCode
+                                    codeList="./resources/codeList.xml#CI_PresentationFormCode" codeListValue="documentDigital">documentDigital</gmd:CI_PresentationFormCode>
+                                    </gmd:presentationForm>
+                                </gmd:CI_Citation>
+                            </gmd:specification>
+                            <gmd:explanation>
+                                <gco:CharacterString>El test se realiza al fichero comprimido en formato COG por hojas MTN25 rectangulares</gco:CharacterString>
+                            </gmd:explanation>
+                            <gmd:pass>
+                                <gco:Boolean>true</gco:Boolean>
+                            </gmd:pass>
+                        </gmd:DQ_ConformanceResult>
+                    </gmd:result>
+                </gmd:DQ_ConceptualConsistency>
+            </gmd:report>
+            <gmd:report>
+                <gmd:DQ_ConceptualConsistency>
+                    <gmd:nameOfMeasure>
+                        <gco:CharacterString>04 Revisión visual de la ortofoto</gco:CharacterString>
+                    </gmd:nameOfMeasure>
+                    <gmd:measureDescription>
+                        <gco:CharacterString>Se comprueba la geometría interna del mosaico y la falta de imagen tanto en el interior como en los bordes de la hoja rectangular del MTN25</gco:CharacterString>
+                    </gmd:measureDescription>
+                    <gmd:evaluationMethodType>
+                        <gmd:DQ_EvaluationMethodTypeCode
+                            codeList="./resources/codeList.xml#DQ_EvaluationMethodTypeCode" codeListValue="directInternal">directInternal</gmd:DQ_EvaluationMethodTypeCode>
+                    </gmd:evaluationMethodType>
+                    <gmd:evaluationMethodDescription>
+                        <gco:CharacterString>Análisis de la ortofoto</gco:CharacterString>
+                    </gmd:evaluationMethodDescription>
+                    <gmd:result>
+                        <gmd:DQ_ConformanceResult>
+                            <gmd:specification>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>Control de Calidad de los mosaicos a escala 1:25.000 de máxima actualidad de 2026</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:alternateTitle>
+                                    <gco:CharacterString>Control de Calidad de los mosaicos MA 1:25.000 2026</gco:CharacterString>
+                                    </gmd:alternateTitle>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2026-02-04</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="./resources/codeList.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                                       </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                    <gmd:presentationForm>
+                                    <gmd:CI_PresentationFormCode
+                                    codeList="./resources/codeList.xml#CI_PresentationFormCode" codeListValue="documentDigital">documentDigital</gmd:CI_PresentationFormCode>
+                                    </gmd:presentationForm>
+                                </gmd:CI_Citation>
+                            </gmd:specification>
+                            <gmd:explanation>
+                                <gco:CharacterString>Se analiza la ortofoto completa</gco:CharacterString>
+                            </gmd:explanation>
+                            <gmd:pass>
+                                <gco:Boolean>true</gco:Boolean>
+                            </gmd:pass>
+                        </gmd:DQ_ConformanceResult>
+                    </gmd:result>
+                </gmd:DQ_ConceptualConsistency>
+            </gmd:report>
+            <gmd:report>
+                <gmd:DQ_ConceptualConsistency>
+                    <gmd:nameOfMeasure>
+                        <gco:CharacterString>05 Revisión de cases entre Mosaicos MTN25</gco:CharacterString>
+                    </gmd:nameOfMeasure>
+                    <gmd:measureDescription>
+                        <gco:CharacterString>Se comprueba que no exista ningún problema geométrico en el case entre los distintos mosaicos</gco:CharacterString>
+                    </gmd:measureDescription>
+                    <gmd:evaluationMethodType>
+                        <gmd:DQ_EvaluationMethodTypeCode
+                            codeList="./resources/codeList.xml#DQ_EvaluationMethodTypeCode" codeListValue="directInternal">directInternal</gmd:DQ_EvaluationMethodTypeCode>
+                    </gmd:evaluationMethodType>
+                    <gmd:evaluationMethodDescription>
+                        <gco:CharacterString>Análisis de la ortofoto</gco:CharacterString>
+                    </gmd:evaluationMethodDescription>
+                    <gmd:result>
+                        <gmd:DQ_ConformanceResult>
+                            <gmd:specification>
+                                <gmd:CI_Citation>
+                                    <gmd:title>
+                                    <gco:CharacterString>Control de Calidad de los mosaicos a escala 1:25.000 de máxima actualidad de 2026</gco:CharacterString>
+                                    </gmd:title>
+                                    <gmd:alternateTitle>
+                                    <gco:CharacterString>Control de Calidad de los mosaicos MA 1:25.000 2026</gco:CharacterString>
+                                    </gmd:alternateTitle>
+                                    <gmd:date>
+                                    <gmd:CI_Date>
+                                    <gmd:date>
+                                    <gco:Date>2026-02-04</gco:Date>
+                                    </gmd:date>
+                                    <gmd:dateType>
+                                    <gmd:CI_DateTypeCode
+                                    codeList="./resources/codeList.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                                       </gmd:dateType>
+                                    </gmd:CI_Date>
+                                    </gmd:date>
+                                    <gmd:presentationForm>
+                                    <gmd:CI_PresentationFormCode
+                                    codeList="./resources/codeList.xml#CI_PresentationFormCode" codeListValue="documentDigital">documentDigital</gmd:CI_PresentationFormCode>
+                                    </gmd:presentationForm>
+                                </gmd:CI_Citation>
+                            </gmd:specification>
+                            <gmd:explanation>
+                                <gco:CharacterString>Se analiza la ortofoto completa</gco:CharacterString>
+                            </gmd:explanation>
+                            <gmd:pass>
+                                <gco:Boolean>true</gco:Boolean>
+                            </gmd:pass>
+                        </gmd:DQ_ConformanceResult>
+                    </gmd:result>
+                </gmd:DQ_ConceptualConsistency>
+            </gmd:report>
+            <gmd:lineage>
+                <gmd:LI_Lineage>
+                    <gmd:statement>
+                        <gco:CharacterString>Para generar el mosaico se ha utilizado la información procedente de diversos Planes PNOA de las distintas Comunidades Autónomas. Este mosaico procede directamente de los ficheros que componen la imagen considerando las ortofotos interiores y colindantes a la hoja de acuerdo al criterio de máxima actualidad. La imagen resultante es rectangular y sin ausencia de información en los bordes. Como resultado se obtiene: -Mosaico YCBCR de máxima actualidad comprimido por hojas MTN25 en sistema ETRS89 y en formato COG (con compresión JPG). -Shape de máxima actualización</gco:CharacterString>
+                    </gmd:statement>
+                    <gmd:processStep>
+                        <gmd:LI_ProcessStep>
+                            <gmd:description>
+                                <gco:CharacterString>Mosaico de máxima actualidad: En función de las fechas de las ortofotos que intervienen en el mosaico se establecen dos criterios: 1.- Para ortofotos de distinta fecha prevalece la más actual. 2.- Para ortofotos de igual fecha prevalece la de más resolución</gco:CharacterString>
+                            </gmd:description>
+                            <gmd:dateTime>
+                                <gco:DateTime>2026-01-25T12:00:00</gco:DateTime>
+                            </gmd:dateTime>
+                        </gmd:LI_ProcessStep>
+                    </gmd:processStep>
+                    <gmd:processStep>
+                        <gmd:LI_ProcessStep>
+                            <gmd:description>
+                                <gco:CharacterString>Shape de máxima actualidad: Shape por hoja MTN25 con las fechas del vuelo PNOA</gco:CharacterString>
+                            </gmd:description>
+                            <gmd:dateTime>
+                                <gco:DateTime>2026-02-02T12:00:00</gco:DateTime>
+                            </gmd:dateTime>
+                        </gmd:LI_ProcessStep>
+                    </gmd:processStep>
+                    <gmd:source>
+                        <gmd:LI_Source>
+                            <gmd:description>
+                                <gco:CharacterString>Este mosaico de máxima actualidad se ha generado con las ortofotos siguientes: PNOA_2025_EXT:25\29\202506\h05_0551_4-4.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_4-5.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_5-3.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_5-4.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_5-5.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_6-2.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_6-3.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_6-4.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_6-5.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_7-1.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_7-2.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_7-3.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_7-4.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_7-5.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_8-1.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_8-2.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_8-3.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_8-4.tif
+/PNOA_2025_EXT:25\29\202506\h05_0551_8-5.tif
+/PNOA_2025_EXT:25\29\202506\h05_0552_1-2.tif
+/PNOA_2025_EXT:25\29\202506\h05_0552_1-3.tif
+/PNOA_2025_EXT:25\29\202506\h05_0552_1-4.tif
+/PNOA_2025_EXT:25\29\202506\h05_0552_1-5.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0526_4-8.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0526_5-8.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0526_6-8.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0526_7-8.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0526_8-8.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0527_1-8.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0551_4-1.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0551_4-2.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0551_4-3.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0551_5-1.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0551_5-2.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0551_6-1.tif
+/PNOA_2023_CYL:25\W\29\202307\h05_0552_1-1.tif
+</gco:CharacterString>
+                               </gmd:description>
+                        </gmd:LI_Source>
+                    </gmd:source>
+                </gmd:LI_Lineage>
+            </gmd:lineage>
+        </gmd:DQ_DataQuality>
+    </gmd:dataQualityInfo>
+</gmd:MD_Metadata>
+

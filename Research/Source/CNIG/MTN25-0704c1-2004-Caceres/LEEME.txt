@@ -1,0 +1,8 @@
+El archivo zip contiene 3 tipos de archivos:
+
+*.jpg:  archivo sin georreferenciar prodedente del escaneado de los fondos de la Cartoteca del Instituto Geográfico Nacional. Resolución 250 ppp. 
+
+*.ecw   archivo georreferenciado a partir del jpg anterior, en el sistema geodésico original del mapa y en coordenadas geográficas (longitud y latitud) sin proyección y a 400 ppp.
+
+*.prj   archivo auxiliar con los datos de georreferenciación que algunos programas necesitan para la correcta interpretación del ecw.
+
