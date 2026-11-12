@@ -1,6 +1,6 @@
 # VerifyProject
 
-- Fecha: 2026-11-12 10:26
+- Fecha: 2026-11-12 10:32
 - Unity: 6000.3.6f1
 - Modo: headless
 - Errores: 0 · Avisos: 1
@@ -17,6 +17,6 @@
 | Input Actions | Ok | Assets/_Qazrix/Settings/Input/QazrixControls.inputactions |
 | Escena Prototype | Ok | Assets/_Qazrix/Scenes/Prototype/Prototype.unity |
 | Escenas de build | Ok | Prototype incluida y activa. |
-| Contenido de escena | Ok | Jugador, cámara orbital, luz, entrada y guardia presentes; ningún script perdido. |
+| Contenido de escena | Ok | Jugador, cámara orbital, luz, entrada, guardia y malla de navegación presentes; ningún script perdido. |
 | Documentación | Ok | README, CLAUDE.md, spec, DecisionLog y registros de fuentes/licencias presentes. |
 | Registro de licencias | Ok | Ningún activo de arte o audio sin fila en ASSET_LICENSES.csv. |

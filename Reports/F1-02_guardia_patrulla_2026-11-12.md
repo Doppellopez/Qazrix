@@ -50,3 +50,13 @@
   - Los estados Investigate y Search comparten comportamiento (ir al último punto y mirar alrededor).
 
 - **Próximo paso más pequeño:** que Jorge juegue la escena `Prototype`: dejarse ver, esconderse tras la pared alta, pasar agachado por detrás del guardia y correr cerca de él, y diga qué se siente injusto o confuso. Después, siguiente corte de F1: parkour contextual mínimo, o decidir si se instala AI Navigation para que el guardia rodee obstáculos.
+
+## Añadido: navegación con AI Navigation (2026-11-12, D38)
+
+- **Motivo:** el guardia iba en línea recta y se quedaba empujando contra los obstáculos. Jorge autorizó instalar el paquete.
+- **Cambios:** `com.unity.ai.navigation` 2.0.9 en `Packages/manifest.json` (viene con el editor, no se descarga). `PrototypeSceneBuilder` calcula la malla de navegación del circuito para un personaje de 0,4 m de radio, 1,8 m de alto y escalones de hasta 0,3 m, la guarda en `Scenes/Prototype/Prototype_NavMesh.asset` y añade un `NavMeshSurface` que la carga. `GuardController.MoveTo` sigue el camino de la malla (lo recalcula cada 0,4 s o si el destino se mueve) y cae a línea recta si no hay malla o camino; si el destino no es alcanzable se detiene en el punto alcanzable más cercano. Al investigar anda más deprisa (2,6 m/s). `VerifyProject` exige la malla.
+- **Comandos (salida 0 todos):** `RebuildBatch`, `VerifyProject.RunBatch`, tests EditMode y PlayMode.
+- **Pruebas:** VerifyProject 0 errores; EditMode 42/42; PlayMode 10/10. Prueba nueva: guardia al sur de la pared alta y jugador al norte, a 5 m; el jugador corre, el guardia lo oye, rodea la pared por un extremo y pasa al otro lado en menos de 7 s.
+- **Sustituye arriba:** el problema «Sin navegación» queda resuelto en la escena `Prototype`.
+- **Problemas conocidos nuevos:** la malla solo existe en `Prototype` y hay que regenerar la escena si cambia el circuito; el guardia no salta ni trepa, así que no sube a la plataforma ni entra en el túnel (1,3 m de alto, él mide 1,8 m): si el jugador está ahí, se queda en el punto más cercano; el botón «Bake» del inspector de `NavMeshSurface` recalcularía la malla con los ajustes por defecto de Unity, no con estos.
+- **Sigue sin hacerse:** jugar a mano contra el guardia.

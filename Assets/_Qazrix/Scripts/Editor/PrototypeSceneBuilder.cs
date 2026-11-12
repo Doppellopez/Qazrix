@@ -1,12 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Qazrix.AI;
 using Qazrix.Input;
 using Qazrix.Prototype;
+using Unity.AI.Navigation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
@@ -19,6 +22,7 @@ namespace Qazrix.EditorTools
     public static class PrototypeSceneBuilder
     {
         public const string ScenePath = "Assets/_Qazrix/Scenes/Prototype/Prototype.unity";
+        public const string NavMeshPath = "Assets/_Qazrix/Scenes/Prototype/Prototype_NavMesh.asset";
         private const string MaterialFolder = "Assets/_Qazrix/Art/Prototype";
 
         [MenuItem("Qazrix/Prototipo/Crear o abrir escena Prototype", priority = 20)]
@@ -107,6 +111,9 @@ namespace Qazrix.EditorTools
             // Pared alta para comprobar que la cámara no la atraviesa.
             Box("Pared_alta", level, block, new Vector3(0f, 2.5f, -8f), new Vector3(10f, 5f, 0.5f));
 
+            // La malla se calcula con el circuito ya colocado y antes de crear a los personajes.
+            BakeNavMesh(level.gameObject);
+
             QazrixInput input = CreateInput();
             PrototypePlayerController player = CreatePlayer(body, accent);
             Transform cameraRig = CreateCamera(player.transform, input);
@@ -179,6 +186,38 @@ namespace Qazrix.EditorTools
             var controller = go.AddComponent<PrototypePlayerController>();
             go.AddComponent<PlayerStealthTarget>();
             return controller;
+        }
+
+        /// <summary>
+        /// Malla de navegación del circuito para un personaje como el guardia: 0,4 m de radio, 1,8 m de
+        /// alto y escalones de hasta 0,3 m (lo que sube su CharacterController). Se guarda como asset y
+        /// la carga un NavMeshSurface al arrancar la escena.
+        /// </summary>
+        private static void BakeNavMesh(GameObject root)
+        {
+            Physics.SyncTransforms();
+            var bounds = new Bounds(Vector3.zero, new Vector3(70f, 20f, 70f));
+            var sources = new List<NavMeshBuildSource>();
+            UnityEngine.AI.NavMeshBuilder.CollectSources(bounds, ~0, NavMeshCollectGeometry.PhysicsColliders, 0,
+                new List<NavMeshBuildMarkup>(), sources);
+
+            NavMeshBuildSettings settings = NavMesh.GetSettingsByID(0);
+            settings.agentRadius = 0.4f;
+            settings.agentHeight = 1.8f;
+            settings.agentClimb = 0.3f;
+            settings.agentSlope = 40f;
+
+            NavMeshData data = UnityEngine.AI.NavMeshBuilder.BuildNavMeshData(settings, sources, bounds, Vector3.zero, Quaternion.identity);
+            if (data == null) throw new InvalidOperationException("No se pudo calcular la malla de navegación.");
+            data.name = "Prototype_NavMesh";
+
+            Directory.CreateDirectory(Path.GetDirectoryName(NavMeshPath));
+            AssetDatabase.DeleteAsset(NavMeshPath);
+            AssetDatabase.CreateAsset(data, NavMeshPath);
+
+            var surface = root.AddComponent<NavMeshSurface>();
+            surface.navMeshData = data;
+            EditorUtility.SetDirty(surface);
         }
 
         /// <summary>Guardia con su ruta de patrulla. Empieza en el primer punto, mirando hacia el segundo.</summary>

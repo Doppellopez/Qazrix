@@ -1,13 +1,15 @@
 using Qazrix.Simulation.AI;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Qazrix.AI
 {
     /// <summary>
     /// Guardia del prototipo (spec §6.2). Aquí solo hay sentidos y movimiento: qué hacer con lo que
     /// percibe lo decide <see cref="AlertStateMachine"/>, y cuánto ve lo calcula <see cref="VisionCone"/>.
-    /// Se mueve en línea recta hacia su destino; no usa NavMesh todavía, y por eso el movimiento está
-    /// reunido en <see cref="MoveTo"/> para poder sustituirlo.
+    /// Se desplaza con un CharacterController siguiendo el camino que calcula la malla de navegación
+    /// (D38); si no hay malla o no encuentra camino, va en línea recta. Todo el movimiento pasa por
+    /// <see cref="MoveTo"/>.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public sealed class GuardController : MonoBehaviour
@@ -25,11 +27,17 @@ namespace Qazrix.AI
 
         [Header("Movimiento")]
         [SerializeField] private float walkSpeed = 1.6f;
+        [SerializeField] private float investigateSpeed = 2.6f;
         [SerializeField] private float runSpeed = 4.2f;
         [SerializeField] private float turnSpeedDegrees = 240f;
         [SerializeField] private float arriveDistance = 0.5f;
         [SerializeField] private float catchDistance = 1.1f;
         [SerializeField] private float lookAroundDegreesPerSecond = 60f;
+
+        [Header("Navegación")]
+        [SerializeField] private float repathSeconds = 0.4f;
+        [SerializeField] private float navSampleDistance = 2f;
+        [SerializeField] private float cornerReach = 0.3f;
 
         private CharacterController _controller;
         private AlertStateMachine _machine;
@@ -38,6 +46,16 @@ namespace Qazrix.AI
         private Vector3 _post;
         private Quaternion _postRotation;
         private Vector3 _lastKnown;
+
+        private NavMeshPath _path;
+        private Vector3[] _corners = new Vector3[0];
+        private Vector3 _pathDestination;
+        private float _pathTime = -1000f;
+        private int _corner;
+        private bool _hasPath;
+
+        /// <summary>Si en el último movimiento seguía un camino de la malla de navegación (false = línea recta).</summary>
+        public bool IsFollowingPath => _hasPath;
 
         public AlertState State => _machine != null ? _machine.State : AlertState.Patrol;
         public float Awareness => _machine != null ? _machine.Awareness : 0f;
@@ -122,7 +140,7 @@ namespace Qazrix.AI
 
                 case AlertState.Investigate:
                 case AlertState.Search:
-                    if (MoveTo(_lastKnown, walkSpeed))
+                    if (MoveTo(_lastKnown, investigateSpeed))
                         transform.Rotate(0f, lookAroundDegreesPerSecond * Time.deltaTime, 0f); // mira alrededor
                     break;
 
@@ -174,15 +192,31 @@ namespace Qazrix.AI
             }
         }
 
-        /// <summary>Avanza en línea recta hacia el destino. Devuelve true cuando ya ha llegado.</summary>
+        /// <summary>
+        /// Avanza hacia el destino rodeando obstáculos. Devuelve true cuando ha llegado, o cuando ha
+        /// llegado al punto alcanzable más cercano (por ejemplo, si el destino está sobre una plataforma).
+        /// </summary>
         private bool MoveTo(Vector3 destination, float speed)
         {
-            Vector3 flat = destination - transform.position;
-            flat.y = 0f;
-            if (flat.magnitude <= arriveDistance)
+            if (FlatDistance(transform.position, destination) <= arriveDistance)
             {
                 _controller.SimpleMove(Vector3.zero); // sigue aplicando la gravedad
                 return true;
+            }
+
+            Vector3 step = NextStep(destination, out bool endOfPath);
+            if (endOfPath)
+            {
+                _controller.SimpleMove(Vector3.zero);
+                return true;
+            }
+
+            Vector3 flat = step - transform.position;
+            flat.y = 0f;
+            if (flat.sqrMagnitude < 1e-6f)
+            {
+                _controller.SimpleMove(Vector3.zero);
+                return false;
             }
 
             Vector3 direction = flat.normalized;
@@ -190,6 +224,34 @@ namespace Qazrix.AI
             transform.rotation = Quaternion.RotateTowards(transform.rotation, look, turnSpeedDegrees * Time.deltaTime);
             _controller.SimpleMove(direction * speed);
             return false;
+        }
+
+        /// <summary>
+        /// Siguiente punto hacia el que andar. Recalcula el camino cada poco o si el destino se mueve.
+        /// Sin malla de navegación o sin camino, devuelve el propio destino (línea recta).
+        /// </summary>
+        private Vector3 NextStep(Vector3 destination, out bool endOfPath)
+        {
+            endOfPath = false;
+            bool stale = Time.time - _pathTime > repathSeconds || (destination - _pathDestination).sqrMagnitude > 0.25f;
+            if (stale)
+            {
+                if (_path == null) _path = new NavMeshPath();
+                _pathTime = Time.time;
+                _pathDestination = destination;
+                _corner = 1;
+                _hasPath = NavMesh.SamplePosition(transform.position, out NavMeshHit from, navSampleDistance, NavMesh.AllAreas)
+                           && NavMesh.SamplePosition(destination, out NavMeshHit to, navSampleDistance, NavMesh.AllAreas)
+                           && NavMesh.CalculatePath(from.position, to.position, NavMesh.AllAreas, _path)
+                           && _path.corners.Length >= 2;
+                if (_hasPath) _corners = _path.corners;
+            }
+
+            if (!_hasPath) return destination;
+
+            while (_corner < _corners.Length - 1 && FlatDistance(transform.position, _corners[_corner]) <= cornerReach) _corner++;
+            if (_corner == _corners.Length - 1 && FlatDistance(transform.position, _corners[_corner]) <= cornerReach) endOfPath = true;
+            return _corners[_corner];
         }
 
         private void Face(Vector3 point)

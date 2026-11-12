@@ -190,10 +190,12 @@ namespace Qazrix.EditorTools
             if (reader == null) problems.Add("sin QazrixInput");
             else if (reader.Actions == null) problems.Add("QazrixInput sin Input Actions asignadas");
             if (!roots.Any(r => r.GetComponentInChildren<GuardController>(true) != null)) problems.Add("sin guardia");
+            var surface = roots.Select(r => r.GetComponentInChildren<Unity.AI.Navigation.NavMeshSurface>(true)).FirstOrDefault(c => c != null);
+            if (surface == null || surface.navMeshData == null) problems.Add("sin malla de navegación");
             if (!roots.Any(r => r.GetComponentInChildren<StealthTarget>(true) != null)) problems.Add("el jugador no es detectable (falta StealthTarget)");
 
             yield return problems.Count == 0
-                ? new Check("Contenido de escena", Level.Ok, "Jugador, cámara orbital, luz, entrada y guardia presentes; ningún script perdido.")
+                ? new Check("Contenido de escena", Level.Ok, "Jugador, cámara orbital, luz, entrada, guardia y malla de navegación presentes; ningún script perdido.")
                 : new Check("Contenido de escena", Level.Error, string.Join("; ", problems) + ".");
         }
 

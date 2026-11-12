@@ -136,6 +136,46 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Investigating_GoesAroundTheWall_InsteadOfPushingIntoIt()
+        {
+            yield return LoadScene();
+            // La pared alta ocupa x de -5 a 5 en z = -8. Guardia al sur, de espaldas; jugador justo al
+            // otro lado, a 5 m. En línea recta el guardia se quedaría empujando contra la pared.
+            var post = new Vector3(0f, 0f, -10.5f);
+            _guard.SetPost(post, Quaternion.LookRotation(Vector3.back, Vector3.up));
+
+            var body = _player.GetComponent<CharacterController>();
+            body.enabled = false;
+            _player.transform.position = new Vector3(0f, 0f, -5.5f);
+            body.enabled = true;
+            yield return Seconds(0.5f);
+            Assert.AreEqual(AlertState.Patrol, _guard.State, "con la pared en medio y sin ruido no lo percibe");
+
+            Press(_keyboard.leftShiftKey);
+            Press(_keyboard.wKey);
+            yield return Seconds(0.6f);
+            Release(_keyboard.wKey);
+            Release(_keyboard.leftShiftKey);
+            Assert.AreNotEqual(AlertState.Patrol, _guard.State, "correr a 5 m debe oírse aunque haya pared");
+
+            bool followedPath = false, crossed = false;
+            float widestDetour = 0f;
+            float end = Time.time + 7f;
+            while (Time.time < end && !crossed)
+            {
+                followedPath |= _guard.IsFollowingPath;
+                Vector3 p = _guard.transform.position;
+                if (p.z < -7.5f) widestDetour = Mathf.Max(widestDetour, Mathf.Abs(p.x));
+                crossed = p.z > -7.5f; // ya está al norte de la pared
+                yield return null;
+            }
+
+            Assert.IsTrue(followedPath, "debería usar la malla de navegación");
+            Assert.IsTrue(crossed, "debería haber pasado al otro lado de la pared");
+            Assert.Greater(widestDetour, 5f, "solo se puede pasar por uno de los extremos de la pared");
+        }
+
+        [UnityTest]
         public IEnumerator CrouchWalkingBehindTheGuard_IsSilent()
         {
             yield return LoadScene();

@@ -4,7 +4,8 @@
     "references": [
         "Qazrix.Simulation",
         "Qazrix.Runtime",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.AI.Navigation"
     ],
     "includePlatforms": [
         "Editor"
