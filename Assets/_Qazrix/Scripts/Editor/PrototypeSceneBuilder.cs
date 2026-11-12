@@ -115,7 +115,7 @@ namespace Qazrix.EditorTools
             Box("Pared_alta", level, block, new Vector3(0f, 2.5f, -8f), new Vector3(10f, 5f, 0.5f));
 
             // La malla se calcula con el circuito ya colocado y antes de crear a los personajes.
-            BakeNavMesh(level.gameObject);
+            BakeNavMesh(level.gameObject, new Bounds(Vector3.zero, new Vector3(70f, 20f, 70f)), NavMeshPath);
 
             QazrixInput input = CreateInput();
             PrototypePlayerController player = CreatePlayer(body, accent);
@@ -197,10 +197,10 @@ namespace Qazrix.EditorTools
         /// alto y escalones de hasta 0,3 m (lo que sube su CharacterController). Se guarda como asset y
         /// la carga un NavMeshSurface al arrancar la escena.
         /// </summary>
-        private static void BakeNavMesh(GameObject root)
+        /// <param name="root">Objeto en el origen y sin girar que llevará el NavMeshSurface.</param>
+        internal static void BakeNavMesh(GameObject root, Bounds bounds, string assetPath)
         {
             Physics.SyncTransforms();
-            var bounds = new Bounds(Vector3.zero, new Vector3(70f, 20f, 70f));
             var sources = new List<NavMeshBuildSource>();
             UnityEngine.AI.NavMeshBuilder.CollectSources(bounds, ~0, NavMeshCollectGeometry.PhysicsColliders, 0,
                 new List<NavMeshBuildMarkup>(), sources);
@@ -213,11 +213,11 @@ namespace Qazrix.EditorTools
 
             NavMeshData data = UnityEngine.AI.NavMeshBuilder.BuildNavMeshData(settings, sources, bounds, Vector3.zero, Quaternion.identity);
             if (data == null) throw new InvalidOperationException("No se pudo calcular la malla de navegación.");
-            data.name = "Prototype_NavMesh";
+            data.name = Path.GetFileNameWithoutExtension(assetPath);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(NavMeshPath));
-            AssetDatabase.DeleteAsset(NavMeshPath);
-            AssetDatabase.CreateAsset(data, NavMeshPath);
+            Directory.CreateDirectory(Path.GetDirectoryName(assetPath));
+            AssetDatabase.DeleteAsset(assetPath);
+            AssetDatabase.CreateAsset(data, assetPath);
 
             var surface = root.AddComponent<NavMeshSurface>();
             surface.navMeshData = data;
@@ -308,7 +308,7 @@ namespace Qazrix.EditorTools
             return go.transform;
         }
 
-        private static Transform Box(string name, Transform parent, Material material, Vector3 position, Vector3 size)
+        internal static Transform Box(string name, Transform parent, Material material, Vector3 position, Vector3 size)
         {
             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = name;

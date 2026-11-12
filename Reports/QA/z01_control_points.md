@@ -1,6 +1,6 @@
 # Puntos de control de Z01
 
-- Fecha: 2026-11-11 17:45 · Unity 6000.3.6f1
+- Fecha: 2026-11-12 10:49 · Unity 6000.3.6f1
 - Origen local: E 726094, N 4372732, cota 440 m (EPSG:25829); X = este, Y = altura, Z = norte.
 - Relieve: MDT02-ETRS89-HU29-0704-1-COB2.tif (DATA-001), 513×513 muestras cada 2 m. Superficie: MDS02_WGS84_PM-2_0704-1.tif (DATA-003).
 - Tolerancias: conversión 2 mm; cota Unity frente a GDAL 0.25 m.

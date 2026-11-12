@@ -36,3 +36,11 @@
   - La captura muestra en azul la malla de navegación: es una ayuda de depuración del editor, no forma parte del juego.
 
 - **Próximo paso más pequeño:** que Jorge recorra el circuito de `Prototype` usando Espacio delante del obstáculo bajo y de la plataforma, y diga si los tiempos se sienten bien. Lo que falta de F1 según la spec: sistema de interacción, checkpoint y build de Windows probado en otro PC.
+
+## Añadido: guardia y parkour también en Z01_Relieve (2026-11-12)
+
+- **Motivo:** Jorge probó en `Z01_Relieve` y no vio guardia ni parkour: solo estaban en `Prototype`.
+- **Cambios:** `Z01GeoBuilder` añade una «zona de juego» de prueba alrededor del origen: murete de 0,5 m (saltar) a 6 m al norte, plataforma de 1 m (trepar) a su izquierda, ambos hundidos 2 m en el relieve; malla de navegación `Scenes/Z01/Z01_NavMesh.asset` en un cuadrado de 160 m; guardia que recorre un cuadrado de 40 m. `PrototypeSceneBuilder.BakeNavMesh` y `Box` pasan a ser reutilizables. Nuevo `Tests/PlayMode/Z01SceneTests` (3 pruebas).
+- **Comandos (salida 0 todos):** `Z01GeoBuilder.BuildBatch`, `PrototypeSceneBuilder.RebuildBatch`, `Z01GeoReport.RunBatch`, `VerifyProject.RunBatch`, tests EditMode y PlayMode, `CaptureZ01Batch`.
+- **Pruebas:** VerifyProject 0 errores; EditMode 51/51; PlayMode 17/17. En Z01: el jugador queda apoyado en el relieve, el guardia patrulla siguiendo la malla sobre el terreno y Espacio salta el murete. Puntos de control siguen en tolerancia.
+- **Límites:** son piezas de prueba, no geometría de Cáceres; la trepada a la plataforma y la detección del guardia en Z01 no tienen prueba propia; fuera del cuadrado de 160 m no hay malla y el guardia iría en línea recta; sin jugar a mano.

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Qazrix.Input;
+using Qazrix.AI;
 using Qazrix.Prototype;
+using Qazrix.Simulation.Movement;
 using Qazrix.Simulation.World;
 using Qazrix.World;
 using UnityEditor;
@@ -25,6 +27,10 @@ namespace Qazrix.EditorTools
         public const string ScenePath = "Assets/_Qazrix/Scenes/Z01/Z01_Relieve.unity";
         public const string TerrainDataPath = "Assets/_Qazrix/Scenes/Z01/Z01_TerrainData.asset";
         public const string TerrainName = "Z01_Relieve";
+        public const string NavMeshPath = "Assets/_Qazrix/Scenes/Z01/Z01_NavMesh.asset";
+
+        /// <summary>Lado (m) del cuadrado alrededor del origen que recibe malla de navegación.</summary>
+        public const float PlayAreaSide = 160f;
         public const string ControlPointsRoot = "Puntos_de_control";
 
         /// <summary>Lado de la ventana (m) donde se mide la altura de cada volumen.</summary>
@@ -79,8 +85,27 @@ namespace Qazrix.EditorTools
                 CreateVolume(root, p, terrainGrid, surfaceGrid, meta, block);
             }
 
+            // --- Zona de juego de prueba alrededor del origen (no es geometría de Cáceres) ---
+            float Ground(float x, float z) => (float)(terrainGrid.Sample(x, z) - meta.originHeight);
+
+            // Dos obstáculos de parkour hundidos en el relieve, para que la pendiente no deje huecos:
+            // un murete de 0,5 m para saltar y una plataforma de 1 m para trepar.
+            Transform play = new GameObject("Zona_de_juego").transform;
+            const float sunk = 2f;
+            float wallTop = Ground(0f, 6f) + 0.5f;
+            PrototypeSceneBuilder.Box("Murete", play, block, new Vector3(0f, wallTop - (0.5f + sunk) * 0.5f, 6f), new Vector3(3f, 0.5f + sunk, 0.4f))
+                .gameObject.AddComponent<ParkourMarker>().Configure(ParkourKind.Vault);
+            float deckTop = Ground(-8f, 6f) + 1f;
+            PrototypeSceneBuilder.Box("Plataforma", play, pole, new Vector3(-8f, deckTop - (1f + sunk) * 0.5f, 6f), new Vector3(4f, 1f + sunk, 4f))
+                .gameObject.AddComponent<ParkourMarker>().Configure(ParkourKind.Climb);
+
+            // Malla de navegación solo en el cuadrado central: basta para el guardia y pesa poco.
+            var navigation = new GameObject("Navegacion");
+            PrototypeSceneBuilder.BakeNavMesh(navigation,
+                new Bounds(new Vector3(0f, Ground(0f, 0f), 0f), new Vector3(PlayAreaSide, 120f, PlayAreaSide)), NavMeshPath);
+
             // El jugador nace en el origen local, medio metro por encima del relieve.
-            float groundY = (float)(terrainGrid.Sample(0, 0) - meta.originHeight);
+            float groundY = Ground(0f, 0f);
             QazrixInput input = PrototypeSceneBuilder.CreateInput();
             PrototypePlayerController player = PrototypeSceneBuilder.CreatePlayer(body, pole);
             player.transform.position = new Vector3(0f, groundY + 0.5f, 0f);
@@ -92,6 +117,15 @@ namespace Qazrix.EditorTools
 
             var hud = new GameObject("HUD").AddComponent<PrototypeHud>();
             hud.Configure(player, input);
+
+            // Guardia que da la vuelta a un cuadrado de 40 m alrededor del punto de salida.
+            Material guardBody = PrototypeSceneBuilder.GetOrCreateMaterial("Proto_Guardia", new Color(0.45f, 0.20f, 0.18f));
+            Material signal = PrototypeSceneBuilder.GetOrCreateMaterial("Proto_Senal", Color.white);
+            var corners = new[] { new Vector2(20f, 20f), new Vector2(-20f, 20f), new Vector2(-20f, -20f), new Vector2(20f, -20f) };
+            Vector3[] route = corners.Select(c => new Vector3(c.x, Ground(c.x, c.y) + 0.1f, c.y)).ToArray();
+            GuardController guard = PrototypeSceneBuilder.CreateGuard("Guardia", guardBody, signal, player.GetComponent<StealthTarget>(), route);
+            hud.ShowGuard(guard);
+            EditorUtility.SetDirty(hud);
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.MarkSceneDirty(scene);

@@ -4,7 +4,7 @@ Aventura de sigilo y acción en tercera persona ambientada en Cáceres (Qazrix),
 Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 
 **Versión:** 0.1 · **Fase actual:** F0-A rehecha tras el reinicio del 2026-11-11 (D31), con **URP provisional** como en el paquete original (D32). F0-B hecha: relieve real de Z01 con tres puntos de control (D33); aún sin edificios.
-**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 51/51 tests EditMode y 14/14 pruebas en Play. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
+**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 51/51 tests EditMode y 17/17 pruebas en Play. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
 
 ---
 
@@ -44,7 +44,7 @@ Relieve real de 1024 × 1024 m alrededor de la Plaza Mayor (MDT02 del CNIG), con
 
 1. Menú **Qazrix → Mapa → Crear escena Z01 (relieve CNIG)**. Se puede repetir: todo se regenera desde `Research/Derived/Z01`.
 2. Menú **Qazrix → Mapa → Informe de puntos de control Z01** → `Reports/QA/z01_control_points.md`.
-3. Play: el jugador del prototipo nace en el origen local y puede andar por el relieve.
+3. Play: el jugador del prototipo nace en el origen local y puede andar por el relieve. Hay una zona de juego de prueba: un murete para saltar y una plataforma para trepar a 6 m al norte, y un guardia que rodea el punto de salida.
 
 Para regenerar los datos derivados desde las fuentes del CNIG (necesita el GDAL de QGIS 3.44; no descarga nada):
 
@@ -97,7 +97,7 @@ No añadas `-quit`: los métodos cierran Unity con su propio código de salida y
 | `Scripts/Runtime/World/` | Puente entre coordenadas `double` y `Vector3` |
 | `Scripts/Editor/` | `PrototypeSceneBuilder`, `VerifyProject`, `PrototypePreview`, `ProjectInfo`, `Z01GeoBuilder`, `Z01GeoReport`; `Urp/UrpSetup` (solo compila con URP instalado) |
 | `Tests/EditMode/` | 51 tests: lógica pura (alerta, visión, ruido, parkour, georreferencia) y acciones de entrada |
-| `Tests/PlayMode/` | 14 pruebas en Play de la escena Prototype con teclado simulado (movimiento, paneles, guardia y parkour); dejan capturas en `Reports/QA` |
+| `Tests/PlayMode/` | 17 pruebas en Play con teclado simulado: 14 en Prototype (movimiento, paneles, guardia y parkour) y 3 en Z01_Relieve; dejan capturas en `Reports/QA` |
 | `Settings/URP/` | Assets del pipeline URP provisional (D06, D32) |
 
 Fuera de `Assets`: `Design/DecisionLog.md`, `Research/Datasets.md`, `Research/ASSET_LICENSES.csv`, datos fuente en `Research/Source/` e informes en `Reports/`.
