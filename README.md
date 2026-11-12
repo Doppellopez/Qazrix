@@ -4,7 +4,7 @@ Aventura de sigilo y acción en tercera persona ambientada en Cáceres (Qazrix),
 Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 
 **Versión:** 0.1 · **Fase actual:** F0-A rehecha tras el reinicio del 2026-11-11 (D31), con **URP provisional** como en el paquete original (D32). F0-B hecha: relieve real de Z01 con tres puntos de control (D33); aún sin edificios.
-**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 56/56 tests EditMode y 19/19 pruebas en Play. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
+**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 56/56 tests EditMode, 20/20 pruebas en Play y build de Windows correcto. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
 
 ---
 
@@ -27,6 +27,7 @@ Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 | Zoom | rueda | cruceta arriba/abajo |
 | Ocultar panel | F1 | Select |
 | Cambiar teclas | F2 | Start |
+| Cambiar de escena | F3 | — |
 
 Qué probar en el circuito:
 
@@ -57,6 +58,10 @@ powershell -ExecutionPolicy Bypass -File Tools\GIS\make_z01.ps1
 En headless: `Qazrix.EditorTools.Z01GeoBuilder.BuildBatch`, `Qazrix.EditorTools.Z01GeoReport.RunBatch` y `Qazrix.EditorTools.PrototypePreview.CaptureZ01Batch`, igual que las órdenes de abajo.
 
 Los tres puntos de control (Torre de Bujaco, Concatedral de Santa María y San Francisco Javier) salen del LiDAR PNOA 2018 y los identificó Jorge sobre el plano `Reports/QA/z01_candidatos_lidar.png` (D34). Para añadir más: `Tools/GIS/gcp_candidates_lidar.py` lista los candidatos y se apuntan en `Research/Survey/gcp_input.csv`. Ambos scripts de Python se ejecutan con `python-qgis-ltr.bat` de QGIS.
+
+## Build de Windows
+
+Menú **Qazrix → Build → Windows (desarrollo)**. Genera `Builds/Windows/Qazrix.exe` con las dos escenas y deja el informe en `Reports/QA/build-windows-latest.md`. Para probarlo en otro PC, copia la carpeta `Builds/Windows` entera. Dentro del juego, F3 cambia de escena y Alt+F4 cierra. En headless: `Qazrix.EditorTools.BuildWindows.BuildBatch`.
 
 ## Ejecución sin interfaz (headless)
 
@@ -100,7 +105,7 @@ No añadas `-quit`: los métodos cierran Unity con su propio código de salida y
 | `Scripts/Runtime/World/` | Puente entre coordenadas `double` y `Vector3` |
 | `Scripts/Editor/` | `PrototypeSceneBuilder`, `VerifyProject`, `PrototypePreview`, `ProjectInfo`, `Z01GeoBuilder`, `Z01GeoReport`; `Urp/UrpSetup` (solo compila con URP instalado) |
 | `Tests/EditMode/` | 56 tests: lógica pura (alerta, visión, ruido, parkour, interacción, georreferencia) y acciones de entrada |
-| `Tests/PlayMode/` | 19 pruebas en Play con teclado simulado: 16 en Prototype (movimiento, paneles, guardia, parkour, interacción y checkpoint) y 3 en Z01_Relieve; dejan capturas en `Reports/QA` |
+| `Tests/PlayMode/` | 20 pruebas en Play con teclado simulado: 17 en Prototype (movimiento, paneles, guardia, parkour, interacción, checkpoint y cambio de escena) y 3 en Z01_Relieve; dejan capturas en `Reports/QA` |
 | `Settings/URP/` | Assets del pipeline URP provisional (D06, D32) |
 
 Fuera de `Assets`: `Design/DecisionLog.md`, `Research/Datasets.md`, `Research/ASSET_LICENSES.csv`, datos fuente en `Research/Source/` e informes en `Reports/`.

@@ -114,6 +114,7 @@ namespace Qazrix.Input
                 .WithControlsExcluding("<Keyboard>/escape")
                 .WithControlsExcluding("<Keyboard>/f1")
                 .WithControlsExcluding("<Keyboard>/f2")
+                .WithControlsExcluding("<Keyboard>/f3")
                 .WithCancelingThrough("<Keyboard>/escape")
                 .OnComplete(_ => FinishRebind(true))
                 .OnCancel(_ => FinishRebind(false))

@@ -127,6 +127,19 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator F3_SwitchesToTheNextScene()
+        {
+            yield return LoadScene();
+            Assert.AreEqual("Prototype", SceneManager.GetActiveScene().name);
+
+            yield return Tap(_keyboard.f3Key);
+            for (int i = 0; i < 10; i++) yield return null;
+
+            Assert.AreEqual("Z01_Relieve", SceneManager.GetActiveScene().name, "F3 debe cargar la siguiente escena del build");
+            Assert.IsNotNull(Object.FindFirstObjectByType<PrototypePlayerController>(), "y en ella hay jugador");
+        }
+
+        [UnityTest]
         public IEnumerator F1_TogglesTheHud()
         {
             yield return LoadScene();

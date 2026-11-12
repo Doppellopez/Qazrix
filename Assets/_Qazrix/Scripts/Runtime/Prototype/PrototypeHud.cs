@@ -115,9 +115,10 @@ namespace Qazrix.Prototype
                 "Cámara: ratón (clic captura, Esc suelta) · stick der.\n" +
                 "Zoom: rueda · cruceta arriba/abajo\n" +
                 "Ocultar panel: F1 · Select\n" +
-                "Cambiar teclas: F2 · Start";
+                "Cambiar teclas: F2 · Start\n" +
+                "Cambiar de escena: F3";
 
-            var area = new Rect(12f, 12f, 420f, 316f);
+            var area = new Rect(12f, 12f, 420f, 332f);
             GUI.Box(area, GUIContent.none);
             GUI.Label(new Rect(area.x + 10f, area.y + 8f, area.width - 20f, area.height - 16f), text, _style);
         }

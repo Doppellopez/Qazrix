@@ -331,6 +331,7 @@ namespace Qazrix.EditorTools
             var reader = go.AddComponent<QazrixInput>();
             reader.Configure(InputActionsBuilder.Ensure());
             go.AddComponent<ControlsPanel>().Configure(reader);
+            go.AddComponent<SceneSwitcher>().Configure(reader);
             EditorUtility.SetDirty(go);
             return reader;
         }

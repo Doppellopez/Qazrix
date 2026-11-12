@@ -16,6 +16,7 @@ namespace Qazrix.Input
         public bool InteractPressed;
         public bool ToggleHudPressed;
         public bool ToggleControlsPressed;
+        public bool SwitchScenePressed;
         public bool CaptureCursorPressed;
         public bool ReleaseCursorPressed;
     }
@@ -34,7 +35,7 @@ namespace Qazrix.Input
 
         private InputActionMap _map;
         private InputAction _move, _lookPointer, _lookStick, _zoom, _run, _crouch, _jump, _interact;
-        private InputAction _toggleHud, _toggleControls, _captureCursor, _releaseCursor;
+        private InputAction _toggleHud, _toggleControls, _switchScene, _captureCursor, _releaseCursor;
         private bool _warned;
 
         /// <summary>Con un panel abierto el juego no recibe movimiento ni cámara; solo las teclas de panel.</summary>
@@ -62,6 +63,7 @@ namespace Qazrix.Input
             _interact = _map.FindAction(QazrixControls.Interact, true);
             _toggleHud = _map.FindAction(QazrixControls.ToggleHud, true);
             _toggleControls = _map.FindAction(QazrixControls.ToggleControls, true);
+            _switchScene = _map.FindAction(QazrixControls.SwitchScene, true);
             _captureCursor = _map.FindAction(QazrixControls.CaptureCursor, true);
             _releaseCursor = _map.FindAction(QazrixControls.ReleaseCursor, true);
 
@@ -101,6 +103,7 @@ namespace Qazrix.Input
             frame.JumpPressed = _jump.WasPressedThisFrame();
             frame.InteractPressed = _interact.WasPressedThisFrame();
             frame.CaptureCursorPressed = _captureCursor.WasPressedThisFrame();
+            frame.SwitchScenePressed = _switchScene.WasPressedThisFrame();
             return frame;
         }
 
