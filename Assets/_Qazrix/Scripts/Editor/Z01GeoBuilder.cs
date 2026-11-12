@@ -115,6 +115,10 @@ namespace Qazrix.EditorTools
             player.Configure(cameraRig, player.transform.Find("Visual"), input);
             EditorUtility.SetDirty(player);
 
+            // Carta sobre la plataforma y checkpoint al otro lado del murete.
+            PrototypeSceneBuilder.CreateLetter(play, pole, new Vector3(-8f, deckTop + 0.25f, 6f));
+            PrototypeSceneBuilder.CreateCheckpoint(play, "tras el murete", new Vector3(0f, Ground(0f, 9f) + 1f, 9f), new Vector3(4f, 2.4f, 2f));
+
             var hud = new GameObject("HUD").AddComponent<PrototypeHud>();
             hud.Configure(player, input);
 

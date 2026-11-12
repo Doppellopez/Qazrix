@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Qazrix.AI;
+using Qazrix.Gameplay;
 using Qazrix.Input;
 using Qazrix.Prototype;
 using Qazrix.Simulation.Movement;
@@ -117,6 +118,11 @@ namespace Qazrix.EditorTools
             // La malla se calcula con el circuito ya colocado y antes de crear a los personajes.
             BakeNavMesh(level.gameObject, new Bounds(Vector3.zero, new Vector3(70f, 20f, 70f)), NavMeshPath);
 
+            // Objetivo y checkpoint del circuito: una carta en lo alto del mirador y un punto de
+            // reaparición a la salida del túnel.
+            CreateLetter(level, accent, new Vector3(12f, 3.0f, 12.3f));
+            CreateCheckpoint(level, "salida del túnel", new Vector3(6.5f, 1f, 11.6f), new Vector3(3f, 2f, 1.6f));
+
             QazrixInput input = CreateInput();
             PrototypePlayerController player = CreatePlayer(body, accent);
             Transform cameraRig = CreateCamera(player.transform, input);
@@ -187,6 +193,7 @@ namespace Qazrix.EditorTools
             nose.GetComponent<MeshRenderer>().sharedMaterial = accent;
 
             go.AddComponent<PlayerParkour>();
+            go.AddComponent<PlayerInteractor>();
             var controller = go.AddComponent<PrototypePlayerController>();
             go.AddComponent<PlayerStealthTarget>();
             return controller;
@@ -222,6 +229,43 @@ namespace Qazrix.EditorTools
             var surface = root.AddComponent<NavMeshSurface>();
             surface.navMeshData = data;
             EditorUtility.SetDirty(surface);
+        }
+
+        /// <summary>Carta que se recoge con la tecla de interactuar.</summary>
+        internal static LetterPickup CreateLetter(Transform parent, Material material, Vector3 position)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = "Carta";
+            go.transform.SetParent(parent, false);
+            go.transform.position = position;
+            go.transform.rotation = Quaternion.Euler(0f, 25f, 0f);
+            go.transform.localScale = new Vector3(0.35f, 0.06f, 0.25f);
+            go.GetComponent<MeshRenderer>().sharedMaterial = material;
+            go.GetComponent<BoxCollider>().isTrigger = true; // se encuentra, pero no estorba el paso
+
+            var letter = go.AddComponent<LetterPickup>();
+            letter.SetPrompt("recoger la carta");
+            return letter;
+        }
+
+        /// <summary>Zona invisible que fija el punto de reaparición del jugador al entrar en ella.</summary>
+        internal static CheckpointZone CreateCheckpoint(Transform parent, string label, Vector3 center, Vector3 size)
+        {
+            var go = new GameObject("Checkpoint_" + label.Replace(' ', '_'));
+            go.transform.SetParent(parent, false);
+            go.transform.position = center;
+            var box = go.AddComponent<BoxCollider>();
+            box.size = size;
+            box.isTrigger = true;
+
+            // El jugador reaparece a ras de suelo en el centro de la zona.
+            var point = new GameObject("Reaparicion").transform;
+            point.SetParent(go.transform, false);
+            point.localPosition = new Vector3(0f, -size.y * 0.5f + 0.1f, 0f);
+
+            var zone = go.AddComponent<CheckpointZone>();
+            zone.Configure(label, point);
+            return zone;
         }
 
         /// <summary>Guardia con su ruta de patrulla. Empieza en el primer punto, mirando hacia el segundo.</summary>

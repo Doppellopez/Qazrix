@@ -66,9 +66,22 @@ namespace Qazrix.Prototype
 
         public bool IsInParkour => _parkour != null && _parkour.IsActive;
 
+        /// <summary>Nombre del último checkpoint alcanzado; vacío si aún reaparece en el inicio.</summary>
+        public string CheckpointLabel { get; private set; } = string.Empty;
+
+        /// <summary>Fija dónde reaparece el jugador al caer o ser alcanzado.</summary>
+        public void SetCheckpoint(Vector3 position, Quaternion rotation, string label)
+        {
+            _spawnPosition = position;
+            _spawnRotation = rotation;
+            CheckpointLabel = label ?? string.Empty;
+        }
+
         public void Configure(Transform cameraRig, Transform visualRoot, QazrixInput reader)
         {
             inputReader = reader;
+            var interactor = GetComponent<Qazrix.Gameplay.PlayerInteractor>();
+            if (interactor != null) interactor.Configure(reader);
             cameraTransform = cameraRig;
             visual = visualRoot;
         }

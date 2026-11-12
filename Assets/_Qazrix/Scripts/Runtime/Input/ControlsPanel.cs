@@ -19,6 +19,7 @@ namespace Qazrix.Input
             { QazrixControls.Run, "Correr" },
             { QazrixControls.Crouch, "Agacharse" },
             { QazrixControls.Jump, "Saltar" },
+            { QazrixControls.Interact, "Interactuar" },
             { "up", "adelante" }, { "down", "atrás" }, { "left", "izquierda" }, { "right", "derecha" }
         };
 

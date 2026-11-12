@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Qazrix.Input;
 using UnityEditor;
@@ -22,6 +23,16 @@ namespace Qazrix.EditorTools
         {
             if (!File.Exists(AssetPath)) Write();
             var asset = AssetDatabase.LoadAssetAtPath<InputActionAsset>(AssetPath);
+
+            // Si el código lee una acción que el archivo no tiene (se añadió después), se regenera.
+            // Coste: cambian los identificadores y las teclas reasignadas por el jugador se pierden.
+            InputActionMap map = asset != null ? asset.FindActionMap(QazrixControls.GameplayMap) : null;
+            if (map == null || QazrixControls.AllActions.Any(name => map.FindAction(name) == null))
+            {
+                Debug.LogWarning("[Qazrix] Al archivo de Input Actions le faltan acciones: se regenera con las de fábrica.");
+                Write();
+                asset = AssetDatabase.LoadAssetAtPath<InputActionAsset>(AssetPath);
+            }
             if (asset == null) throw new InvalidOperationException($"No se pudo importar {AssetPath}");
             return asset;
         }

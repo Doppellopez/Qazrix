@@ -4,7 +4,7 @@ Aventura de sigilo y acción en tercera persona ambientada en Cáceres (Qazrix),
 Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 
 **Versión:** 0.1 · **Fase actual:** F0-A rehecha tras el reinicio del 2026-11-11 (D31), con **URP provisional** como en el paquete original (D32). F0-B hecha: relieve real de Z01 con tres puntos de control (D33); aún sin edificios.
-**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 51/51 tests EditMode y 17/17 pruebas en Play. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
+**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 56/56 tests EditMode y 19/19 pruebas en Play. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
 
 ---
 
@@ -13,7 +13,7 @@ Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 1. Unity Hub → abrir esta carpeta con **Unity 6000.3.6f1** (D05).
 2. Menú **Qazrix → Prototipo → Crear o abrir escena Prototype**.
 3. Menú **Qazrix → Verificar proyecto**. Objetivo: **0 errores**. El aviso de render pipeline es normal mientras D06 siga abierta.
-4. **Window → General → Test Runner → EditMode → Run All.** Deben pasar 51 tests.
+4. **Window → General → Test Runner → EditMode → Run All.** Deben pasar 56 tests.
 5. Pulsa **Play** y haz clic en la ventana Game para capturar el ratón.
 
 | Acción | Teclado / ratón | Mando |
@@ -22,6 +22,7 @@ Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 | Correr | Mayús izq. | L3 o gatillo derecho |
 | Saltar | Espacio | A / Cruz |
 | Agacharse | C o Ctrl | B / Círculo |
+| Interactuar | E | X / Cuadrado |
 | Cámara | ratón (clic captura, Esc suelta) | stick derecho |
 | Zoom | rueda | cruceta arriba/abajo |
 | Ocultar panel | F1 | Select |
@@ -36,6 +37,7 @@ Qué probar en el circuito:
 - pegar la cámara a la pared alta: no debe atravesarla;
 - tirarte fuera del suelo: debes reaparecer en el punto de salida;
 - el guardia (cápsula granate) rodea el circuito: déjate ver, escóndete tras la pared alta, pasa agachado por detrás y corre cerca de él; la bola sobre su cabeza y la línea «Guardia» del recuadro dicen qué está haciendo;
+- sube al mirador por la rampa y recoge la carta con E; pasa por la salida del túnel y verás «Reaparición: salida del túnel» en el recuadro: desde entonces, si el guardia te alcanza vuelves ahí;
 - pulsar F2, cambiar «Saltar» a otra tecla, cerrar y comprobar que salta con la nueva; parar, volver a Play y ver que se conserva.
 
 ## Mapa Z01 (F0-B)
@@ -91,13 +93,14 @@ No añadas `-quit`: los métodos cierran Unity con su propio código de salida y
 | Ruta | Contenido |
 |---|---|
 | `Scripts/Simulation/` | Lógica pura sin Unity (`noEngineReferences`): máquina de alerta de guardias, cono de visión y reglas de ruido, origen geográfico local y rejilla de cotas |
+| `Scripts/Runtime/Gameplay/` | Interacción (base `Interactable`, carta) y zonas de checkpoint (D40) |
 | `Scripts/Runtime/AI/` | Guardia con patrulla, vista y oído (D37) que rodea obstáculos con la malla de navegación (D38), y contrato `StealthTarget` |
 | `Scripts/Runtime/Prototype/` | Controlador del jugador, cámara orbital con colisión, panel de depuración |
 | `Scripts/Runtime/Input/` | Input Actions de fábrica, lector único de entrada y panel de reasignación de teclas (D36) |
 | `Scripts/Runtime/World/` | Puente entre coordenadas `double` y `Vector3` |
 | `Scripts/Editor/` | `PrototypeSceneBuilder`, `VerifyProject`, `PrototypePreview`, `ProjectInfo`, `Z01GeoBuilder`, `Z01GeoReport`; `Urp/UrpSetup` (solo compila con URP instalado) |
-| `Tests/EditMode/` | 51 tests: lógica pura (alerta, visión, ruido, parkour, georreferencia) y acciones de entrada |
-| `Tests/PlayMode/` | 17 pruebas en Play con teclado simulado: 14 en Prototype (movimiento, paneles, guardia y parkour) y 3 en Z01_Relieve; dejan capturas en `Reports/QA` |
+| `Tests/EditMode/` | 56 tests: lógica pura (alerta, visión, ruido, parkour, interacción, georreferencia) y acciones de entrada |
+| `Tests/PlayMode/` | 19 pruebas en Play con teclado simulado: 16 en Prototype (movimiento, paneles, guardia, parkour, interacción y checkpoint) y 3 en Z01_Relieve; dejan capturas en `Reports/QA` |
 | `Settings/URP/` | Assets del pipeline URP provisional (D06, D32) |
 
 Fuera de `Assets`: `Design/DecisionLog.md`, `Research/Datasets.md`, `Research/ASSET_LICENSES.csv`, datos fuente en `Research/Source/` e informes en `Reports/`.

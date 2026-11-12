@@ -23,6 +23,7 @@ namespace Qazrix.Input
         public const string Run = "Run";
         public const string Crouch = "Crouch";
         public const string Jump = "Jump";
+        public const string Interact = "Interact";
         public const string ToggleHud = "ToggleHud";
         public const string ToggleControls = "ToggleControls";
         public const string CaptureCursor = "CaptureCursor";
@@ -30,12 +31,12 @@ namespace Qazrix.Input
 
         public static readonly string[] AllActions =
         {
-            Move, LookPointer, LookStick, Zoom, Run, Crouch, Jump,
+            Move, LookPointer, LookStick, Zoom, Run, Crouch, Jump, Interact,
             ToggleHud, ToggleControls, CaptureCursor, ReleaseCursor
         };
 
         /// <summary>Acciones que el jugador puede reasignar desde el panel de controles.</summary>
-        public static readonly string[] RebindableActions = { Move, Run, Crouch, Jump };
+        public static readonly string[] RebindableActions = { Move, Run, Crouch, Jump, Interact };
 
         /// <summary>Crea las acciones con las asignaciones por defecto. Quien la llama debe destruir el objeto.</summary>
         public static InputActionAsset CreateDefault()
@@ -77,6 +78,7 @@ namespace Qazrix.Input
             Button(map, Run, new[] { "<Keyboard>/leftShift" }, new[] { "<Gamepad>/leftStickPress", "<Gamepad>/rightTrigger" });
             Button(map, Crouch, new[] { "<Keyboard>/c", "<Keyboard>/leftCtrl" }, new[] { "<Gamepad>/buttonEast" });
             Button(map, Jump, new[] { "<Keyboard>/space" }, new[] { "<Gamepad>/buttonSouth" });
+            Button(map, Interact, new[] { "<Keyboard>/e" }, new[] { "<Gamepad>/buttonWest" });
             Button(map, ToggleHud, new[] { "<Keyboard>/f1" }, new[] { "<Gamepad>/select" });
             Button(map, ToggleControls, new[] { "<Keyboard>/f2" }, new[] { "<Gamepad>/start" });
             Button(map, CaptureCursor, new[] { "<Mouse>/leftButton" }, new string[0]);

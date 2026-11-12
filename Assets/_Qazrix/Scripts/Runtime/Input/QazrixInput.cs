@@ -13,6 +13,7 @@ namespace Qazrix.Input
         public bool Run;
         public bool Crouch;
         public bool JumpPressed;
+        public bool InteractPressed;
         public bool ToggleHudPressed;
         public bool ToggleControlsPressed;
         public bool CaptureCursorPressed;
@@ -32,7 +33,7 @@ namespace Qazrix.Input
         [SerializeField] private InputActionAsset actions;
 
         private InputActionMap _map;
-        private InputAction _move, _lookPointer, _lookStick, _zoom, _run, _crouch, _jump;
+        private InputAction _move, _lookPointer, _lookStick, _zoom, _run, _crouch, _jump, _interact;
         private InputAction _toggleHud, _toggleControls, _captureCursor, _releaseCursor;
         private bool _warned;
 
@@ -58,6 +59,7 @@ namespace Qazrix.Input
             _run = _map.FindAction(QazrixControls.Run, true);
             _crouch = _map.FindAction(QazrixControls.Crouch, true);
             _jump = _map.FindAction(QazrixControls.Jump, true);
+            _interact = _map.FindAction(QazrixControls.Interact, true);
             _toggleHud = _map.FindAction(QazrixControls.ToggleHud, true);
             _toggleControls = _map.FindAction(QazrixControls.ToggleControls, true);
             _captureCursor = _map.FindAction(QazrixControls.CaptureCursor, true);
@@ -97,6 +99,7 @@ namespace Qazrix.Input
             frame.Run = _run.IsPressed();
             frame.Crouch = _crouch.IsPressed();
             frame.JumpPressed = _jump.WasPressedThisFrame();
+            frame.InteractPressed = _interact.WasPressedThisFrame();
             frame.CaptureCursorPressed = _captureCursor.WasPressedThisFrame();
             return frame;
         }

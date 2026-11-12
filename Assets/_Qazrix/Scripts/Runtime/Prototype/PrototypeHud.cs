@@ -1,4 +1,5 @@
 using Qazrix.AI;
+using Qazrix.Gameplay;
 using Qazrix.Input;
 using Qazrix.Simulation.AI;
 using Qazrix.Simulation.Movement;
@@ -34,9 +35,21 @@ namespace Qazrix.Prototype
             guard = watched;
         }
 
+        private PlayerInteractor _interactor;
+
+        private string ProgressLine()
+        {
+            if (player == null) return string.Empty;
+            if (_interactor == null) _interactor = player.GetComponent<PlayerInteractor>();
+            string checkpoint = string.IsNullOrEmpty(player.CheckpointLabel) ? "inicio" : player.CheckpointLabel;
+            int items = _interactor != null ? _interactor.ItemsCollected : 0;
+            return $"Reaparición: {checkpoint} · cartas: {items}\n";
+        }
+
         private string ParkourHint()
         {
             if (player == null) return "\n";
+            if (_interactor != null && _interactor.Current != null) return $"<b>E / X: {_interactor.Current.Prompt}</b>\n";
             switch (player.AvailableParkour)
             {
                 case ParkourAction.Vault: return "<b>Espacio / A: saltar el obstáculo</b>\n";
@@ -92,17 +105,19 @@ namespace Qazrix.Prototype
                 $"Unity {Application.unityVersion} · {PipelineName}\n" +
                 $"{1f / Mathf.Max(_smoothedDelta, 0.0001f):0} fps ({_smoothedDelta * 1000f:0.0} ms) · {state}\n" +
                 (guard != null ? $"Guardia: {StateName(guard.State)} · sospecha {guard.Awareness * 100f:0} %\n" : "") +
+                ProgressLine() +
                 ParkourHint() + "\n" +
                 "Mover: WASD / flechas · stick izq.\n" +
                 "Correr: Mayús izq. · L3 / gatillo der.\n" +
                 "Saltar: Espacio · A\n" +
                 "Agacharse: C / Ctrl · B\n" +
+                "Interactuar: E · X\n" +
                 "Cámara: ratón (clic captura, Esc suelta) · stick der.\n" +
                 "Zoom: rueda · cruceta arriba/abajo\n" +
                 "Ocultar panel: F1 · Select\n" +
                 "Cambiar teclas: F2 · Start";
 
-            var area = new Rect(12f, 12f, 420f, 284f);
+            var area = new Rect(12f, 12f, 420f, 316f);
             GUI.Box(area, GUIContent.none);
             GUI.Label(new Rect(area.x + 10f, area.y + 8f, area.width - 20f, area.height - 16f), text, _style);
         }
