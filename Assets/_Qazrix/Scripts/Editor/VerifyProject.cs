@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Qazrix.AI;
 using Qazrix.Input;
 using Qazrix.Prototype;
 using UnityEditor;
@@ -188,9 +189,11 @@ namespace Qazrix.EditorTools
             if (!hasLight) problems.Add("sin luz");
             if (reader == null) problems.Add("sin QazrixInput");
             else if (reader.Actions == null) problems.Add("QazrixInput sin Input Actions asignadas");
+            if (!roots.Any(r => r.GetComponentInChildren<GuardController>(true) != null)) problems.Add("sin guardia");
+            if (!roots.Any(r => r.GetComponentInChildren<StealthTarget>(true) != null)) problems.Add("el jugador no es detectable (falta StealthTarget)");
 
             yield return problems.Count == 0
-                ? new Check("Contenido de escena", Level.Ok, "Jugador, cámara orbital, luz y entrada presentes; ningún script perdido.")
+                ? new Check("Contenido de escena", Level.Ok, "Jugador, cámara orbital, luz, entrada y guardia presentes; ningún script perdido.")
                 : new Check("Contenido de escena", Level.Error, string.Join("; ", problems) + ".");
         }
 

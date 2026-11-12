@@ -1,4 +1,6 @@
+using Qazrix.AI;
 using Qazrix.Input;
+using Qazrix.Simulation.AI;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -12,6 +14,7 @@ namespace Qazrix.Prototype
     {
         [SerializeField] private PrototypePlayerController player;
         [SerializeField] private QazrixInput inputReader;
+        [SerializeField] private GuardController guard;
         [SerializeField] private bool visible = true;
 
         private float _smoothedDelta = 1f / 60f;
@@ -24,6 +27,24 @@ namespace Qazrix.Prototype
         }
 
         public bool IsVisible => visible;
+
+        public void ShowGuard(GuardController watched)
+        {
+            guard = watched;
+        }
+
+        private static string StateName(AlertState state)
+        {
+            switch (state)
+            {
+                case AlertState.Suspicious: return "sospecha";
+                case AlertState.Investigate: return "investiga";
+                case AlertState.Alert: return "ALARMA";
+                case AlertState.Search: return "busca";
+                case AlertState.Return: return "vuelve";
+                default: return "patrulla";
+            }
+        }
 
         public static string PipelineName
         {
@@ -57,7 +78,8 @@ namespace Qazrix.Prototype
             string text =
                 $"<b>QAZRIX v{Application.version}</b> — prototipo F0\n" +
                 $"Unity {Application.unityVersion} · {PipelineName}\n" +
-                $"{1f / Mathf.Max(_smoothedDelta, 0.0001f):0} fps ({_smoothedDelta * 1000f:0.0} ms) · {state}\n\n" +
+                $"{1f / Mathf.Max(_smoothedDelta, 0.0001f):0} fps ({_smoothedDelta * 1000f:0.0} ms) · {state}\n" +
+                (guard != null ? $"Guardia: {StateName(guard.State)} · sospecha {guard.Awareness * 100f:0} %\n\n" : "\n") +
                 "Mover: WASD / flechas · stick izq.\n" +
                 "Correr: Mayús izq. · L3 / gatillo der.\n" +
                 "Saltar: Espacio · A\n" +
@@ -67,7 +89,7 @@ namespace Qazrix.Prototype
                 "Ocultar panel: F1 · Select\n" +
                 "Cambiar teclas: F2 · Start";
 
-            var area = new Rect(12f, 12f, 420f, 250f);
+            var area = new Rect(12f, 12f, 420f, 268f);
             GUI.Box(area, GUIContent.none);
             GUI.Label(new Rect(area.x + 10f, area.y + 8f, area.width - 20f, area.height - 16f), text, _style);
         }

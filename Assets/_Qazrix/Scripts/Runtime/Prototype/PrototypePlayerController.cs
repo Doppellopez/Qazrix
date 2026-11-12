@@ -29,6 +29,7 @@ namespace Qazrix.Prototype
         [SerializeField] private float gravity = -22f;
         [SerializeField] private float coyoteSeconds = 0.12f;
         [SerializeField] private float jumpBufferSeconds = 0.12f;
+        [SerializeField] private float hardLandingSpeed = -4f; // m/s; caer más rápido que esto hace ruido
 
         [Header("Altura (m)")]
         [SerializeField] private float standHeight = 1.8f;
@@ -49,6 +50,14 @@ namespace Qazrix.Prototype
         public bool IsGrounded { get; private set; }
         public bool IsCrouching { get; private set; }
         public float HorizontalSpeed => _horizontalVelocity.magnitude;
+
+        /// <summary>Corre de verdad: tecla pulsada, de pie, en el suelo y moviéndose.</summary>
+        public bool IsRunning { get; private set; }
+
+        /// <summary>Instante (Time.time) de la última caída con golpe; -1000 si aún no ha caído.</summary>
+        public float LastLandingTime { get; private set; } = -1000f;
+
+        public float CurrentHeight => IsCrouching ? crouchHeight : standHeight;
 
         public void Configure(Transform cameraRig, Transform visualRoot, QazrixInput reader)
         {
@@ -77,7 +86,11 @@ namespace Qazrix.Prototype
             Vector3 motion = (_horizontalVelocity + Vector3.up * _verticalVelocity) * dt;
             CollisionFlags flags = _controller.Move(motion);
 
+            bool wasGrounded = IsGrounded;
+            float fallSpeed = _verticalVelocity;
             IsGrounded = _controller.isGrounded;
+            if (!wasGrounded && IsGrounded && fallSpeed < hardLandingSpeed) LastLandingTime = Time.time;
+            IsRunning = input.Run && !IsCrouching && IsGrounded && HorizontalSpeed > walkSpeed + 0.2f;
             if ((flags & CollisionFlags.Above) != 0 && _verticalVelocity > 0f) _verticalVelocity = 0f;
 
             // Caer fuera del mundo no debe dejar al jugador perdido (spec §6.1).
@@ -161,7 +174,8 @@ namespace Qazrix.Prototype
             }
         }
 
-        private void Respawn()
+        /// <summary>Devuelve al jugador al punto de salida (caída fuera del mundo o captura).</summary>
+        public void Respawn()
         {
             _controller.enabled = false;
             transform.SetPositionAndRotation(_spawnPosition, _spawnRotation);

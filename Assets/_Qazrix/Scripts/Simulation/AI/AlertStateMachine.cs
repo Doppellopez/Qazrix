@@ -131,6 +131,12 @@ namespace Qazrix.Simulation.AI
             }
         }
 
+        /// <summary>Da por terminada la alarma (por ejemplo, tras alcanzar al intruso) y vuelve a su puesto.</summary>
+        public void GiveUp()
+        {
+            if (State != AlertState.Return) Enter(AlertState.Return);
+        }
+
         private void UpdateAwareness(float dt, GuardPercept percept)
         {
             // En alerta o búsqueda el guardia ya sabe que hay alguien: la sospecha no baja.

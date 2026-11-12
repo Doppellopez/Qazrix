@@ -3,6 +3,7 @@
     "rootNamespace": "Qazrix.Tests.PlayMode",
     "references": [
         "Qazrix.Runtime",
+        "Qazrix.Simulation",
         "Unity.InputSystem",
         "Unity.InputSystem.TestFramework",
         "UnityEngine.TestRunner"

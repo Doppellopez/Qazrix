@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Qazrix.AI;
 using Qazrix.Input;
 using Qazrix.Prototype;
 using UnityEditor;
@@ -114,6 +115,15 @@ namespace Qazrix.EditorTools
 
             var hud = new GameObject("HUD").AddComponent<PrototypeHud>();
             hud.Configure(player, input);
+
+            // Guardia que rodea el circuito. Empieza en la esquina noreste, lejos y de espaldas al jugador.
+            Material guardBody = GetOrCreateMaterial("Proto_Guardia", new Color(0.45f, 0.20f, 0.18f));
+            Material signal = GetOrCreateMaterial("Proto_Senal", Color.white);
+            GuardController guard = CreateGuard("Guardia", guardBody, signal, player.GetComponent<StealthTarget>(), new[]
+            {
+                new Vector3(16f, 0f, 17f), new Vector3(-12f, 0f, 17f), new Vector3(-12f, 0f, -5f), new Vector3(16f, 0f, -5f)
+            });
+            hud.ShowGuard(guard);
             EditorUtility.SetDirty(hud);
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
@@ -166,7 +176,65 @@ namespace Qazrix.EditorTools
             nose.transform.localScale = new Vector3(0.5f, 0.15f, 0.3f);
             nose.GetComponent<MeshRenderer>().sharedMaterial = accent;
 
-            return go.AddComponent<PrototypePlayerController>();
+            var controller = go.AddComponent<PrototypePlayerController>();
+            go.AddComponent<PlayerStealthTarget>();
+            return controller;
+        }
+
+        /// <summary>Guardia con su ruta de patrulla. Empieza en el primer punto, mirando hacia el segundo.</summary>
+        internal static GuardController CreateGuard(string name, Material body, Material signal, StealthTarget target, Vector3[] route)
+        {
+            var routeRoot = new GameObject(name + "_Ruta").transform;
+            var points = new Transform[route.Length];
+            for (int i = 0; i < route.Length; i++)
+            {
+                points[i] = new GameObject($"Punto_{i + 1}").transform;
+                points[i].SetParent(routeRoot, false);
+                points[i].position = route[i];
+            }
+
+            var go = new GameObject(name);
+            go.transform.position = route[0];
+            if (route.Length > 1) go.transform.rotation = Quaternion.LookRotation(route[1] - route[0], Vector3.up);
+
+            var cc = go.AddComponent<CharacterController>();
+            cc.radius = 0.3f;
+            cc.height = 1.8f;
+            cc.center = new Vector3(0f, 0.9f, 0f);
+            cc.stepOffset = 0.35f;
+            cc.skinWidth = 0.03f;
+
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            visual.name = "Visual";
+            UnityEngine.Object.DestroyImmediate(visual.GetComponent<Collider>());
+            visual.transform.SetParent(go.transform, false);
+            visual.transform.localPosition = new Vector3(0f, 0.9f, 0f);
+            visual.transform.localScale = new Vector3(0.6f, 0.9f, 0.6f);
+            visual.GetComponent<MeshRenderer>().sharedMaterial = body;
+
+            GameObject nose = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            nose.name = "Frente";
+            UnityEngine.Object.DestroyImmediate(nose.GetComponent<Collider>());
+            nose.transform.SetParent(visual.transform, false);
+            nose.transform.localPosition = new Vector3(0f, 0.55f, 0.45f);
+            nose.transform.localScale = new Vector3(0.5f, 0.15f, 0.3f);
+            nose.GetComponent<MeshRenderer>().sharedMaterial = body;
+
+            // Señal sobre la cabeza: color por estado y tamaño por sospecha.
+            GameObject mark = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            mark.name = "Senal";
+            UnityEngine.Object.DestroyImmediate(mark.GetComponent<Collider>());
+            mark.transform.SetParent(go.transform, false);
+            mark.transform.localPosition = new Vector3(0f, 2.3f, 0f);
+            mark.transform.localScale = Vector3.one * 0.2f;
+            var markRenderer = mark.GetComponent<MeshRenderer>();
+            markRenderer.sharedMaterial = signal;
+            markRenderer.shadowCastingMode = ShadowCastingMode.Off;
+
+            var guard = go.AddComponent<GuardController>();
+            guard.Configure(target, points, markRenderer);
+            EditorUtility.SetDirty(guard);
+            return guard;
         }
 
         /// <summary>Objeto «Entrada»: lector de Input Actions y panel de reasignación de teclas.</summary>
