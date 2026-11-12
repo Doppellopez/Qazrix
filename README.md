@@ -4,7 +4,7 @@ Aventura de sigilo y acción en tercera persona ambientada en Cáceres (Qazrix),
 Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 
 **Versión:** 0.1 · **Fase actual:** F0-A rehecha tras el reinicio del 2026-11-11 (D31), con **URP provisional** como en el paquete original (D32). F0-B hecha: relieve real de Z01 con tres puntos de control (D33); aún sin edificios.
-**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 42/42 tests EditMode y 10/10 pruebas en Play. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
+**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 51/51 tests EditMode y 14/14 pruebas en Play. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
 
 ---
 
@@ -13,7 +13,7 @@ Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 1. Unity Hub → abrir esta carpeta con **Unity 6000.3.6f1** (D05).
 2. Menú **Qazrix → Prototipo → Crear o abrir escena Prototype**.
 3. Menú **Qazrix → Verificar proyecto**. Objetivo: **0 errores**. El aviso de render pipeline es normal mientras D06 siga abierta.
-4. **Window → General → Test Runner → EditMode → Run All.** Deben pasar 42 tests.
+4. **Window → General → Test Runner → EditMode → Run All.** Deben pasar 51 tests.
 5. Pulsa **Play** y haz clic en la ventana Game para capturar el ratón.
 
 | Acción | Teclado / ratón | Mando |
@@ -29,8 +29,8 @@ Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 
 Qué probar en el circuito:
 
-- saltar el obstáculo bajo y subir andando el escalón;
-- saltar a la plataforma naranja (1 m);
+- delante del obstáculo bajo aparece «Espacio / A: saltar el obstáculo»: púlsalo y pasa por encima; el escalón se sube andando;
+- delante de la plataforma naranja (1 m) aparece «Espacio / A: trepar»: púlsalo y sube;
 - pasar agachado por el túnel: dentro no debes poder levantarte;
 - subir la rampa hasta el mirador;
 - pegar la cámara a la pared alta: no debe atravesarla;
@@ -96,8 +96,8 @@ No añadas `-quit`: los métodos cierran Unity con su propio código de salida y
 | `Scripts/Runtime/Input/` | Input Actions de fábrica, lector único de entrada y panel de reasignación de teclas (D36) |
 | `Scripts/Runtime/World/` | Puente entre coordenadas `double` y `Vector3` |
 | `Scripts/Editor/` | `PrototypeSceneBuilder`, `VerifyProject`, `PrototypePreview`, `ProjectInfo`, `Z01GeoBuilder`, `Z01GeoReport`; `Urp/UrpSetup` (solo compila con URP instalado) |
-| `Tests/EditMode/` | 42 tests: lógica pura (alerta, visión, ruido, georreferencia) y acciones de entrada |
-| `Tests/PlayMode/` | 10 pruebas en Play de la escena Prototype con teclado simulado (movimiento, paneles y guardia); dejan capturas en `Reports/QA` |
+| `Tests/EditMode/` | 51 tests: lógica pura (alerta, visión, ruido, parkour, georreferencia) y acciones de entrada |
+| `Tests/PlayMode/` | 14 pruebas en Play de la escena Prototype con teclado simulado (movimiento, paneles, guardia y parkour); dejan capturas en `Reports/QA` |
 | `Settings/URP/` | Assets del pipeline URP provisional (D06, D32) |
 
 Fuera de `Assets`: `Design/DecisionLog.md`, `Research/Datasets.md`, `Research/ASSET_LICENSES.csv`, datos fuente en `Research/Source/` e informes en `Reports/`.

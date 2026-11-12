@@ -5,6 +5,7 @@ using System.Linq;
 using Qazrix.AI;
 using Qazrix.Input;
 using Qazrix.Prototype;
+using Qazrix.Simulation.Movement;
 using Unity.AI.Navigation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -94,9 +95,11 @@ namespace Qazrix.EditorTools
 
             var level = new GameObject("Circuito").transform;
             Box("Suelo", level, ground, new Vector3(0f, -0.5f, 0f), new Vector3(60f, 1f, 60f));
-            Box("Obstaculo_bajo", level, block, new Vector3(0f, 0.25f, 5f), new Vector3(3f, 0.5f, 0.4f));
+            Box("Obstaculo_bajo", level, block, new Vector3(0f, 0.25f, 5f), new Vector3(3f, 0.5f, 0.4f))
+                .gameObject.AddComponent<ParkourMarker>().Configure(ParkourKind.Vault);
             Box("Escalon", level, block, new Vector3(-6f, 0.15f, 5f), new Vector3(3f, 0.3f, 2f));
-            Box("Plataforma", level, accent, new Vector3(-6f, 0.5f, 9f), new Vector3(4f, 1f, 4f));
+            Box("Plataforma", level, accent, new Vector3(-6f, 0.5f, 9f), new Vector3(4f, 1f, 4f))
+                .gameObject.AddComponent<ParkourMarker>().Configure(ParkourKind.Climb);
 
             // Túnel de 1,3 m de alto: solo se pasa agachado (1,0 m) y dentro no cabe de pie (1,8 m).
             Box("Tunel_pared_izq", level, block, new Vector3(5.35f, 0.65f, 8f), new Vector3(0.3f, 1.3f, 5f));
@@ -183,6 +186,7 @@ namespace Qazrix.EditorTools
             nose.transform.localScale = new Vector3(0.5f, 0.15f, 0.3f);
             nose.GetComponent<MeshRenderer>().sharedMaterial = accent;
 
+            go.AddComponent<PlayerParkour>();
             var controller = go.AddComponent<PrototypePlayerController>();
             go.AddComponent<PlayerStealthTarget>();
             return controller;

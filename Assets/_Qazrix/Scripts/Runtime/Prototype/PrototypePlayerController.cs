@@ -1,4 +1,5 @@
 using Qazrix.Input;
+using Qazrix.Simulation.Movement;
 using UnityEngine;
 
 namespace Qazrix.Prototype
@@ -40,6 +41,7 @@ namespace Qazrix.Prototype
         [SerializeField] private float respawnFallDistance = 150f; // metros por debajo del punto de salida
 
         private CharacterController _controller;
+        private PlayerParkour _parkour;
         private Vector3 _horizontalVelocity;
         private float _verticalVelocity;
         private float _sinceGrounded;
@@ -59,6 +61,11 @@ namespace Qazrix.Prototype
 
         public float CurrentHeight => IsCrouching ? crouchHeight : standHeight;
 
+        /// <summary>Acción de parkour posible ahora mismo con la tecla de salto (None si no hay ninguna).</summary>
+        public ParkourAction AvailableParkour => _parkour != null ? _parkour.Available : ParkourAction.None;
+
+        public bool IsInParkour => _parkour != null && _parkour.IsActive;
+
         public void Configure(Transform cameraRig, Transform visualRoot, QazrixInput reader)
         {
             inputReader = reader;
@@ -69,6 +76,7 @@ namespace Qazrix.Prototype
         private void Awake()
         {
             _controller = GetComponent<CharacterController>();
+            _parkour = GetComponent<PlayerParkour>(); // opcional: sin él solo hay salto normal
             _spawnPosition = transform.position;
             _spawnRotation = transform.rotation;
             ApplyHeight(standHeight);
@@ -78,6 +86,28 @@ namespace Qazrix.Prototype
         {
             InputFrame input = inputReader != null ? inputReader.Read() : default;
             float dt = Time.deltaTime;
+
+            if (_parkour != null)
+            {
+                // Durante un salto de obstáculo o una trepada el cuerpo sigue su trayectoria: sin control.
+                if (_parkour.IsActive)
+                {
+                    if (!_parkour.Tick(dt)) FinishParkour();
+                    return;
+                }
+
+                bool canAct = IsGrounded && !IsCrouching;
+                _parkour.Refresh(canAct);
+                // La tecla de salto es contextual: ante un obstáculo marcado lo salta o lo trepa.
+                if (canAct && input.JumpPressed && _parkour.TryBegin())
+                {
+                    _horizontalVelocity = Vector3.zero;
+                    _verticalVelocity = 0f;
+                    _sinceJumpPressed = 999f;
+                    IsRunning = false;
+                    return;
+                }
+            }
 
             UpdateCrouch(input.Crouch);
             UpdateHorizontal(input, dt);
@@ -95,6 +125,13 @@ namespace Qazrix.Prototype
 
             // Caer fuera del mundo no debe dejar al jugador perdido (spec §6.1).
             if (transform.position.y < _spawnPosition.y - respawnFallDistance) Respawn();
+        }
+
+        private void FinishParkour()
+        {
+            _verticalVelocity = -2f;
+            _sinceGrounded = 0f;
+            IsGrounded = true;
         }
 
         private void UpdateCrouch(bool wantsCrouch)

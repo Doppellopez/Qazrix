@@ -1,6 +1,7 @@
 using Qazrix.AI;
 using Qazrix.Input;
 using Qazrix.Simulation.AI;
+using Qazrix.Simulation.Movement;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -31,6 +32,17 @@ namespace Qazrix.Prototype
         public void ShowGuard(GuardController watched)
         {
             guard = watched;
+        }
+
+        private string ParkourHint()
+        {
+            if (player == null) return "\n";
+            switch (player.AvailableParkour)
+            {
+                case ParkourAction.Vault: return "<b>Espacio / A: saltar el obstáculo</b>\n";
+                case ParkourAction.Climb: return "<b>Espacio / A: trepar</b>\n";
+                default: return "\n";
+            }
         }
 
         private static string StateName(AlertState state)
@@ -79,7 +91,8 @@ namespace Qazrix.Prototype
                 $"<b>QAZRIX v{Application.version}</b> — prototipo F0\n" +
                 $"Unity {Application.unityVersion} · {PipelineName}\n" +
                 $"{1f / Mathf.Max(_smoothedDelta, 0.0001f):0} fps ({_smoothedDelta * 1000f:0.0} ms) · {state}\n" +
-                (guard != null ? $"Guardia: {StateName(guard.State)} · sospecha {guard.Awareness * 100f:0} %\n\n" : "\n") +
+                (guard != null ? $"Guardia: {StateName(guard.State)} · sospecha {guard.Awareness * 100f:0} %\n" : "") +
+                ParkourHint() + "\n" +
                 "Mover: WASD / flechas · stick izq.\n" +
                 "Correr: Mayús izq. · L3 / gatillo der.\n" +
                 "Saltar: Espacio · A\n" +
@@ -89,7 +102,7 @@ namespace Qazrix.Prototype
                 "Ocultar panel: F1 · Select\n" +
                 "Cambiar teclas: F2 · Start";
 
-            var area = new Rect(12f, 12f, 420f, 268f);
+            var area = new Rect(12f, 12f, 420f, 284f);
             GUI.Box(area, GUIContent.none);
             GUI.Label(new Rect(area.x + 10f, area.y + 8f, area.width - 20f, area.height - 16f), text, _style);
         }
