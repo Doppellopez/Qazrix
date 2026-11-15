@@ -1,0 +1,75 @@
+{
+  "zone": "Z01",
+  "source": "relieve MDT02 (DATA-001); zonas libres de edificio con pendiente >= 14 grados",
+  "columns": 450,
+  "rows": 360,
+  "cellSize": 0.2,
+  "rowOrder": "north-to-south",
+  "format": "float32 little-endian; NaN = sin peldaño; valor = cota del peldaño en metros locales (Y)",
+  "localWestX": -30.0,
+  "localNorthZ": 112.0,
+  "riser": 0.2,
+  "flights": [
+    {
+      "areaM2": 402.0,
+      "riseM": 2.8,
+      "bottom": [
+        21.9,
+        103.7
+      ],
+      "top": [
+        21.9,
+        97.1
+      ]
+    },
+    {
+      "areaM2": 210.4,
+      "riseM": 4.8,
+      "bottom": [
+        26.5,
+        60.3
+      ],
+      "top": [
+        41.7,
+        55.9
+      ]
+    },
+    {
+      "areaM2": 46.2,
+      "riseM": 1.8,
+      "bottom": [
+        47.7,
+        43.7
+      ],
+      "top": [
+        53.9,
+        40.3
+      ]
+    },
+    {
+      "areaM2": 19.7,
+      "riseM": 1.6,
+      "bottom": [
+        14.1,
+        43.9
+      ],
+      "top": [
+        18.7,
+        42.9
+      ]
+    },
+    {
+      "areaM2": 17.2,
+      "riseM": 2.4,
+      "bottom": [
+        55.1,
+        75.9
+      ],
+      "top": [
+        59.9,
+        74.3
+      ]
+    }
+  ],
+  "generated": "2026-11-15 18:33"
+}

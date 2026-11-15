@@ -1,0 +1,22 @@
+{
+  "zone": "Z01",
+  "source": "LiDAR PNOA 2018, cuadro 726-4374, clase 6 (DATA-002); relieve MDT02 (DATA-001)",
+  "crs": "EPSG:25829",
+  "columns": 512,
+  "rows": 576,
+  "cellSize": 1.0,
+  "rowOrder": "north-to-south",
+  "format": "float32 little-endian; NaN = sin edificio; valor = cota del tejado en metros locales (Y)",
+  "westEasting": 726000.0,
+  "northNorthing": 4372996.0,
+  "localWestX": -94.0,
+  "localNorthZ": 264.0,
+  "minBuildingHeight": 2.5,
+  "builtCells": 147899,
+  "rasterRadius": 0.5,
+  "buildings": 607,
+  "roofStep": 0.9,
+  "cellsRemovedToWidenStreets": 997,
+  "walkableReachablePercent": 92.5,
+  "generated": "2026-11-15 18:33"
+}

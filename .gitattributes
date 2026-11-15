@@ -182,3 +182,6 @@ LightingData.asset     binary
 *.JPEG                  lfs
 *.PNG                   lfs
 *.TIF                   lfs
+
+# Qazrix: datos binarios de zona que lee el juego (rejillas de tejados)
+Assets/_Qazrix/Data/**/*.bytes  lfs

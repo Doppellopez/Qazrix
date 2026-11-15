@@ -4,7 +4,7 @@ Aventura de sigilo y acción en tercera persona ambientada en Cáceres (Qazrix),
 Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 
 **Versión:** 0.1 · **Fase actual:** F0-A rehecha tras el reinicio del 2026-11-11 (D31), con **URP provisional** como en el paquete original (D32). F0-B hecha: relieve real de Z01 con tres puntos de control (D33); aún sin edificios.
-**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 56/56 tests EditMode, 20/20 pruebas en Play y build de Windows correcto. Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
+**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 71/71 tests EditMode y 27/27 pruebas en Play (2026-11-15). F2 empezada: volumetría del casco antiguo de Cáceres con calles transitables (D42), edificios separados con tejado propio y escalinatas de la Plaza Mayor con peldaños (D44). Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
 
 ---
 
@@ -13,7 +13,7 @@ Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 1. Unity Hub → abrir esta carpeta con **Unity 6000.3.6f1** (D05).
 2. Menú **Qazrix → Prototipo → Crear o abrir escena Prototype**.
 3. Menú **Qazrix → Verificar proyecto**. Objetivo: **0 errores**. El aviso de render pipeline es normal mientras D06 siga abierta.
-4. **Window → General → Test Runner → EditMode → Run All.** Deben pasar 56 tests.
+4. **Window → General → Test Runner → EditMode → Run All.** Deben pasar 69 tests.
 5. Pulsa **Play** y haz clic en la ventana Game para capturar el ratón.
 
 | Acción | Teclado / ratón | Mando |
@@ -59,6 +59,17 @@ En headless: `Qazrix.EditorTools.Z01GeoBuilder.BuildBatch`, `Qazrix.EditorTools.
 
 Los tres puntos de control (Torre de Bujaco, Concatedral de Santa María y San Francisco Javier) salen del LiDAR PNOA 2018 y los identificó Jorge sobre el plano `Reports/QA/z01_candidatos_lidar.png` (D34). Para añadir más: `Tools/GIS/gcp_candidates_lidar.py` lista los candidatos y se apuntan en `Research/Survey/gcp_input.csv`. Ambos scripts de Python se ejecutan con `python-qgis-ltr.bat` de QGIS.
 
+## Ciudad: casco antiguo de Cáceres (F2)
+
+La escena `Z01_Relieve` levanta al cargarse la volumetría de los edificios del recinto intramuros y la Plaza Mayor: 148 000 m² construidos, 364 000 triángulos, con el 92,5 % del suelo libre conectado a pie. Los datos salen del LiDAR PNOA 2018 y se regeneran con:
+
+```powershell
+& "C:\Program Files\QGIS 3.44.15\bin\python-qgis-ltr.bat" Tools\GIS\make_city_blocks.py
+& "C:\Program Files\QGIS 3.44.15\bin\python-qgis-ltr.bat" Tools\GIS\make_plaza_stairs.py   # después del anterior: peldaños de la Plaza Mayor (D44)
+```
+
+Después, menú **Qazrix → Mapa → Crear escena Z01 (relieve CNIG)**. Las mallas no están en el repositorio: las crea `CityBlocks` a partir de `Assets/_Qazrix/Data/Zones/Z01/z01_tejados_1m.bytes`. Es volumetría con el aspecto actual de la ciudad, sin fachadas ni muralla diferenciada.
+
 ## Build de Windows
 
 Menú **Qazrix → Build → Windows (desarrollo)**. Genera `Builds/Windows/Qazrix.exe` con las dos escenas y deja el informe en `Reports/QA/build-windows-latest.md`. Para probarlo en otro PC, copia la carpeta `Builds/Windows` entera. Dentro del juego, F3 cambia de escena y Alt+F4 cierra. En headless: `Qazrix.EditorTools.BuildWindows.BuildBatch`.
@@ -102,10 +113,10 @@ No añadas `-quit`: los métodos cierran Unity con su propio código de salida y
 | `Scripts/Runtime/AI/` | Guardia con patrulla, vista y oído (D37) que rodea obstáculos con la malla de navegación (D38), y contrato `StealthTarget` |
 | `Scripts/Runtime/Prototype/` | Controlador del jugador, cámara orbital con colisión, panel de depuración |
 | `Scripts/Runtime/Input/` | Input Actions de fábrica, lector único de entrada y panel de reasignación de teclas (D36) |
-| `Scripts/Runtime/World/` | Puente entre coordenadas `double` y `Vector3` |
-| `Scripts/Editor/` | `PrototypeSceneBuilder`, `VerifyProject`, `PrototypePreview`, `ProjectInfo`, `Z01GeoBuilder`, `Z01GeoReport`; `Urp/UrpSetup` (solo compila con URP instalado) |
-| `Tests/EditMode/` | 56 tests: lógica pura (alerta, visión, ruido, parkour, interacción, georreferencia) y acciones de entrada |
-| `Tests/PlayMode/` | 20 pruebas en Play con teclado simulado: 17 en Prototype (movimiento, paneles, guardia, parkour, interacción, checkpoint y cambio de escena) y 3 en Z01_Relieve; dejan capturas en `Reports/QA` |
+| `Scripts/Runtime/World/` | Puente entre coordenadas `double` y `Vector3`; `CityBlocks`, la volumetría de la ciudad (D42) |
+| `Scripts/Editor/` | `PrototypeSceneBuilder`, `VerifyProject`, `PrototypePreview`, `ProjectInfo`, `Z01GeoBuilder`, `Z01GeoReport`, `BuildWindows`; modelos de personajes `HidalgoBuilder` y `GuardModelBuilder` sobre `CharacterKit` (D43); `Urp/UrpSetup` (solo compila con URP instalado) |
+| `Tests/EditMode/` | 69 tests: lógica pura (alerta, visión, ruido, parkour, interacción, ciclo de andar, georreferencia, volumetría) y acciones de entrada |
+| `Tests/PlayMode/` | 27 pruebas en Play con teclado simulado: 20 en Prototype (incluidos los modelos del hidalgo y del guardia) y 7 en Z01_Relieve (ciudad, monumentos en su sitio, edificios con tejado propio, calles, subida de la escalinata de la plaza, guardia y parkour); dejan capturas en `Reports/QA` |
 | `Settings/URP/` | Assets del pipeline URP provisional (D06, D32) |
 
 Fuera de `Assets`: `Design/DecisionLog.md`, `Research/Datasets.md`, `Research/ASSET_LICENSES.csv`, datos fuente en `Research/Source/` e informes en `Reports/`.

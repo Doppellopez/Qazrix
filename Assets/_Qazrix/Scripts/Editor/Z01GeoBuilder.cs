@@ -82,33 +82,41 @@ namespace Qazrix.EditorTools
                     continue;
                 }
                 CreateControlPoint(root, p, meta.Origin, pole);
-                CreateVolume(root, p, terrainGrid, surfaceGrid, meta, block);
             }
 
-            // --- Zona de juego de prueba alrededor del origen (no es geometría de Cáceres) ---
             float Ground(float x, float z) => (float)(terrainGrid.Sample(x, z) - meta.originHeight);
+
+            // --- Ciudad: volumetría de los edificios del casco antiguo (LiDAR PNOA 2018, D42) ---
+            CityBlocks city = CreateCity(terrain);
+            // Escalinatas de la Plaza Mayor: peldaños donde el relieve solo da una rampa (D44).
+            CreateStairs(terrain);
+
+            // --- Zona de juego de prueba en la Plaza Mayor (no es geometría de Cáceres) ---
+            // Se busca un claro de 12 m de radio cerca del punto deseado para no nacer dentro de un edificio.
+            Vector2 spawn = city.FindOpen(SpawnHint.x, SpawnHint.y, 12f);
+            float sx = spawn.x, sz = spawn.y;
 
             // Dos obstáculos de parkour hundidos en el relieve, para que la pendiente no deje huecos:
             // un murete de 0,5 m para saltar y una plataforma de 1 m para trepar.
             Transform play = new GameObject("Zona_de_juego").transform;
             const float sunk = 2f;
-            float wallTop = Ground(0f, 6f) + 0.5f;
-            PrototypeSceneBuilder.Box("Murete", play, block, new Vector3(0f, wallTop - (0.5f + sunk) * 0.5f, 6f), new Vector3(3f, 0.5f + sunk, 0.4f))
+            float wallTop = Ground(sx, sz + 6f) + 0.5f;
+            PrototypeSceneBuilder.Box("Murete", play, block, new Vector3(sx, wallTop - (0.5f + sunk) * 0.5f, sz + 6f), new Vector3(3f, 0.5f + sunk, 0.4f))
                 .gameObject.AddComponent<ParkourMarker>().Configure(ParkourKind.Vault);
-            float deckTop = Ground(-8f, 6f) + 1f;
-            PrototypeSceneBuilder.Box("Plataforma", play, pole, new Vector3(-8f, deckTop - (1f + sunk) * 0.5f, 6f), new Vector3(4f, 1f + sunk, 4f))
+            float deckTop = Ground(sx - 8f, sz + 6f) + 1f;
+            PrototypeSceneBuilder.Box("Plataforma", play, pole, new Vector3(sx - 8f, deckTop - (1f + sunk) * 0.5f, sz + 6f), new Vector3(4f, 1f + sunk, 4f))
                 .gameObject.AddComponent<ParkourMarker>().Configure(ParkourKind.Climb);
 
-            // Malla de navegación solo en el cuadrado central: basta para el guardia y pesa poco.
+            // Malla de navegación en un cuadrado alrededor del punto de salida: incluye calles y edificios.
             var navigation = new GameObject("Navegacion");
             PrototypeSceneBuilder.BakeNavMesh(navigation,
-                new Bounds(new Vector3(0f, Ground(0f, 0f), 0f), new Vector3(PlayAreaSide, 120f, PlayAreaSide)), NavMeshPath);
+                new Bounds(new Vector3(sx, Ground(sx, sz), sz), new Vector3(PlayAreaSide, 160f, PlayAreaSide)), NavMeshPath);
 
-            // El jugador nace en el origen local, medio metro por encima del relieve.
-            float groundY = Ground(0f, 0f);
+            // El jugador nace en el claro, medio metro por encima del relieve.
+            float groundY = Ground(sx, sz);
             QazrixInput input = PrototypeSceneBuilder.CreateInput();
             PrototypePlayerController player = PrototypeSceneBuilder.CreatePlayer(body, pole);
-            player.transform.position = new Vector3(0f, groundY + 0.5f, 0f);
+            player.transform.position = new Vector3(sx, groundY + 0.5f, sz);
             Transform cameraRig = PrototypeSceneBuilder.CreateCamera(player.transform, input);
             cameraRig.position = player.transform.position + new Vector3(0f, 2.9f, -4.3f);
             cameraRig.GetComponent<Camera>().farClipPlane = 3000f;
@@ -116,8 +124,8 @@ namespace Qazrix.EditorTools
             EditorUtility.SetDirty(player);
 
             // Carta sobre la plataforma y checkpoint al otro lado del murete.
-            PrototypeSceneBuilder.CreateLetter(play, pole, new Vector3(-8f, deckTop + 0.25f, 6f));
-            PrototypeSceneBuilder.CreateCheckpoint(play, "tras el murete", new Vector3(0f, Ground(0f, 9f) + 1f, 9f), new Vector3(4f, 2.4f, 2f));
+            PrototypeSceneBuilder.CreateLetter(play, pole, new Vector3(sx - 8f, deckTop + 0.25f, sz + 6f));
+            PrototypeSceneBuilder.CreateCheckpoint(play, "tras el murete", new Vector3(sx, Ground(sx, sz + 9f) + 1f, sz + 9f), new Vector3(4f, 2.4f, 2f));
 
             var hud = new GameObject("HUD").AddComponent<PrototypeHud>();
             hud.Configure(player, input);
@@ -125,8 +133,12 @@ namespace Qazrix.EditorTools
             // Guardia que da la vuelta a un cuadrado de 40 m alrededor del punto de salida.
             Material guardBody = PrototypeSceneBuilder.GetOrCreateMaterial("Proto_Guardia", new Color(0.45f, 0.20f, 0.18f));
             Material signal = PrototypeSceneBuilder.GetOrCreateMaterial("Proto_Senal", Color.white);
+            // Cada esquina se lleva al punto despejado más cercano, para que ninguna caiga dentro de un edificio.
             var corners = new[] { new Vector2(20f, 20f), new Vector2(-20f, 20f), new Vector2(-20f, -20f), new Vector2(20f, -20f) };
-            Vector3[] route = corners.Select(c => new Vector3(c.x, Ground(c.x, c.y) + 0.1f, c.y)).ToArray();
+            Vector3[] route = corners
+                .Select(c => city.FindOpen(sx + c.x, sz + c.y, 1.5f))
+                .Select(c => new Vector3(c.x, Ground(c.x, c.y) + 0.1f, c.y))
+                .ToArray();
             GuardController guard = PrototypeSceneBuilder.CreateGuard("Guardia", guardBody, signal, player.GetComponent<StealthTarget>(), route);
             hud.ShowGuard(guard);
             EditorUtility.SetDirty(hud);
@@ -139,6 +151,55 @@ namespace Qazrix.EditorTools
             AddToBuildSettings();
             AssetDatabase.SaveAssets();
             Debug.Log($"[Qazrix] Escena Z01 creada: {ScenePath} · relieve {terrainGrid.Min:0.0}–{terrainGrid.Max:0.0} m · {points.Count} puntos de control · {terrain.name}");
+            Debug.Log($"[Qazrix] Ciudad: {city.BuiltCells} m² construidos, {city.ChunkCount} trozos, {city.TriangleCount} triángulos, {city.BuildSeconds:0.00} s · salida en ({sx:0.0}, {sz:0.0})");
+        }
+
+        /// <summary>Punto deseado de salida del jugador: centro aproximado de la Plaza Mayor, en metros locales.</summary>
+        private static readonly Vector2 SpawnHint = new Vector2(11f, 73f);
+
+        public const string RoofsPath = "Assets/_Qazrix/Data/Zones/Z01/z01_tejados_1m.bytes";
+        public const string RoofsMetaPath = "Assets/_Qazrix/Data/Zones/Z01/z01_tejados_1m.json";
+        public const string CityName = "Ciudad";
+
+        private static CityBlocks CreateCity(Terrain terrain)
+        {
+            var roofs = AssetDatabase.LoadAssetAtPath<TextAsset>(RoofsPath);
+            var roofsMeta = AssetDatabase.LoadAssetAtPath<TextAsset>(RoofsMetaPath);
+            if (roofs == null || roofsMeta == null)
+                throw new FileNotFoundException($"Faltan los datos de tejados ({RoofsPath}). Ejecuta Tools/GIS/make_city_blocks.py (README).");
+
+            // Colores planos de volumetría: teja y piedra. Es la apariencia actual, no la de 1229.
+            Material roof = PrototypeSceneBuilder.GetOrCreateMaterial("Ciudad_Tejado", new Color(0.62f, 0.36f, 0.26f));
+            Material wall = PrototypeSceneBuilder.GetOrCreateMaterial("Ciudad_Muro", new Color(0.74f, 0.70f, 0.62f));
+
+            var city = new GameObject(CityName).AddComponent<CityBlocks>();
+            city.Configure(roofs, roofsMeta, terrain, roof, wall);
+            city.Build(); // las mallas no se guardan en la escena; hacen falta ahora para la malla de navegación
+            EditorUtility.SetDirty(city);
+            return city;
+        }
+
+        public const string StairsPath = "Assets/_Qazrix/Data/Zones/Z01/z01_escalinata.bytes";
+        public const string StairsMetaPath = "Assets/_Qazrix/Data/Zones/Z01/z01_escalinata.json";
+        public const string StairsName = "Escalinata";
+
+        /// <summary>
+        /// Peldaños de 0,2 m generados por <c>Tools/GIS/make_plaza_stairs.py</c>. Usan el mismo mallador
+        /// que los edificios, con un salto menor que la contrahuella para que cada peldaño sea plano.
+        /// </summary>
+        private static void CreateStairs(Terrain terrain)
+        {
+            var steps = AssetDatabase.LoadAssetAtPath<TextAsset>(StairsPath);
+            var stepsMeta = AssetDatabase.LoadAssetAtPath<TextAsset>(StairsMetaPath);
+            if (steps == null || stepsMeta == null)
+                throw new FileNotFoundException($"Faltan los datos de la escalinata ({StairsPath}). Ejecuta Tools/GIS/make_plaza_stairs.py (README).");
+
+            Material stone = PrototypeSceneBuilder.GetOrCreateMaterial("Ciudad_Peldano", new Color(0.66f, 0.63f, 0.57f));
+            var stairs = new GameObject(StairsName).AddComponent<CityBlocks>();
+            stairs.Configure(steps, stepsMeta, terrain, stone, stone, 0.05f);
+            stairs.Build(); // hacen falta ahora para la malla de navegación
+            EditorUtility.SetDirty(stairs);
+            Debug.Log($"[Qazrix] Escalinata: {stairs.BuiltCells * 0.04f:0} m² de peldaños, {stairs.TriangleCount} triángulos");
         }
 
         private static Terrain CreateTerrain(Z01GeoData.Meta meta, HeightGrid grid)

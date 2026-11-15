@@ -19,6 +19,8 @@ namespace Qazrix.EditorTools
             {
                 EditorSceneManager.OpenScene(PrototypeSceneBuilder.ScenePath, OpenSceneMode.Single);
                 Capture(OutputPath, new Vector3(-9f, 7f, -9f), new Vector3(3f, 0.5f, 7f));
+                Capture("Reports/QA/personaje_hidalgo.png", new Vector3(1.5f, 1.35f, 2.4f), new Vector3(0f, 0.95f, 0f));
+                Capture("Reports/QA/personaje_guardia.png", new Vector3(13.4f, 1.45f, 19.0f), new Vector3(16f, 1.0f, 17f));
             }
             catch (Exception e)
             {
@@ -35,8 +37,10 @@ namespace Qazrix.EditorTools
             try
             {
                 EditorSceneManager.OpenScene(Z01GeoBuilder.ScenePath, OpenSceneMode.Single);
-                Capture("Reports/QA/z01_vista_aerea.png", new Vector3(-260f, 260f, -420f), new Vector3(40f, -10f, 40f), 4000f);
-                Capture("Reports/QA/z01_vista_puntos.png", new Vector3(-40f, 25f, -60f), new Vector3(60f, 5f, 60f), 4000f);
+                // Casco antiguo desde el suroeste, en alto; Plaza Mayor a pie de calle; y vista cenital.
+                Capture("Reports/QA/z01_vista_aerea.png", new Vector3(-120f, 230f, -260f), new Vector3(150f, 0f, 20f), 4000f);
+                Capture("Reports/QA/z01_vista_plaza.png", new Vector3(-8f, 0.5f, 55f), new Vector3(45f, 8f, 80f), 4000f);
+                Capture("Reports/QA/z01_vista_cenital.png", new Vector3(160f, 620f, -25f), new Vector3(160f, 0f, -24f), 4000f);
             }
             catch (Exception e)
             {

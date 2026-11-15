@@ -175,27 +175,19 @@ namespace Qazrix.EditorTools
             cc.slopeLimit = 45f;
             cc.skinWidth = 0.03f;
 
-            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            visual.name = "Visual";
-            UnityEngine.Object.DestroyImmediate(visual.GetComponent<Collider>());
+            // «Visual» es el nodo que el controlador escala al agacharse, con las medidas de una cápsula
+            // de Unity. El modelo del hidalgo cuelga de él.
+            var visual = new GameObject("Visual");
             visual.transform.SetParent(go.transform, false);
             visual.transform.localPosition = new Vector3(0f, 0.9f, 0f);
             visual.transform.localScale = new Vector3(0.6f, 0.9f, 0.6f);
-            visual.GetComponent<MeshRenderer>().sharedMaterial = body;
-
-            // Marca hacia dónde mira la cápsula.
-            GameObject nose = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            nose.name = "Frente";
-            UnityEngine.Object.DestroyImmediate(nose.GetComponent<Collider>());
-            nose.transform.SetParent(visual.transform, false);
-            nose.transform.localPosition = new Vector3(0f, 0.55f, 0.45f);
-            nose.transform.localScale = new Vector3(0.5f, 0.15f, 0.3f);
-            nose.GetComponent<MeshRenderer>().sharedMaterial = accent;
+            CharacterWalkAnimator animator = HidalgoBuilder.Build(visual.transform, go.transform, cc);
 
             go.AddComponent<PlayerParkour>();
             go.AddComponent<PlayerInteractor>();
             var controller = go.AddComponent<PrototypePlayerController>();
             go.AddComponent<PlayerStealthTarget>();
+            EditorUtility.SetDirty(animator);
             return controller;
         }
 
@@ -291,28 +283,15 @@ namespace Qazrix.EditorTools
             cc.stepOffset = 0.35f;
             cc.skinWidth = 0.03f;
 
-            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            visual.name = "Visual";
-            UnityEngine.Object.DestroyImmediate(visual.GetComponent<Collider>());
-            visual.transform.SetParent(go.transform, false);
-            visual.transform.localPosition = new Vector3(0f, 0.9f, 0f);
-            visual.transform.localScale = new Vector3(0.6f, 0.9f, 0.6f);
-            visual.GetComponent<MeshRenderer>().sharedMaterial = body;
-
-            GameObject nose = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            nose.name = "Frente";
-            UnityEngine.Object.DestroyImmediate(nose.GetComponent<Collider>());
-            nose.transform.SetParent(visual.transform, false);
-            nose.transform.localPosition = new Vector3(0f, 0.55f, 0.45f);
-            nose.transform.localScale = new Vector3(0.5f, 0.15f, 0.3f);
-            nose.GetComponent<MeshRenderer>().sharedMaterial = body;
+            // Modelo: guardia andalusí corpulento con sable curvo (GuardModelBuilder, D43).
+            EditorUtility.SetDirty(GuardModelBuilder.Build(go.transform, cc));
 
             // Señal sobre la cabeza: color por estado y tamaño por sospecha.
             GameObject mark = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             mark.name = "Senal";
             UnityEngine.Object.DestroyImmediate(mark.GetComponent<Collider>());
             mark.transform.SetParent(go.transform, false);
-            mark.transform.localPosition = new Vector3(0f, 2.3f, 0f);
+            mark.transform.localPosition = new Vector3(0f, 2.35f, 0f); // por encima del turbante
             mark.transform.localScale = Vector3.one * 0.2f;
             var markRenderer = mark.GetComponent<MeshRenderer>();
             markRenderer.sharedMaterial = signal;
@@ -366,10 +345,10 @@ namespace Qazrix.EditorTools
         }
 
         /// <summary>Material con el shader por defecto del pipeline activo, así vale con HDRP, URP o Built-in.</summary>
-        internal static Material GetOrCreateMaterial(string name, Color color)
+        internal static Material GetOrCreateMaterial(string name, Color color, string folder = MaterialFolder)
         {
-            Directory.CreateDirectory(MaterialFolder);
-            string path = $"{MaterialFolder}/{name}.mat";
+            Directory.CreateDirectory(folder);
+            string path = $"{folder}/{name}.mat";
 
             RenderPipelineAsset pipeline = GraphicsSettings.currentRenderPipeline;
             Shader shader = pipeline != null && pipeline.defaultMaterial != null
