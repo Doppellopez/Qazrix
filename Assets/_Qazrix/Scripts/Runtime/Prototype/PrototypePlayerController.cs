@@ -42,6 +42,7 @@ namespace Qazrix.Prototype
 
         private CharacterController _controller;
         private PlayerParkour _parkour;
+        private PlayerWallClimb _climb;
         private Vector3 _horizontalVelocity;
         private float _verticalVelocity;
         private float _sinceGrounded;
@@ -65,6 +66,9 @@ namespace Qazrix.Prototype
         public ParkourAction AvailableParkour => _parkour != null ? _parkour.Available : ParkourAction.None;
 
         public bool IsInParkour => _parkour != null && _parkour.IsActive;
+
+        /// <summary>Está agarrado a una fachada, trepando o encaramándose al tejado.</summary>
+        public bool IsClimbing => _climb != null && _climb.IsActive;
 
         /// <summary>Nombre del último checkpoint alcanzado; vacío si aún reaparece en el inicio.</summary>
         public string CheckpointLabel { get; private set; } = string.Empty;
@@ -90,6 +94,7 @@ namespace Qazrix.Prototype
         {
             _controller = GetComponent<CharacterController>();
             _parkour = GetComponent<PlayerParkour>(); // opcional: sin él solo hay salto normal
+            _climb = GetComponent<PlayerWallClimb>();  // opcional: sin él no trepa fachadas
             _spawnPosition = transform.position;
             _spawnRotation = transform.rotation;
             ApplyHeight(standHeight);
@@ -122,6 +127,27 @@ namespace Qazrix.Prototype
                 }
             }
 
+            if (_climb != null)
+            {
+                // Trepando, la palanca sube, baja o desplaza de lado; agacharse suelta la pared.
+                if (_climb.IsActive)
+                {
+                    _climb.Tick(dt, input.Move, input.Crouch);
+                    if (!_climb.IsActive) FinishClimb();
+                    return;
+                }
+
+                // Corriendo contra una fachada se agarra a ella, también en el aire tras un salto.
+                if (_climb.TryBegin(Wished(input), input.Run, IsCrouching || input.Crouch))
+                {
+                    _horizontalVelocity = Vector3.zero;
+                    _verticalVelocity = 0f;
+                    IsGrounded = false;
+                    IsRunning = false;
+                    return;
+                }
+            }
+
             UpdateCrouch(input.Crouch);
             UpdateHorizontal(input, dt);
             UpdateVertical(input, dt);
@@ -138,6 +164,21 @@ namespace Qazrix.Prototype
 
             // Caer fuera del mundo no debe dejar al jugador perdido (spec §6.1).
             if (transform.position.y < _spawnPosition.y - respawnFallDistance) Respawn();
+        }
+
+        private void FinishClimb()
+        {
+            _horizontalVelocity = Vector3.zero;
+            _sinceJumpPressed = 999f;
+            if (_climb.EndedStanding)
+            {
+                FinishParkour();
+                return;
+            }
+            // Se ha soltado: cae desde donde estaba.
+            _verticalVelocity = 0f;
+            _sinceGrounded = 999f;
+            IsGrounded = false;
         }
 
         private void FinishParkour()
@@ -163,15 +204,17 @@ namespace Qazrix.Prototype
             }
         }
 
+        /// <summary>Dirección horizontal pedida con la palanca, relativa a la cámara.</summary>
+        private Vector3 Wished(InputFrame input)
+        {
+            if (input.Move.sqrMagnitude <= 0.0001f) return Vector3.zero;
+            float yaw = cameraTransform != null ? cameraTransform.eulerAngles.y : transform.eulerAngles.y;
+            return Quaternion.Euler(0f, yaw, 0f) * new Vector3(input.Move.x, 0f, input.Move.y);
+        }
+
         private void UpdateHorizontal(InputFrame input, float dt)
         {
-            Vector3 wished = Vector3.zero;
-            if (input.Move.sqrMagnitude > 0.0001f)
-            {
-                float yaw = cameraTransform != null ? cameraTransform.eulerAngles.y : transform.eulerAngles.y;
-                Quaternion basis = Quaternion.Euler(0f, yaw, 0f);
-                wished = basis * new Vector3(input.Move.x, 0f, input.Move.y);
-            }
+            Vector3 wished = Wished(input);
 
             float topSpeed = IsCrouching ? crouchSpeed : (input.Run ? runSpeed : walkSpeed);
             Vector3 target = wished * topSpeed;
@@ -227,6 +270,7 @@ namespace Qazrix.Prototype
         /// <summary>Devuelve al jugador al punto de salida (caída fuera del mundo o captura).</summary>
         public void Respawn()
         {
+            if (_climb != null) _climb.Cancel();
             _controller.enabled = false;
             transform.SetPositionAndRotation(_spawnPosition, _spawnRotation);
             _controller.enabled = true;

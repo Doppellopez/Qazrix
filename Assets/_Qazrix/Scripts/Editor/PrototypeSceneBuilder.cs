@@ -184,6 +184,7 @@ namespace Qazrix.EditorTools
             CharacterWalkAnimator animator = HidalgoBuilder.Build(visual.transform, go.transform, cc);
 
             go.AddComponent<PlayerParkour>();
+            go.AddComponent<PlayerWallClimb>();
             go.AddComponent<PlayerInteractor>();
             var controller = go.AddComponent<PrototypePlayerController>();
             go.AddComponent<PlayerStealthTarget>();

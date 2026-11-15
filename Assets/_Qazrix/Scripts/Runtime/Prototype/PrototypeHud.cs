@@ -110,6 +110,7 @@ namespace Qazrix.Prototype
                 "Mover: WASD / flechas · stick izq.\n" +
                 "Correr: Mayús izq. · L3 / gatillo der.\n" +
                 "Saltar: Espacio · A\n" +
+                "Trepar: correr contra una fachada · agacharse suelta\n" +
                 "Agacharse: C / Ctrl · B\n" +
                 "Interactuar: E · X\n" +
                 "Cámara: ratón (clic captura, Esc suelta) · stick der.\n" +

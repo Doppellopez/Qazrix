@@ -197,6 +197,7 @@ namespace Qazrix.EditorTools
             Material stone = PrototypeSceneBuilder.GetOrCreateMaterial("Ciudad_Peldano", new Color(0.66f, 0.63f, 0.57f));
             var stairs = new GameObject(StairsName).AddComponent<CityBlocks>();
             stairs.Configure(steps, stepsMeta, terrain, stone, stone, 0.05f);
+            stairs.Climbable = false; // se suben andando, no trepando
             stairs.Build(); // hacen falta ahora para la malla de navegación
             EditorUtility.SetDirty(stairs);
             Debug.Log($"[Qazrix] Escalinata: {stairs.BuiltCells * 0.04f:0} m² de peldaños, {stairs.TriangleCount} triángulos");

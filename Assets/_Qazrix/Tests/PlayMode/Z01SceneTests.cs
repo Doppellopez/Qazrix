@@ -205,6 +205,91 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Player_ClimbsAFacade_LetsGo_AndReachesTheRoof()
+        {
+            yield return LoadScene();
+            var climb = _player.GetComponent<PlayerWallClimb>();
+            Assert.IsNotNull(climb, "el jugador no tiene PlayerWallClimb");
+
+            // Primera fachada de la ciudad al norte de la plaza que mire al sur (W lleva hacia el norte).
+            Vector3 spawn = _player.transform.position;
+            RaycastHit wall = default;
+            bool found = false;
+            for (float dx = -12f; dx <= 12f && !found; dx += 3f)
+            {
+                var from = new Vector3(spawn.x + dx, spawn.y + 1.3f, spawn.z);
+                found = Physics.Raycast(from, Vector3.forward, out wall, 150f)
+                        && wall.collider.GetComponentInParent<CityBlocks>() == _city && wall.normal.z < -0.9f;
+            }
+            Assert.IsTrue(found, "no se encontró una fachada al norte de la plaza");
+            Assert.IsTrue(Physics.Raycast(wall.point + new Vector3(0f, 1f, -0.9f), Vector3.down, out RaycastHit ground, 40f));
+
+            var body = _player.GetComponent<CharacterController>();
+            body.enabled = false;
+            _player.transform.position = ground.point + Vector3.up * 0.1f;
+            body.enabled = true;
+            for (int i = 0; i < 20; i++) yield return null;
+            float groundY = _player.transform.position.y;
+
+            // Corre contra la fachada: se agarra y sube.
+            Press(_keyboard.leftShiftKey);
+            Press(_keyboard.wKey);
+            float limit = Time.time + 4f;
+            while (Time.time < limit && !_player.IsClimbing) yield return null;
+            Assert.IsTrue(_player.IsClimbing, "corriendo contra la fachada debe agarrarse a ella");
+            limit = Time.time + 4f;
+            while (Time.time < limit && _player.transform.position.y < groundY + 2f) yield return null;
+            Assert.Greater(_player.transform.position.y, groundY + 2f, "debe subir por la fachada");
+
+            // Animación de escalada: los dos brazos por encima de los hombros y alternándose.
+            var animator = _player.GetComponentInChildren<CharacterWalkAnimator>();
+            Assert.IsNotNull(animator, "el hidalgo no tiene animador");
+            float widestGap = 0f;
+            for (int i = 0; i < 40; i++)
+            {
+                Assert.Greater(animator.LeftArmAngle, 100f, "trepando, el brazo izquierdo va levantado");
+                Assert.Greater(animator.RightArmAngle, 100f, "y el derecho también");
+                widestGap = Mathf.Max(widestGap, Mathf.Abs(animator.LeftArmAngle - animator.RightArmAngle));
+                yield return null;
+            }
+            Assert.Greater(widestGap, 25f, "los brazos deben alternarse al subir");
+            yield return Capture("play_z01_trepada.png");
+
+            // Agacharse suelta la pared y cae al suelo.
+            Release(_keyboard.wKey);
+            Press(_keyboard.cKey);
+            yield return null;
+            yield return null;
+            Assert.IsFalse(_player.IsClimbing, "agacharse debe soltar la pared");
+            Release(_keyboard.cKey);
+            limit = Time.time + 3f;
+            while (Time.time < limit && !_player.IsGrounded) yield return null;
+            Assert.IsTrue(_player.IsGrounded, "al soltarse cae al suelo");
+            Assert.Less(_player.transform.position.y, groundY + 0.6f);
+
+            // Segundo intento, hasta arriba: se encarama al tejado.
+            Press(_keyboard.wKey);
+            limit = Time.time + 25f;
+            while (Time.time < limit && climb.RoofsReached == 0) yield return null;
+            Release(_keyboard.wKey);
+            Release(_keyboard.leftShiftKey);
+            for (int i = 0; i < 20; i++) yield return null;
+
+            Vector3 top = _player.transform.position;
+            Assert.AreEqual(1, climb.RoofsReached, "debe llegar al tejado");
+            Assert.IsFalse(_player.IsClimbing);
+            Assert.IsTrue(_player.IsGrounded, "y quedar de pie en él");
+            yield return Capture("play_z01_tejado.png");
+            // Lo que pisa es la ciudad (puede quedar en el mismo borde del tejado, medio cuerpo fuera).
+            Assert.IsTrue(Physics.SphereCast(top + Vector3.up, 0.25f, Vector3.down, out RaycastHit under, 1.2f)
+                          && under.collider.GetComponentInParent<CityBlocks>() == _city,
+                $"debe quedar de pie sobre un edificio (pared en {wall.point}, quedó en {top}, calle a {groundY:0.0})");
+            Assert.Greater(top.y, groundY + 2.4f);
+            Debug.Log($"[Qazrix] Trepada: tejado a {top.y - groundY:0.0} m sobre la calle");
+            yield return Capture("play_z01_tejado.png");
+        }
+
+        [UnityTest]
         public IEnumerator Guard_PatrolsBetweenTheBuildings_FollowingTheNavMesh()
         {
             yield return LoadScene();

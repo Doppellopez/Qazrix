@@ -37,6 +37,14 @@ namespace Qazrix.World
         // Salto de cota (m) que separa dos volúmenes pegados: cada edificio conserva su tejado y entre
         // ambos hay muro. En una escalinata es menor que la contrahuella.
         [SerializeField] private float roofStep = 0.5f;
+        [SerializeField] private bool climbable = true;
+
+        /// <summary>¿Puede el jugador trepar por estos muros? Los edificios sí; los peldaños no.</summary>
+        public bool Climbable
+        {
+            get => climbable;
+            set => climbable = value;
+        }
 
         private readonly List<Mesh> _meshes = new List<Mesh>();
         private float[] _roofs;

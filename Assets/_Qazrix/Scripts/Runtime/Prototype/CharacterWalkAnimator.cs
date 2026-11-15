@@ -25,9 +25,18 @@ namespace Qazrix.Prototype
         private bool _hasLast;
         private float _phase;
         private float _leftLeg, _rightLeg, _leftArm, _rightArm;
+        private PlayerWallClimb _climb;
+        private bool _lookedForClimb;
+        private float _climbPhase;
+        private float _lastHeight;
+        private bool _hasLastHeight;
 
         /// <summary>Ángulo actual de la pierna izquierda, en grados (para pruebas).</summary>
         public float LeftLegAngle => _leftLeg;
+
+        public float LeftArmAngle => _leftArm;
+
+        public float RightArmAngle => _rightArm;
 
         public float RightLegAngle => _rightLeg;
 
@@ -59,11 +68,41 @@ namespace Qazrix.Prototype
             _lastPosition = position;
             _hasLast = true;
 
-            // Con el CharacterController desactivado (salto de obstáculo, trepada) o sin suelo, pose de aire.
+            // Con el CharacterController desactivado (salto de obstáculo) o sin suelo, pose de aire.
             bool airborne = body != null && (!body.enabled || !body.isGrounded);
+            if (!_lookedForClimb)
+            {
+                _climb = root.GetComponent<PlayerWallClimb>(); // solo el jugador trepa fachadas
+                _lookedForClimb = true;
+            }
+            bool climbing = _climb != null && _climb.IsActive;
+            float climbed = _hasLastHeight ? position.y - _lastHeight : 0f;
+            _lastHeight = position.y;
+            _hasLastHeight = true;
 
             float targetLeftLeg, targetRightLeg, targetLeftArm, targetRightArm;
-            if (airborne)
+            bool bothArms = false;
+            if (climbing && _climb.IsMantling)
+            {
+                // Encaramándose al tejado: los brazos empujan hacia abajo y una pierna sube al borde.
+                float t = _climb.MantleProgress;
+                targetLeftArm = targetRightArm = ClimbCycle.MantleArmAngle(t);
+                targetLeftLeg = ClimbCycle.MantleLegAngle(t, true);
+                targetRightLeg = ClimbCycle.MantleLegAngle(t, false);
+                bothArms = true;
+            }
+            else if (climbing)
+            {
+                // Trepando: brazos arriba alternándose, al ritmo de lo que el cuerpo se mueve por la pared.
+                float along = Mathf.Abs(climbed) + speed * Time.deltaTime;
+                if (along < maxSpeed * Time.deltaTime) _climbPhase = ClimbCycle.Advance(_climbPhase, along);
+                targetLeftArm = ClimbCycle.ArmAngle(_climbPhase, true);
+                targetRightArm = ClimbCycle.ArmAngle(_climbPhase, false);
+                targetLeftLeg = ClimbCycle.LegAngle(_climbPhase, true);
+                targetRightLeg = ClimbCycle.LegAngle(_climbPhase, false);
+                bothArms = true;
+            }
+            else if (airborne)
             {
                 targetLeftLeg = airLegAngle;
                 targetRightLeg = -airLegAngle * 0.5f;
@@ -78,7 +117,7 @@ namespace Qazrix.Prototype
                 targetLeftArm = WalkCycle.ArmAngle(_phase, speed);
                 targetRightArm = -targetLeftArm;
             }
-            if (!swingRightArm) targetRightArm = 0f;
+            if (!swingRightArm && !bothArms) targetRightArm = 0f; // para trepar hacen falta las dos manos
 
             float step = blendDegreesPerSecond * Time.deltaTime;
             _leftLeg = Mathf.MoveTowards(_leftLeg, targetLeftLeg, step);

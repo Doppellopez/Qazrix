@@ -4,7 +4,7 @@ Aventura de sigilo y acción en tercera persona ambientada en Cáceres (Qazrix),
 Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 
 **Versión:** 0.1 · **Fase actual:** F0-A rehecha tras el reinicio del 2026-11-11 (D31), con **URP provisional** como en el paquete original (D32). F0-B hecha: relieve real de Z01 con tres puntos de control (D33); aún sin edificios.
-**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 71/71 tests EditMode y 27/27 pruebas en Play (2026-11-15). F2 empezada: volumetría del casco antiguo de Cáceres con calles transitables (D42), edificios separados con tejado propio y escalinatas de la Plaza Mayor con peldaños (D44). Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
+**Estado del código:** compila en Unity 6000.3.6f1, `VerifyProject` 0 errores y 78/78 tests EditMode y 28/28 pruebas en Play (2026-11-15). Trepada libre por fachadas y tejados, con animación de escalada (D45). F2 empezada: volumetría del casco antiguo de Cáceres con calles transitables (D42), edificios separados con tejado propio y escalinatas de la Plaza Mayor con peldaños (D44). Play probado a mano por Jorge el 2026-11-11 (comprobación visual general).
 
 ---
 
@@ -116,7 +116,7 @@ No añadas `-quit`: los métodos cierran Unity con su propio código de salida y
 | `Scripts/Runtime/World/` | Puente entre coordenadas `double` y `Vector3`; `CityBlocks`, la volumetría de la ciudad (D42) |
 | `Scripts/Editor/` | `PrototypeSceneBuilder`, `VerifyProject`, `PrototypePreview`, `ProjectInfo`, `Z01GeoBuilder`, `Z01GeoReport`, `BuildWindows`; modelos de personajes `HidalgoBuilder` y `GuardModelBuilder` sobre `CharacterKit` (D43); `Urp/UrpSetup` (solo compila con URP instalado) |
 | `Tests/EditMode/` | 69 tests: lógica pura (alerta, visión, ruido, parkour, interacción, ciclo de andar, georreferencia, volumetría) y acciones de entrada |
-| `Tests/PlayMode/` | 27 pruebas en Play con teclado simulado: 20 en Prototype (incluidos los modelos del hidalgo y del guardia) y 7 en Z01_Relieve (ciudad, monumentos en su sitio, edificios con tejado propio, calles, subida de la escalinata de la plaza, guardia y parkour); dejan capturas en `Reports/QA` |
+| `Tests/PlayMode/` | 28 pruebas en Play con teclado simulado: 20 en Prototype (incluidos los modelos del hidalgo y del guardia) y 8 en Z01_Relieve (ciudad, monumentos en su sitio, edificios con tejado propio, calles, subida de la escalinata de la plaza, trepada de una fachada hasta el tejado, guardia y parkour); dejan capturas en `Reports/QA` |
 | `Settings/URP/` | Assets del pipeline URP provisional (D06, D32) |
 
 Fuera de `Assets`: `Design/DecisionLog.md`, `Research/Datasets.md`, `Research/ASSET_LICENSES.csv`, datos fuente en `Research/Source/` e informes en `Reports/`.
