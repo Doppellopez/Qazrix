@@ -105,6 +105,61 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Jump_ShowsRise_Fall_AndLandingPoses()
+        {
+            yield return LoadScene();
+            var animator = _player.GetComponentInChildren<CharacterWalkAnimator>();
+            Assert.IsNotNull(animator, "el jugador no tiene animador");
+            Assert.IsFalse(animator.IsAirPose, "en el suelo no hay pose de aire");
+
+            Press(_keyboard.spaceKey);
+            yield return null;
+            Release(_keyboard.spaceKey);
+
+            float highestArmRising = 0f, highestArmFalling = 0f, widestLanding = 0f;
+            bool rose = false, fell = false, landed = false, captured = false;
+            for (int i = 0; i < 200 && !(landed && !animator.IsLandingPose); i++)
+            {
+                yield return null;
+                if (animator.IsAirPose && animator.VerticalSpeed > 0.5f)
+                {
+                    rose = true;
+                    highestArmRising = Mathf.Max(highestArmRising, animator.LeftArmAngle);
+                }
+                if (animator.IsAirPose && animator.VerticalSpeed < -0.5f)
+                {
+                    fell = true;
+                    highestArmFalling = Mathf.Max(highestArmFalling, animator.LeftArmAngle);
+                    if (!captured)
+                    {
+                        captured = true;
+                        // Cámara lateral solo para la captura: desde detrás el cuerpo tapa los brazos.
+                        var side = new GameObject("CamaraLateral").AddComponent<Camera>();
+                        side.depth = 100f;
+                        Vector3 chest = _player.transform.position + Vector3.up * 0.9f;
+                        side.transform.position = chest + _player.transform.right * 3.2f + _player.transform.forward * 1.2f;
+                        side.transform.LookAt(chest);
+                        yield return Capture("play_salto.png");
+                        Object.Destroy(side.gameObject);
+                    }
+                }
+                if (animator.IsLandingPose)
+                {
+                    landed = true;
+                    widestLanding = Mathf.Max(widestLanding, animator.LeftLegAngle - animator.RightLegAngle);
+                }
+            }
+
+            Assert.IsTrue(rose, "al saltar debe pasar por la pose de subida");
+            Assert.IsTrue(fell, "y por la de caída");
+            Assert.IsTrue(landed, "y amortiguar al tocar el suelo");
+            Assert.Greater(highestArmRising, 60f, "subiendo, los brazos se lanzan hacia arriba");
+            Assert.Greater(highestArmFalling, 60f, "cayendo siguen levantados");
+            Assert.Greater(widestLanding, 5f, "al aterrizar las piernas se abren en zancada");
+            Assert.IsTrue(_player.IsGrounded, "acaba en el suelo");
+        }
+
+        [UnityTest]
         public IEnumerator F2_OpensAndClosesTheControlsPanel_AndBlocksMovement()
         {
             yield return LoadScene();

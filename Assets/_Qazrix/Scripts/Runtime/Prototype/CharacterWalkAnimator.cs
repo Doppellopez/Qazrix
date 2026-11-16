@@ -17,7 +17,8 @@ namespace Qazrix.Prototype
         [SerializeField] private Transform leftArm;
         [SerializeField] private Transform rightArm;
         [SerializeField] private bool swingRightArm = true;  // falso si lleva algo en la mano derecha
-        [SerializeField] private float airLegAngle = 18f;     // piernas algo recogidas en el aire
+        [SerializeField] private float airGraceSeconds = 0.06f;      // no cambia de pose por perder el suelo un instante
+        [SerializeField] private float landingMinAirSeconds = 0.25f; // aire mínimo para amortiguar al caer
         [SerializeField] private float blendDegreesPerSecond = 540f;
         [SerializeField] private float maxSpeed = 12f;        // descarta teletransportes y reapariciones
 
@@ -30,6 +31,18 @@ namespace Qazrix.Prototype
         private float _climbPhase;
         private float _lastHeight;
         private bool _hasLastHeight;
+        private float _verticalSpeed;
+        private float _airSeconds;
+        private float _sinceLanding = -1f;
+
+        /// <summary>¿Está con la postura de salto o caída?</summary>
+        public bool IsAirPose { get; private set; }
+
+        /// <summary>¿Está amortiguando un aterrizaje?</summary>
+        public bool IsLandingPose { get; private set; }
+
+        /// <summary>Velocidad vertical que usa la animación, en m/s (para pruebas).</summary>
+        public float VerticalSpeed => _verticalSpeed;
 
         /// <summary>Ángulo actual de la pierna izquierda, en grados (para pruebas).</summary>
         public float LeftLegAngle => _leftLeg;
@@ -80,6 +93,25 @@ namespace Qazrix.Prototype
             _lastHeight = position.y;
             _hasLastHeight = true;
 
+            // Velocidad vertical medida, algo suavizada, y tiempos en el aire y desde el aterrizaje.
+            float measured = climbed / Time.deltaTime;
+            if (Mathf.Abs(measured) > 60f) measured = 0f; // teletransporte o reaparición
+            _verticalSpeed = Mathf.Lerp(_verticalSpeed, measured, Mathf.Clamp01(Time.deltaTime * 20f));
+            if (airborne && !climbing)
+            {
+                _airSeconds += Time.deltaTime;
+                _sinceLanding = -1f;
+            }
+            else
+            {
+                // Solo amortigua si de verdad venía de un salto o una caída, no de un escalón.
+                if (_airSeconds >= landingMinAirSeconds && !climbing) _sinceLanding = 0f;
+                else if (_sinceLanding >= 0f) _sinceLanding += Time.deltaTime;
+                _airSeconds = 0f;
+            }
+            IsAirPose = airborne && !climbing && _airSeconds >= airGraceSeconds;
+            IsLandingPose = !airborne && !climbing && AirCycle.IsLanding(_sinceLanding);
+
             float targetLeftLeg, targetRightLeg, targetLeftArm, targetRightArm;
             bool bothArms = false;
             if (climbing && _climb.IsMantling)
@@ -102,12 +134,20 @@ namespace Qazrix.Prototype
                 targetRightLeg = ClimbCycle.LegAngle(_climbPhase, false);
                 bothArms = true;
             }
-            else if (airborne)
+            else if (IsAirPose)
             {
-                targetLeftLeg = airLegAngle;
-                targetRightLeg = -airLegAngle * 0.5f;
-                targetLeftArm = -airLegAngle;
-                targetRightArm = -airLegAngle;
+                // Salto y caída: la postura sale de la velocidad vertical (AirCycle).
+                targetLeftLeg = AirCycle.LegAngle(_verticalSpeed, _airSeconds, true);
+                targetRightLeg = AirCycle.LegAngle(_verticalSpeed, _airSeconds, false);
+                targetLeftArm = AirCycle.ArmAngle(_verticalSpeed, _airSeconds, true);
+                targetRightArm = AirCycle.ArmAngle(_verticalSpeed, _airSeconds, false);
+            }
+            else if (IsLandingPose)
+            {
+                // Recién aterrizado: amortigua con una zancada y los brazos por delante.
+                targetLeftLeg = AirCycle.LandingLegAngle(_sinceLanding, true);
+                targetRightLeg = AirCycle.LandingLegAngle(_sinceLanding, false);
+                targetLeftArm = targetRightArm = AirCycle.LandingArmAngle(_sinceLanding);
             }
             else
             {
