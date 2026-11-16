@@ -168,8 +168,8 @@ namespace Qazrix.EditorTools
             if (roofs == null || roofsMeta == null)
                 throw new FileNotFoundException($"Faltan los datos de tejados ({RoofsPath}). Ejecuta Tools/GIS/make_city_blocks.py (README).");
 
-            // Teja de color plano y muro con textura de piedra (CC0-006). No es la apariencia de 1229.
-            Material roof = PrototypeSceneBuilder.GetOrCreateMaterial("Ciudad_Tejado", new Color(0.62f, 0.36f, 0.26f));
+            // Teja (CC0-009) y muro de piedra (CC0-006) con textura. No es la apariencia de 1229.
+            Material roof = CityWallMaterial.EnsureRoof();
             Material wall = CityWallMaterial.Ensure();
 
             var city = new GameObject(CityName).AddComponent<CityBlocks>();

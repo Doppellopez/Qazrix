@@ -76,7 +76,7 @@ Menú **Qazrix → Build → Windows (desarrollo)**. Genera `Builds/Windows/Qazr
 
 Menú **Qazrix → Build → Linux (desarrollo)** (D46). Genera `Builds/Linux/Qazrix.x86_64` (x86_64, Mono) con las mismas escenas e informe en `Reports/QA/build-linux-latest.md`. Copia la carpeta `Builds/Linux` entera y en Linux da permiso de ejecución con `chmod +x Qazrix.x86_64`. En headless: `Qazrix.EditorTools.BuildLinux.BuildBatch`. Sin probar todavía en un Linux real.
 
-Menú **Qazrix → Arte → Aplicar piedra a muros y peldaños** (D47, D48): pone la textura CC0-006 (`Assets/_Qazrix/Art/Environment/CastleWall`) en `Ciudad_Muro` y la CC0-008 (`.../RockTileFloor`) en `Ciudad_Peldano`. En headless: `Qazrix.EditorTools.CityWallMaterial.ApplyBatch`.
+Menú **Qazrix → Arte → Aplicar texturas a muros, peldaños y tejados** (D47, D48, D49): pone la textura CC0-006 (`Assets/_Qazrix/Art/Environment/CastleWall`) en `Ciudad_Muro` y la CC0-008 (`.../RockTileFloor`) en `Ciudad_Peldano` y la CC0-009 (`.../ClayRoofTiles`) en `Ciudad_Tejado`. En headless: `Qazrix.EditorTools.CityWallMaterial.ApplyBatch`.
 
 ## Ejecución sin interfaz (headless)
 

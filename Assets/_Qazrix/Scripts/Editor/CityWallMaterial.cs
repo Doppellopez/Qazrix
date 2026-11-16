@@ -6,8 +6,9 @@ using UnityEngine;
 namespace Qazrix.EditorTools
 {
     /// <summary>
-    /// Materiales de piedra de la ciudad, con color y relieve: muros (`Ciudad_Muro`, CC0-006, Castle
-    /// Wall Variation) y peldaños (`Ciudad_Peldano`, CC0-008, Rock Tile Floor), ambos de Poly Haven.
+    /// Materiales con textura de la ciudad, con color y relieve: muros (`Ciudad_Muro`, CC0-006, Castle
+    /// Wall Variation), peldaños (`Ciudad_Peldano`, CC0-008, Rock Tile Floor) y tejados
+    /// (`Ciudad_Tejado`, CC0-009, Clay Roof Tiles 02), todos de Poly Haven.
     /// Los usan todas las escenas que ya referencian esos materiales, sin regenerarlas.
     /// </summary>
     public static class CityWallMaterial
@@ -20,11 +21,16 @@ namespace Qazrix.EditorTools
         public const string StepsColorPath = StepsFolder + "/rock_tile_floor_diff_1k.jpg";
         public const string StepsNormalPath = StepsFolder + "/rock_tile_floor_nor_gl_1k.jpg";
 
-        [MenuItem("Qazrix/Arte/Aplicar piedra a muros y peldaños", priority = 60)]
+        public const string RoofFolder = "Assets/_Qazrix/Art/Environment/ClayRoofTiles";
+        public const string RoofColorPath = RoofFolder + "/clay_roof_tiles_02_diff_1k.jpg";
+        public const string RoofNormalPath = RoofFolder + "/clay_roof_tiles_02_nor_gl_1k.jpg";
+
+        [MenuItem("Qazrix/Arte/Aplicar texturas a muros, peldaños y tejados", priority = 60)]
         public static void ApplyFromMenu()
         {
             Ensure();
             EnsureSteps();
+            EnsureRoof();
             AssetDatabase.SaveAssets();
         }
 
@@ -49,6 +55,9 @@ namespace Qazrix.EditorTools
 
         /// <summary>Material de los peldaños de las escalinatas.</summary>
         public static Material EnsureSteps() => Stone("Ciudad_Peldano", StepsColorPath, StepsNormalPath, "CC0-008");
+
+        /// <summary>Material de teja de los tejados de los edificios.</summary>
+        public static Material EnsureRoof() => Stone("Ciudad_Tejado", RoofColorPath, RoofNormalPath, "CC0-009");
 
         private static Material Stone(string materialName, string colorPath, string normalPath, string assetId)
         {
@@ -79,7 +88,7 @@ namespace Qazrix.EditorTools
             if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", 0.1f); // piedra mate
 
             EditorUtility.SetDirty(material);
-            Debug.Log($"[Qazrix] Textura de piedra aplicada a {materialName} ({assetId})");
+            Debug.Log($"[Qazrix] Textura aplicada a {materialName} ({assetId})");
             return material;
         }
     }
