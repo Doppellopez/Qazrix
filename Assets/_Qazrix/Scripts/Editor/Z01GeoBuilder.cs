@@ -168,14 +168,16 @@ namespace Qazrix.EditorTools
             if (roofs == null || roofsMeta == null)
                 throw new FileNotFoundException($"Faltan los datos de tejados ({RoofsPath}). Ejecuta Tools/GIS/make_city_blocks.py (README).");
 
-            // Teja (CC0-009) y muro de piedra (CC0-006) con textura. No es la apariencia de 1229.
+            // Teja (CC0-010) y muro de piedra (CC0-006) con textura. No es la apariencia de 1229.
             Material roof = CityWallMaterial.EnsureRoof();
             Material wall = CityWallMaterial.Ensure();
 
             var city = new GameObject(CityName).AddComponent<CityBlocks>();
             city.Configure(roofs, roofsMeta, terrain, roof, wall);
+            city.SetOpenings(FacadeOpeningMaterial.Ensure()); // ventanas y saeteras dibujadas (GEN-003)
             city.Build(); // las mallas no se guardan en la escena; hacen falta ahora para la malla de navegación
             EditorUtility.SetDirty(city);
+            Debug.Log($"[Qazrix] Fachadas: {city.WindowCount} ventanas y {city.ArrowSlitCount} saeteras");
             return city;
         }
 
@@ -226,6 +228,7 @@ namespace Qazrix.EditorTools
             data.heightmapResolution = n;                  // antes que el tamaño: cambiarla lo reinicia
             data.size = new Vector3(side, range, side);
             data.SetHeights(0, 0, heights);
+            CityWallMaterial.EnsureGround(data); // empedrado (CC0-011)
             EditorUtility.SetDirty(data);
 
             GameObject go = Terrain.CreateTerrainGameObject(data);
@@ -310,11 +313,7 @@ namespace Qazrix.EditorTools
 
         private static void AddToBuildSettings()
         {
-            List<EditorBuildSettingsScene> scenes = EditorBuildSettings.scenes
-                .Where(s => s.path != ScenePath && File.Exists(s.path))
-                .ToList();
-            scenes.Add(new EditorBuildSettingsScene(ScenePath, true));
-            EditorBuildSettings.scenes = scenes.ToArray();
+            BuildSceneOrder.Apply(); // Z01 es la escena inicial del juego (D50)
         }
     }
 }

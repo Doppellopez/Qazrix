@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<test-run id="2" testcasecount="28" result="Passed" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-16 09:17:25Z" end-time="2026-11-16 09:18:45Z" duration="80,558049">
-  <test-suite type="TestSuite" id="1042" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="28" result="Passed" start-time="2026-11-16 09:17:25Z" end-time="2026-11-16 09:18:45Z" duration="80.558049" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0">
+<test-run id="2" testcasecount="28" result="Passed" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-16 17:37:40Z" end-time="2026-11-16 17:38:54Z" duration="73,3249279">
+  <test-suite type="TestSuite" id="1042" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="28" result="Passed" start-time="2026-11-16 17:37:40Z" end-time="2026-11-16 17:38:54Z" duration="73.324928" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0">
     <properties>
       <property name="platform" value="PlayMode" />
     </properties>
-    <test-suite type="Assembly" id="1035" name="Qazrix.Tests.PlayMode.dll" fullname="C:/Users/Propietario/Qazrix/Library/ScriptAssemblies/Qazrix.Tests.PlayMode.dll" runstate="Runnable" testcasecount="28" result="Passed" start-time="2026-11-16 09:17:25Z" end-time="2026-11-16 09:18:45Z" duration="80.545971" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <test-suite type="Assembly" id="1035" name="Qazrix.Tests.PlayMode.dll" fullname="C:/Users/Propietario/Qazrix/Library/ScriptAssemblies/Qazrix.Tests.PlayMode.dll" runstate="Runnable" testcasecount="28" result="Passed" start-time="2026-11-16 17:37:40Z" end-time="2026-11-16 17:38:54Z" duration="73.312700" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0">
       <properties>
-        <property name="_PID" value="22308" />
+        <property name="_PID" value="18384" />
         <property name="_APPDOMAIN" value="Unity Child Domain" />
         <property name="platform" value="PlayMode" />
         <property name="EditorOnly" value="False" />
       </properties>
-      <test-suite type="TestSuite" id="1036" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="28" result="Passed" start-time="2026-11-16 09:17:25Z" end-time="2026-11-16 09:18:45Z" duration="80.542291" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <test-suite type="TestSuite" id="1036" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="28" result="Passed" start-time="2026-11-16 17:37:40Z" end-time="2026-11-16 17:38:54Z" duration="73.308455" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0">
         <properties />
-        <test-suite type="TestSuite" id="1037" name="Tests" fullname="Qazrix.Tests" runstate="Runnable" testcasecount="28" result="Passed" start-time="2026-11-16 09:17:25Z" end-time="2026-11-16 09:18:45Z" duration="80.538681" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <test-suite type="TestSuite" id="1037" name="Tests" fullname="Qazrix.Tests" runstate="Runnable" testcasecount="28" result="Passed" start-time="2026-11-16 17:37:40Z" end-time="2026-11-16 17:38:54Z" duration="73.305423" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0">
           <properties />
-          <test-suite type="TestSuite" id="1038" name="PlayMode" fullname="Qazrix.Tests.PlayMode" runstate="Runnable" testcasecount="28" result="Passed" start-time="2026-11-16 09:17:25Z" end-time="2026-11-16 09:18:45Z" duration="80.535471" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <test-suite type="TestSuite" id="1038" name="PlayMode" fullname="Qazrix.Tests.PlayMode" runstate="Runnable" testcasecount="28" result="Passed" start-time="2026-11-16 17:37:40Z" end-time="2026-11-16 17:38:54Z" duration="73.301791" total="28" passed="28" failed="0" inconclusive="0" skipped="0" asserts="0">
             <properties />
-            <test-suite type="TestFixture" id="1001" name="CharacterModelTests" fullname="Qazrix.Tests.PlayMode.CharacterModelTests" classname="Qazrix.Tests.PlayMode.CharacterModelTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-16 09:17:25Z" end-time="2026-11-16 09:17:29Z" duration="3.635724" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestFixture" id="1001" name="CharacterModelTests" fullname="Qazrix.Tests.PlayMode.CharacterModelTests" classname="Qazrix.Tests.PlayMode.CharacterModelTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-16 17:37:40Z" end-time="2026-11-16 17:37:44Z" duration="3.452220" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-case id="1004" name="Guard_IsATexturedFigure_WithACurvedSabre" fullname="Qazrix.Tests.PlayMode.CharacterModelTests.Guard_IsATexturedFigure_WithACurvedSabre" methodname="Guard_IsATexturedFigure_WithACurvedSabre" classname="Qazrix.Tests.PlayMode.CharacterModelTests" runstate="Runnable" seed="839848286" result="Passed" start-time="2026-11-16 09:17:25Z" end-time="2026-11-16 09:17:26Z" duration="1.008117" asserts="0">
+              <test-case id="1004" name="Guard_IsATexturedFigure_WithACurvedSabre" fullname="Qazrix.Tests.PlayMode.CharacterModelTests.Guard_IsATexturedFigure_WithACurvedSabre" methodname="Guard_IsATexturedFigure_WithACurvedSabre" classname="Qazrix.Tests.PlayMode.CharacterModelTests" runstate="Runnable" seed="1315304365" result="Passed" start-time="2026-11-16 17:37:40Z" end-time="2026-11-16 17:37:41Z" duration="0.863504" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1002" name="Player_IsATexturedHidalgo_WithWideBreeches" fullname="Qazrix.Tests.PlayMode.CharacterModelTests.Player_IsATexturedHidalgo_WithWideBreeches" methodname="Player_IsATexturedHidalgo_WithWideBreeches" classname="Qazrix.Tests.PlayMode.CharacterModelTests" runstate="Runnable" seed="1417290341" result="Passed" start-time="2026-11-16 09:17:26Z" end-time="2026-11-16 09:17:27Z" duration="0.603041" asserts="0">
+              <test-case id="1002" name="Player_IsATexturedHidalgo_WithWideBreeches" fullname="Qazrix.Tests.PlayMode.CharacterModelTests.Player_IsATexturedHidalgo_WithWideBreeches" methodname="Player_IsATexturedHidalgo_WithWideBreeches" classname="Qazrix.Tests.PlayMode.CharacterModelTests" runstate="Runnable" seed="17736690" result="Passed" start-time="2026-11-16 17:37:41Z" end-time="2026-11-16 17:37:42Z" duration="0.571758" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1003" name="Player_LegsSwing_WhenWalking" fullname="Qazrix.Tests.PlayMode.CharacterModelTests.Player_LegsSwing_WhenWalking" methodname="Player_LegsSwing_WhenWalking" classname="Qazrix.Tests.PlayMode.CharacterModelTests" runstate="Runnable" seed="1690261204" result="Passed" start-time="2026-11-16 09:17:27Z" end-time="2026-11-16 09:17:29Z" duration="2.006474" asserts="0">
+              <test-case id="1003" name="Player_LegsSwing_WhenWalking" fullname="Qazrix.Tests.PlayMode.CharacterModelTests.Player_LegsSwing_WhenWalking" methodname="Player_LegsSwing_WhenWalking" classname="Qazrix.Tests.PlayMode.CharacterModelTests" runstate="Runnable" seed="1077285924" result="Passed" start-time="2026-11-16 17:37:42Z" end-time="2026-11-16 17:37:44Z" duration="2.000542" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
@@ -41,44 +41,44 @@
                 </properties>
               </test-case>
             </test-suite>
-            <test-suite type="TestFixture" id="1005" name="GuardTests" fullname="Qazrix.Tests.PlayMode.GuardTests" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-16 09:17:29Z" end-time="2026-11-16 09:17:54Z" duration="25.726292" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestFixture" id="1005" name="GuardTests" fullname="Qazrix.Tests.PlayMode.GuardTests" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-11-16 17:37:44Z" end-time="2026-11-16 17:38:02Z" duration="17.672529" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-case id="1011" name="CrouchWalkingBehindTheGuard_IsSilent" fullname="Qazrix.Tests.PlayMode.GuardTests.CrouchWalkingBehindTheGuard_IsSilent" methodname="CrouchWalkingBehindTheGuard_IsSilent" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="1051560921" result="Passed" start-time="2026-11-16 09:17:29Z" end-time="2026-11-16 09:17:31Z" duration="2.024806" asserts="0">
+              <test-case id="1011" name="CrouchWalkingBehindTheGuard_IsSilent" fullname="Qazrix.Tests.PlayMode.GuardTests.CrouchWalkingBehindTheGuard_IsSilent" methodname="CrouchWalkingBehindTheGuard_IsSilent" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="855470324" result="Passed" start-time="2026-11-16 17:37:44Z" end-time="2026-11-16 17:37:46Z" duration="1.999535" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1010" name="Investigating_GoesAroundTheWall_InsteadOfPushingIntoIt" fullname="Qazrix.Tests.PlayMode.GuardTests.Investigating_GoesAroundTheWall_InsteadOfPushingIntoIt" methodname="Investigating_GoesAroundTheWall_InsteadOfPushingIntoIt" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="716127363" result="Passed" start-time="2026-11-16 09:17:31Z" end-time="2026-11-16 09:17:42Z" duration="11.695659" asserts="0">
+              <test-case id="1010" name="Investigating_GoesAroundTheWall_InsteadOfPushingIntoIt" fullname="Qazrix.Tests.PlayMode.GuardTests.Investigating_GoesAroundTheWall_InsteadOfPushingIntoIt" methodname="Investigating_GoesAroundTheWall_InsteadOfPushingIntoIt" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="810762702" result="Passed" start-time="2026-11-16 17:37:46Z" end-time="2026-11-16 17:37:50Z" duration="3.733124" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1006" name="Patrol_WalksTheRoute_WithoutNoticingADistantPlayer" fullname="Qazrix.Tests.PlayMode.GuardTests.Patrol_WalksTheRoute_WithoutNoticingADistantPlayer" methodname="Patrol_WalksTheRoute_WithoutNoticingADistantPlayer" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="1931000539" result="Passed" start-time="2026-11-16 09:17:42Z" end-time="2026-11-16 09:17:46Z" duration="3.512349" asserts="0">
+              <test-case id="1006" name="Patrol_WalksTheRoute_WithoutNoticingADistantPlayer" fullname="Qazrix.Tests.PlayMode.GuardTests.Patrol_WalksTheRoute_WithoutNoticingADistantPlayer" methodname="Patrol_WalksTheRoute_WithoutNoticingADistantPlayer" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="1653678540" result="Passed" start-time="2026-11-16 17:37:50Z" end-time="2026-11-16 17:37:53Z" duration="3.487412" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1008" name="PlayerBehindAWall_IsNotSeen" fullname="Qazrix.Tests.PlayMode.GuardTests.PlayerBehindAWall_IsNotSeen" methodname="PlayerBehindAWall_IsNotSeen" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="273222566" result="Passed" start-time="2026-11-16 09:17:46Z" end-time="2026-11-16 09:17:49Z" duration="3.493097" asserts="0">
+              <test-case id="1008" name="PlayerBehindAWall_IsNotSeen" fullname="Qazrix.Tests.PlayMode.GuardTests.PlayerBehindAWall_IsNotSeen" methodname="PlayerBehindAWall_IsNotSeen" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="609277647" result="Passed" start-time="2026-11-16 17:37:53Z" end-time="2026-11-16 17:37:57Z" duration="3.490221" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1007" name="PlayerInFront_IsDiscoveredGradually_ThenCaught" fullname="Qazrix.Tests.PlayMode.GuardTests.PlayerInFront_IsDiscoveredGradually_ThenCaught" methodname="PlayerInFront_IsDiscoveredGradually_ThenCaught" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="1225443567" result="Passed" start-time="2026-11-16 09:17:49Z" end-time="2026-11-16 09:17:52Z" duration="2.920840" asserts="0">
+              <test-case id="1007" name="PlayerInFront_IsDiscoveredGradually_ThenCaught" fullname="Qazrix.Tests.PlayMode.GuardTests.PlayerInFront_IsDiscoveredGradually_ThenCaught" methodname="PlayerInFront_IsDiscoveredGradually_ThenCaught" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="583578957" result="Passed" start-time="2026-11-16 17:37:57Z" end-time="2026-11-16 17:38:00Z" duration="2.903004" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1009" name="RunningBehindTheGuard_IsHeard_AndInvestigated" fullname="Qazrix.Tests.PlayMode.GuardTests.RunningBehindTheGuard_IsHeard_AndInvestigated" methodname="RunningBehindTheGuard_IsHeard_AndInvestigated" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="1810827273" result="Passed" start-time="2026-11-16 09:17:52Z" end-time="2026-11-16 09:17:54Z" duration="2.071148" asserts="0">
+              <test-case id="1009" name="RunningBehindTheGuard_IsHeard_AndInvestigated" fullname="Qazrix.Tests.PlayMode.GuardTests.RunningBehindTheGuard_IsHeard_AndInvestigated" methodname="RunningBehindTheGuard_IsHeard_AndInvestigated" classname="Qazrix.Tests.PlayMode.GuardTests" runstate="Runnable" seed="1573842703" result="Passed" start-time="2026-11-16 17:38:00Z" end-time="2026-11-16 17:38:02Z" duration="2.050907" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
@@ -86,16 +86,16 @@
                 </properties>
               </test-case>
             </test-suite>
-            <test-suite type="TestFixture" id="1012" name="InteractionTests" fullname="Qazrix.Tests.PlayMode.InteractionTests" classname="Qazrix.Tests.PlayMode.InteractionTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-16 09:17:54Z" end-time="2026-11-16 09:17:56Z" duration="1.782448" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestFixture" id="1012" name="InteractionTests" fullname="Qazrix.Tests.PlayMode.InteractionTests" classname="Qazrix.Tests.PlayMode.InteractionTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-11-16 17:38:02Z" end-time="2026-11-16 17:38:03Z" duration="1.709128" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-case id="1014" name="Checkpoint_BecomesTheRespawnPoint" fullname="Qazrix.Tests.PlayMode.InteractionTests.Checkpoint_BecomesTheRespawnPoint" methodname="Checkpoint_BecomesTheRespawnPoint" classname="Qazrix.Tests.PlayMode.InteractionTests" runstate="Runnable" seed="968126889" result="Passed" start-time="2026-11-16 09:17:54Z" end-time="2026-11-16 09:17:55Z" duration="1.027360" asserts="0">
+              <test-case id="1014" name="Checkpoint_BecomesTheRespawnPoint" fullname="Qazrix.Tests.PlayMode.InteractionTests.Checkpoint_BecomesTheRespawnPoint" methodname="Checkpoint_BecomesTheRespawnPoint" classname="Qazrix.Tests.PlayMode.InteractionTests" runstate="Runnable" seed="1440206796" result="Passed" start-time="2026-11-16 17:38:02Z" end-time="2026-11-16 17:38:03Z" duration="0.977536" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1013" name="InteractKey_PicksUpTheLetter_OnlyOnce" fullname="Qazrix.Tests.PlayMode.InteractionTests.InteractKey_PicksUpTheLetter_OnlyOnce" methodname="InteractKey_PicksUpTheLetter_OnlyOnce" classname="Qazrix.Tests.PlayMode.InteractionTests" runstate="Runnable" seed="910490171" result="Passed" start-time="2026-11-16 09:17:55Z" end-time="2026-11-16 09:17:56Z" duration="0.746684" asserts="0">
+              <test-case id="1013" name="InteractKey_PicksUpTheLetter_OnlyOnce" fullname="Qazrix.Tests.PlayMode.InteractionTests.InteractKey_PicksUpTheLetter_OnlyOnce" methodname="InteractKey_PicksUpTheLetter_OnlyOnce" classname="Qazrix.Tests.PlayMode.InteractionTests" runstate="Runnable" seed="478538954" result="Passed" start-time="2026-11-16 17:38:03Z" end-time="2026-11-16 17:38:03Z" duration="0.723236" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
@@ -103,30 +103,30 @@
                 </properties>
               </test-case>
             </test-suite>
-            <test-suite type="TestFixture" id="1015" name="ParkourTests" fullname="Qazrix.Tests.PlayMode.ParkourTests" classname="Qazrix.Tests.PlayMode.ParkourTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-16 09:17:56Z" end-time="2026-11-16 09:18:03Z" duration="7.280236" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestFixture" id="1015" name="ParkourTests" fullname="Qazrix.Tests.PlayMode.ParkourTests" classname="Qazrix.Tests.PlayMode.ParkourTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-16 17:38:03Z" end-time="2026-11-16 17:38:10Z" duration="7.080727" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-case id="1017" name="JumpKey_ClimbsOntoThePlatform" fullname="Qazrix.Tests.PlayMode.ParkourTests.JumpKey_ClimbsOntoThePlatform" methodname="JumpKey_ClimbsOntoThePlatform" classname="Qazrix.Tests.PlayMode.ParkourTests" runstate="Runnable" seed="1957401784" result="Passed" start-time="2026-11-16 09:17:56Z" end-time="2026-11-16 09:17:58Z" duration="1.725981" asserts="0">
+              <test-case id="1017" name="JumpKey_ClimbsOntoThePlatform" fullname="Qazrix.Tests.PlayMode.ParkourTests.JumpKey_ClimbsOntoThePlatform" methodname="JumpKey_ClimbsOntoThePlatform" classname="Qazrix.Tests.PlayMode.ParkourTests" runstate="Runnable" seed="1730726360" result="Passed" start-time="2026-11-16 17:38:03Z" end-time="2026-11-16 17:38:05Z" duration="1.668157" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1018" name="JumpKey_InOpenGround_IsAPlainJump" fullname="Qazrix.Tests.PlayMode.ParkourTests.JumpKey_InOpenGround_IsAPlainJump" methodname="JumpKey_InOpenGround_IsAPlainJump" classname="Qazrix.Tests.PlayMode.ParkourTests" runstate="Runnable" seed="313783873" result="Passed" start-time="2026-11-16 09:17:58Z" end-time="2026-11-16 09:17:59Z" duration="0.817524" asserts="0">
+              <test-case id="1018" name="JumpKey_InOpenGround_IsAPlainJump" fullname="Qazrix.Tests.PlayMode.ParkourTests.JumpKey_InOpenGround_IsAPlainJump" methodname="JumpKey_InOpenGround_IsAPlainJump" classname="Qazrix.Tests.PlayMode.ParkourTests" runstate="Runnable" seed="95261360" result="Passed" start-time="2026-11-16 17:38:05Z" end-time="2026-11-16 17:38:06Z" duration="0.772894" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1016" name="JumpKey_VaultsTheLowObstacle" fullname="Qazrix.Tests.PlayMode.ParkourTests.JumpKey_VaultsTheLowObstacle" methodname="JumpKey_VaultsTheLowObstacle" classname="Qazrix.Tests.PlayMode.ParkourTests" runstate="Runnable" seed="2100246477" result="Passed" start-time="2026-11-16 09:17:59Z" end-time="2026-11-16 09:18:02Z" duration="3.081808" asserts="0">
+              <test-case id="1016" name="JumpKey_VaultsTheLowObstacle" fullname="Qazrix.Tests.PlayMode.ParkourTests.JumpKey_VaultsTheLowObstacle" methodname="JumpKey_VaultsTheLowObstacle" classname="Qazrix.Tests.PlayMode.ParkourTests" runstate="Runnable" seed="2061622032" result="Passed" start-time="2026-11-16 17:38:06Z" end-time="2026-11-16 17:38:09Z" duration="3.038453" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1019" name="UnmarkedWall_CannotBeClimbed" fullname="Qazrix.Tests.PlayMode.ParkourTests.UnmarkedWall_CannotBeClimbed" methodname="UnmarkedWall_CannotBeClimbed" classname="Qazrix.Tests.PlayMode.ParkourTests" runstate="Runnable" seed="169318010" result="Passed" start-time="2026-11-16 09:18:02Z" end-time="2026-11-16 09:18:03Z" duration="1.644548" asserts="0">
+              <test-case id="1019" name="UnmarkedWall_CannotBeClimbed" fullname="Qazrix.Tests.PlayMode.ParkourTests.UnmarkedWall_CannotBeClimbed" methodname="UnmarkedWall_CannotBeClimbed" classname="Qazrix.Tests.PlayMode.ParkourTests" runstate="Runnable" seed="1139628992" result="Passed" start-time="2026-11-16 17:38:09Z" end-time="2026-11-16 17:38:10Z" duration="1.591675" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
@@ -134,37 +134,37 @@
                 </properties>
               </test-case>
             </test-suite>
-            <test-suite type="TestFixture" id="1020" name="PrototypeSceneTests" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-11-16 09:18:03Z" end-time="2026-11-16 09:18:08Z" duration="4.680334" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestFixture" id="1020" name="PrototypeSceneTests" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-11-16 17:38:10Z" end-time="2026-11-16 17:38:15Z" duration="4.941396" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-case id="1025" name="F1_TogglesTheHud" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.F1_TogglesTheHud" methodname="F1_TogglesTheHud" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="954733364" result="Passed" start-time="2026-11-16 09:18:03Z" end-time="2026-11-16 09:18:04Z" duration="0.542411" asserts="0">
+              <test-case id="1025" name="F1_TogglesTheHud" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.F1_TogglesTheHud" methodname="F1_TogglesTheHud" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="1725867432" result="Passed" start-time="2026-11-16 17:38:10Z" end-time="2026-11-16 17:38:11Z" duration="0.530791" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1023" name="F2_OpensAndClosesTheControlsPanel_AndBlocksMovement" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.F2_OpensAndClosesTheControlsPanel_AndBlocksMovement" methodname="F2_OpensAndClosesTheControlsPanel_AndBlocksMovement" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="572480444" result="Passed" start-time="2026-11-16 09:18:04Z" end-time="2026-11-16 09:18:05Z" duration="0.896950" asserts="0">
+              <test-case id="1023" name="F2_OpensAndClosesTheControlsPanel_AndBlocksMovement" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.F2_OpensAndClosesTheControlsPanel_AndBlocksMovement" methodname="F2_OpensAndClosesTheControlsPanel_AndBlocksMovement" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="1439362548" result="Passed" start-time="2026-11-16 17:38:11Z" end-time="2026-11-16 17:38:12Z" duration="0.863905" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1024" name="F3_SwitchesToTheNextScene" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.F3_SwitchesToTheNextScene" methodname="F3_SwitchesToTheNextScene" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="1272076544" result="Passed" start-time="2026-11-16 09:18:05Z" end-time="2026-11-16 09:18:06Z" duration="1.442042" asserts="0">
+              <test-case id="1024" name="F3_SwitchesToTheNextScene" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.F3_SwitchesToTheNextScene" methodname="F3_SwitchesToTheNextScene" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="1341061562" result="Passed" start-time="2026-11-16 17:38:12Z" end-time="2026-11-16 17:38:14Z" duration="1.852797" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1022" name="Space_MakesThePlayerJump" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.Space_MakesThePlayerJump" methodname="Space_MakesThePlayerJump" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="586303687" result="Passed" start-time="2026-11-16 09:18:06Z" end-time="2026-11-16 09:18:07Z" duration="0.828190" asserts="0">
+              <test-case id="1022" name="Space_MakesThePlayerJump" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.Space_MakesThePlayerJump" methodname="Space_MakesThePlayerJump" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="1228821633" result="Passed" start-time="2026-11-16 17:38:14Z" end-time="2026-11-16 17:38:14Z" duration="0.767475" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1021" name="W_MovesThePlayerForward" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.W_MovesThePlayerForward" methodname="W_MovesThePlayerForward" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="1400755516" result="Passed" start-time="2026-11-16 09:18:07Z" end-time="2026-11-16 09:18:08Z" duration="0.963093" asserts="0">
+              <test-case id="1021" name="W_MovesThePlayerForward" fullname="Qazrix.Tests.PlayMode.PrototypeSceneTests.W_MovesThePlayerForward" methodname="W_MovesThePlayerForward" classname="Qazrix.Tests.PlayMode.PrototypeSceneTests" runstate="Runnable" seed="1844954933" result="Passed" start-time="2026-11-16 17:38:14Z" end-time="2026-11-16 17:38:15Z" duration="0.918789" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
@@ -172,46 +172,46 @@
                 </properties>
               </test-case>
             </test-suite>
-            <test-suite type="TestFixture" id="1026" name="Z01SceneTests" fullname="Qazrix.Tests.PlayMode.Z01SceneTests" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-11-16 09:18:08Z" end-time="2026-11-16 09:18:45Z" duration="37.425636" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <test-suite type="TestFixture" id="1026" name="Z01SceneTests" fullname="Qazrix.Tests.PlayMode.Z01SceneTests" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-11-16 17:38:15Z" end-time="2026-11-16 17:38:54Z" duration="38.440784" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
               <properties />
-              <test-case id="1030" name="Buildings_AreSeparateVolumes_WithFlatRoofs" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.Buildings_AreSeparateVolumes_WithFlatRoofs" methodname="Buildings_AreSeparateVolumes_WithFlatRoofs" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="1820141123" result="Passed" start-time="2026-11-16 09:18:08Z" end-time="2026-11-16 09:18:10Z" duration="1.517174" asserts="0">
+              <test-case id="1030" name="Buildings_AreSeparateVolumes_WithFlatRoofs" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.Buildings_AreSeparateVolumes_WithFlatRoofs" methodname="Buildings_AreSeparateVolumes_WithFlatRoofs" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="112321394" result="Passed" start-time="2026-11-16 17:38:15Z" end-time="2026-11-16 17:38:17Z" duration="1.630403" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1027" name="City_IsBuilt_AndThePlayerStartsInTheOpen" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.City_IsBuilt_AndThePlayerStartsInTheOpen" methodname="City_IsBuilt_AndThePlayerStartsInTheOpen" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="2004972845" result="Passed" start-time="2026-11-16 09:18:10Z" end-time="2026-11-16 09:18:11Z" duration="1.477830" asserts="0">
+              <test-case id="1027" name="City_IsBuilt_AndThePlayerStartsInTheOpen" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.City_IsBuilt_AndThePlayerStartsInTheOpen" methodname="City_IsBuilt_AndThePlayerStartsInTheOpen" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="376584133" result="Passed" start-time="2026-11-16 17:38:17Z" end-time="2026-11-16 17:38:19Z" duration="1.628680" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
-                <output><![CDATA[[Qazrix] Ciudad en Play: 130 trozos, 385104 triángulos, 0,44 s
+                <output><![CDATA[[Qazrix] Ciudad en Play: 130 trozos, 440428 triángulos, 0,51 s
 ]]></output>
               </test-case>
-              <test-case id="1033" name="Guard_PatrolsBetweenTheBuildings_FollowingTheNavMesh" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.Guard_PatrolsBetweenTheBuildings_FollowingTheNavMesh" methodname="Guard_PatrolsBetweenTheBuildings_FollowingTheNavMesh" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="206885373" result="Passed" start-time="2026-11-16 09:18:11Z" end-time="2026-11-16 09:18:16Z" duration="5.402288" asserts="0">
+              <test-case id="1033" name="Guard_PatrolsBetweenTheBuildings_FollowingTheNavMesh" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.Guard_PatrolsBetweenTheBuildings_FollowingTheNavMesh" methodname="Guard_PatrolsBetweenTheBuildings_FollowingTheNavMesh" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="822449248" result="Passed" start-time="2026-11-16 17:38:19Z" end-time="2026-11-16 17:38:24Z" duration="5.487210" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1034" name="JumpKey_VaultsTheLowWall" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.JumpKey_VaultsTheLowWall" methodname="JumpKey_VaultsTheLowWall" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="1198440887" result="Passed" start-time="2026-11-16 09:18:16Z" end-time="2026-11-16 09:18:21Z" duration="4.275947" asserts="0">
+              <test-case id="1034" name="JumpKey_VaultsTheLowWall" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.JumpKey_VaultsTheLowWall" methodname="JumpKey_VaultsTheLowWall" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="2086039195" result="Passed" start-time="2026-11-16 17:38:24Z" end-time="2026-11-16 17:38:28Z" duration="4.377517" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1028" name="Monuments_StandWhereTheControlPointsSay" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.Monuments_StandWhereTheControlPointsSay" methodname="Monuments_StandWhereTheControlPointsSay" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="1342181767" result="Passed" start-time="2026-11-16 09:18:21Z" end-time="2026-11-16 09:18:22Z" duration="1.403923" asserts="0">
+              <test-case id="1028" name="Monuments_StandWhereTheControlPointsSay" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.Monuments_StandWhereTheControlPointsSay" methodname="Monuments_StandWhereTheControlPointsSay" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="1936721215" result="Passed" start-time="2026-11-16 17:38:28Z" end-time="2026-11-16 17:38:30Z" duration="1.485438" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1032" name="Player_ClimbsAFacade_LetsGo_AndReachesTheRoof" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.Player_ClimbsAFacade_LetsGo_AndReachesTheRoof" methodname="Player_ClimbsAFacade_LetsGo_AndReachesTheRoof" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="1640814995" result="Passed" start-time="2026-11-16 09:18:22Z" end-time="2026-11-16 09:18:31Z" duration="9.309145" asserts="0">
+              <test-case id="1032" name="Player_ClimbsAFacade_LetsGo_AndReachesTheRoof" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.Player_ClimbsAFacade_LetsGo_AndReachesTheRoof" methodname="Player_ClimbsAFacade_LetsGo_AndReachesTheRoof" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="50119531" result="Passed" start-time="2026-11-16 17:38:30Z" end-time="2026-11-16 17:38:39Z" duration="9.549815" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
@@ -220,14 +220,14 @@
                 <output><![CDATA[[Qazrix] Trepada: tejado a 15,3 m sobre la calle
 ]]></output>
               </test-case>
-              <test-case id="1031" name="PlazaStairs_CanBeClimbedOnFoot" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.PlazaStairs_CanBeClimbedOnFoot" methodname="PlazaStairs_CanBeClimbedOnFoot" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="75367068" result="Passed" start-time="2026-11-16 09:18:31Z" end-time="2026-11-16 09:18:38Z" duration="6.641528" asserts="0">
+              <test-case id="1031" name="PlazaStairs_CanBeClimbedOnFoot" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.PlazaStairs_CanBeClimbedOnFoot" methodname="PlazaStairs_CanBeClimbedOnFoot" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="1849663694" result="Passed" start-time="2026-11-16 17:38:39Z" end-time="2026-11-16 17:38:46Z" duration="6.786661" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />
                   <property name="repeatIteration" value="0" />
                 </properties>
               </test-case>
-              <test-case id="1029" name="Streets_AreWalkable_NotSealedByTheBuildings" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.Streets_AreWalkable_NotSealedByTheBuildings" methodname="Streets_AreWalkable_NotSealedByTheBuildings" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="1649877940" result="Passed" start-time="2026-11-16 09:18:38Z" end-time="2026-11-16 09:18:45Z" duration="7.387316" asserts="0">
+              <test-case id="1029" name="Streets_AreWalkable_NotSealedByTheBuildings" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.Streets_AreWalkable_NotSealedByTheBuildings" methodname="Streets_AreWalkable_NotSealedByTheBuildings" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="1860614490" result="Passed" start-time="2026-11-16 17:38:46Z" end-time="2026-11-16 17:38:54Z" duration="7.484900" asserts="0">
                 <properties>
                   <property name="_JOINTYPE" value="UnityCombinatorial" />
                   <property name="retryIteration" value="0" />

@@ -40,6 +40,19 @@ namespace Qazrix.World
         [SerializeField] private bool climbable = true;
         // Metros de muro que cubre una repetición de la textura.
         [SerializeField] private float textureMeters = 3f;
+        // Ventanas y saeteras dibujadas sobre las fachadas; sin material no se ponen (escalinatas).
+        // La textura lleva la ventana en la mitad izquierda y la saetera en la derecha.
+        [SerializeField] private Material openingMaterial;
+
+        /// <summary>Tamaño del recuadro de cada hueco, en metros (ancho, alto).</summary>
+        public static readonly Vector2 WindowSize = new Vector2(0.9f, 1.6f);
+        public static readonly Vector2 ArrowSlitSize = new Vector2(0.5f, 1.5f);
+
+        public int WindowCount { get; private set; }
+        public int ArrowSlitCount { get; private set; }
+
+        /// <summary>Activa las ventanas y saeteras con ese material; hay que llamar a <see cref="Build"/> después.</summary>
+        public void SetOpenings(Material material) => openingMaterial = material;
 
         /// <summary>¿Puede el jugador trepar por estos muros? Los edificios sí; los peldaños no.</summary>
         public bool Climbable
@@ -106,6 +119,7 @@ namespace Qazrix.World
             // Pie de muro en cada esquina: el terreno bajo ella, algo hundido.
             int stride = _meta.columns + 1;
             var bases = new float[stride * (_meta.rows + 1)];
+            var grounds = new float[bases.Length];
             for (int j = 0; j <= _meta.rows; j++)
             {
                 for (int i = 0; i <= _meta.columns; i++)
@@ -115,6 +129,7 @@ namespace Qazrix.World
                     float ground = terrain != null
                         ? terrain.SampleHeight(new Vector3(x, 0f, z)) + terrain.transform.position.y
                         : lowest - 20f;
+                    grounds[j * stride + i] = ground;
                     bases[j * stride + i] = ground - sinkBelowGround;
                 }
             }
@@ -155,9 +170,74 @@ namespace Qazrix.World
                 if (withColliders) go.AddComponent<MeshCollider>().sharedMesh = mesh;
             }
 
+            if (openingMaterial != null && terrain != null) triangles += BuildOpenings(grounds);
+
             ChunkCount = chunks.Count;
             TriangleCount = triangles;
             BuildSeconds = Time.realtimeSinceStartup - start;
+        }
+
+        /// <summary>
+        /// Una sola malla con un recuadro por hueco, separado 3 cm del muro. Es un dibujo: no abre el
+        /// muro ni lleva colisionador, así que no cambia ni la trepada ni la navegación.
+        /// </summary>
+        private int BuildOpenings(float[] grounds)
+        {
+            List<FacadeOpening> openings = FacadeOpenings.Place(_roofs, _meta.columns, _meta.rows, _meta.cellSize,
+                _meta.localWestX, _meta.localNorthZ, grounds, roofStep > 0f ? roofStep : float.PositiveInfinity,
+                new FacadeOpeningRules());
+            if (openings.Count == 0) return 0;
+
+            var vertices = new Vector3[openings.Count * 4];
+            var normals = new Vector3[vertices.Length];
+            var uvs = new Vector2[vertices.Length];
+            var indices = new int[openings.Count * 6];
+            int windows = 0;
+
+            for (int n = 0; n < openings.Count; n++)
+            {
+                FacadeOpening o = openings[n];
+                bool slit = o.Kind == OpeningKind.ArrowSlit;
+                if (!slit) windows++;
+                Vector2 size = slit ? ArrowSlitSize : WindowSize;
+                var normal = new Vector3(o.NormalX, 0f, o.NormalZ);
+                Vector3 centre = new Vector3(o.X, o.Y, o.Z) + normal * 0.03f;
+                Vector3 right = Vector3.Cross(Vector3.up, normal) * (size.x * 0.5f);
+                Vector3 up = Vector3.up * (size.y * 0.5f);
+                float u0 = slit ? 0.5f : 0f, u1 = u0 + 0.5f;
+
+                int v = n * 4;
+                vertices[v] = centre - right - up; uvs[v] = new Vector2(u0, 0f);
+                vertices[v + 1] = centre + right - up; uvs[v + 1] = new Vector2(u1, 0f);
+                vertices[v + 2] = centre - right + up; uvs[v + 2] = new Vector2(u0, 1f);
+                vertices[v + 3] = centre + right + up; uvs[v + 3] = new Vector2(u1, 1f);
+                for (int k = 0; k < 4; k++) normals[v + k] = normal;
+
+                int t = n * 6;
+                indices[t] = v; indices[t + 1] = v + 3; indices[t + 2] = v + 2;
+                indices[t + 3] = v; indices[t + 4] = v + 1; indices[t + 5] = v + 3;
+            }
+
+            var mesh = new Mesh { name = "Ciudad_Huecos", hideFlags = HideFlags.DontSave };
+            if (vertices.Length > 65000) mesh.indexFormat = IndexFormat.UInt32;
+            mesh.vertices = vertices;
+            mesh.normals = normals;
+            mesh.uv = uvs;
+            mesh.SetTriangles(indices, 0);
+            mesh.RecalculateTangents();
+            mesh.RecalculateBounds();
+            _meshes.Add(mesh);
+
+            var go = new GameObject(mesh.name) { hideFlags = HideFlags.DontSave, isStatic = true };
+            go.transform.SetParent(transform, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var renderer = go.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = openingMaterial;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+
+            WindowCount = windows;
+            ArrowSlitCount = openings.Count - windows;
+            return openings.Count * 2;
         }
 
         private void Clear()
@@ -167,6 +247,8 @@ namespace Qazrix.World
             _meshes.Clear();
             ChunkCount = 0;
             TriangleCount = 0;
+            WindowCount = 0;
+            ArrowSlitCount = 0;
         }
 
         private static void DestroyNow(UnityEngine.Object target)

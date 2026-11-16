@@ -1,0 +1,23 @@
+## Incremento ART-05: teja envejecida, suelo empedrado, ventanas y saeteras
+
+- Objetivo/gate: cuatro peticiones de aspecto de Jorge del 2026-11-16 sobre Z01: tejas que parezcan medievales, quitar la capa azul que las tapaba, suelo empedrado, y ventanas medievales en los edificios con saeteras en las torres. Aspecto provisional de F2; no cierra ningún gate.
+- Cambios de código/escenas/assets:
+  - Tejados: `Assets/_Qazrix/Art/Environment/ClayRoofTiles/` pasa de Clay Roof Tiles 02 (CC0-009, retirada) a `clay_roof_tiles_*_1k.jpg` (CC0-010); `CityWallMaterial.EnsureRoof` y `Ciudad_Tejado.mat`.
+  - Suelo: `Assets/_Qazrix/Art/Environment/CobblestoneFloor/` (CC0-011) y `Ciudad_Suelo.terrainlayer`; `CityWallMaterial.EnsureGround` la pone como única capa de `Z01_TerrainData.asset` (2,4 m por repetición). El menú pasa a llamarse Qazrix → Arte → Aplicar texturas a muros, peldaños, tejados y suelo.
+  - Ventanas y saeteras: `Scripts/Simulation/World/FacadeOpenings.cs` (reparto, lógica pura), `CityBlocks.BuildOpenings` (una malla de recuadros a 3 cm del muro, sin colisionador), `Scripts/Editor/FacadeOpeningMaterial.cs` (textura generada `Art/Environment/Generated/ciudad_huecos.png` y `Ciudad_Hueco.mat`, GEN-003). `Z01GeoBuilder.CreateCity` las activa; la escalinata no las lleva.
+  - Capa azul: `Scripts/Editor/NavMeshOverlayToggle.cs` apaga «Show NavMesh» una vez por sesión del editor y añade Qazrix → Ver → Malla de navegación (capa azul). El interruptor es interno del editor: se accede por reflexión.
+  - `PrototypePreview.CaptureZ01Batch`: nueva vista `z01_vista_tejados.png`.
+  - Escena `Z01_Relieve` regenerada con `Z01GeoBuilder.BuildBatch`.
+- Comandos ejecutados (Unity 6000.3.6f1, sin interfaz salvo PlayMode): `CityWallMaterial.ApplyBatch`, `Z01GeoBuilder.BuildBatch`, `PrototypePreview.CaptureZ01Batch`, tests EditMode, tests PlayMode, `VerifyProject.RunBatch`.
+- Pruebas: aprobadas 84/84 EditMode (5 nuevas de `FacadeOpenings`) y 28/28 PlayMode; `VerifyProject` salida 0 tras registrar GEN-003 (la primera pasada dio 1 error: textura generada sin fila de licencia). La regeneración da 25 850 ventanas y 1 812 saeteras; la ciudad pasa de 364k a 440k triángulos. No ejecutadas: jugar a mano; comprobar con el editor abierto que la capa azul desaparece y que el menú la devuelve (solo consta que la captura PlayMode `play_z01_tejado.png` ya no la muestra); medir rendimiento con los recuadros nuevos; builds.
+- Build y plataforma: sin build nuevo. `Builds/Windows` y `Builds/Linux` no llevan nada de esto.
+- Evidencia: `Reports/QA/z01_vista_plaza.png`, `z01_vista_tejados.png`, `z01_vista_aerea.png`, `play_z01_tejado.png`, `editmode-results.xml`, `playmode-results.xml`, `verify-project-latest.md`, `z01_build.log`.
+- Derechos/licencias de activos nuevos: CC0-010 (Clay Roof Tiles) y CC0-011 (Cobblestone Floor 001), Poly Haven, CC0 1.0, descargas autorizadas por Jorge el 2026-11-16; GEN-003, producción propia. Filas en `Research/ASSET_LICENSES.csv`.
+- Decisiones tomadas: D51, D52, D53.
+- Problemas conocidos:
+  - Un primer intento de `NavMeshOverlayToggle` no compilaba (propiedad interna); corregido con reflexión. Si una versión futura del editor cambia el nombre, el script avisa en consola y no hace nada.
+  - Ventanas y saeteras son un dibujo: no hay hueco, ni puertas, y su reparto es una regla inventada, sin relación con ningún edificio real. En fachadas en diagonal (escalonadas a 1 m) quedan en caras alternas.
+  - La regla de torre (planta ≤ 200 m² y ≥ 13 m de alto) marca también campanarios y cuerpos altos de iglesias y palacios.
+  - El empedrado cubre todo el terreno, también el campo de fuera de la ciudad.
+  - La teja mide 4 m y se repite cada 3 m (tejas un 25 % menores que las reales); los tejados siguen planos.
+- Próximo paso más pequeño: que Jorge abra `Z01_Relieve`, pulse Play y diga si teja, suelo y ventanas le convencen y si la capa azul ha desaparecido; después, commit y regenerar el build de Windows.

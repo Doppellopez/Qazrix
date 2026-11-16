@@ -17,6 +17,7 @@ namespace Qazrix.Tests.PlayMode
     public sealed class PrototypeSceneTests : InputTestFixture
     {
         private const string ScenePath = "Assets/_Qazrix/Scenes/Prototype/Prototype.unity";
+        private const string Z01ScenePath = "Assets/_Qazrix/Scenes/Z01/Z01_Relieve.unity";
 
         private Keyboard _keyboard;
         private PrototypePlayerController _player;
@@ -129,13 +130,18 @@ namespace Qazrix.Tests.PlayMode
         [UnityTest]
         public IEnumerator F3_SwitchesToTheNextScene()
         {
-            yield return LoadScene();
-            Assert.AreEqual("Prototype", SceneManager.GetActiveScene().name);
+            // El juego empieza en Z01 (D50) y Prototype es la siguiente. La vuelta de la última a la
+            // primera no se puede probar aquí: en estas pruebas el primer puesto del build lo ocupa la
+            // escena del propio lanzador de tests, y recargarla tumba el editor.
+            _keyboard = InputSystem.AddDevice<Keyboard>();
+            SceneManager.LoadScene(Z01ScenePath, LoadSceneMode.Single);
+            for (int i = 0; i < 40; i++) yield return null;
+            Assert.AreEqual("Z01_Relieve", SceneManager.GetActiveScene().name);
 
             yield return Tap(_keyboard.f3Key);
             for (int i = 0; i < 10; i++) yield return null;
 
-            Assert.AreEqual("Z01_Relieve", SceneManager.GetActiveScene().name, "F3 debe cargar la siguiente escena del build");
+            Assert.AreEqual("Prototype", SceneManager.GetActiveScene().name, "F3 debe cargar la siguiente escena del build");
             Assert.IsNotNull(Object.FindFirstObjectByType<PrototypePlayerController>(), "y en ella hay jugador");
         }
 

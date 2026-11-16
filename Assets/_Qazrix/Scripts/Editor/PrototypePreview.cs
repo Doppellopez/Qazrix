@@ -40,7 +40,8 @@ namespace Qazrix.EditorTools
                 // Casco antiguo desde el suroeste, en alto; Plaza Mayor a pie de calle; y vista cenital.
                 Capture("Reports/QA/z01_vista_aerea.png", new Vector3(-120f, 230f, -260f), new Vector3(150f, 0f, 20f), 4000f);
                 Capture("Reports/QA/z01_vista_plaza.png", new Vector3(-8f, 0.5f, 55f), new Vector3(45f, 8f, 80f), 4000f);
-                Capture("Reports/QA/z01_vista_cenital.png", new Vector3(160f, 620f, -25f), new Vector3(160f, 0f, -24f), 4000f);
+                Capture("Reports/QA/z01_vista_tejados.png", new Vector3(-8f, 26f, 40f), new Vector3(45f, 12f, 80f), 4000f);
+                Capture("Reports/QA/z01_vista_cenital.png",new Vector3(160f, 620f, -25f), new Vector3(160f, 0f, -24f), 4000f);
             }
             catch (Exception e)
             {

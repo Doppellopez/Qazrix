@@ -76,7 +76,11 @@ Menú **Qazrix → Build → Windows (desarrollo)**. Genera `Builds/Windows/Qazr
 
 Menú **Qazrix → Build → Linux (desarrollo)** (D46). Genera `Builds/Linux/Qazrix.x86_64` (x86_64, Mono) con las mismas escenas e informe en `Reports/QA/build-linux-latest.md`. Copia la carpeta `Builds/Linux` entera y en Linux da permiso de ejecución con `chmod +x Qazrix.x86_64`. En headless: `Qazrix.EditorTools.BuildLinux.BuildBatch`. Sin probar todavía en un Linux real.
 
-Menú **Qazrix → Arte → Aplicar texturas a muros, peldaños y tejados** (D47, D48, D49): pone la textura CC0-006 (`Assets/_Qazrix/Art/Environment/CastleWall`) en `Ciudad_Muro` y la CC0-008 (`.../RockTileFloor`) en `Ciudad_Peldano` y la CC0-009 (`.../ClayRoofTiles`) en `Ciudad_Tejado`. En headless: `Qazrix.EditorTools.CityWallMaterial.ApplyBatch`.
+Menú **Qazrix → Build → Empezar el juego en Z01** (D50): deja `Z01_Relieve` como primera escena del build y `Prototype` como segunda. En headless: `Qazrix.EditorTools.BuildSceneOrder.ApplyBatch`.
+
+Menú **Qazrix → Arte → Aplicar texturas a muros, peldaños, tejados y suelo** (D47, D48, D51, D52): pone el empedrado CC0-011 (`.../CobblestoneFloor`) como capa del terreno de Z01, la textura CC0-006 (`Assets/_Qazrix/Art/Environment/CastleWall`) en `Ciudad_Muro` y la CC0-008 (`.../RockTileFloor`) en `Ciudad_Peldano` y la CC0-010 (`.../ClayRoofTiles`) en `Ciudad_Tejado`. En headless: `Qazrix.EditorTools.CityWallMaterial.ApplyBatch`.
+
+Ventanas y saeteras (D53): `CityBlocks` las dibuja sobre las fachadas según `FacadeOpenings`, con la textura generada GEN-003 (`FacadeOpeningMaterial`); se activan al regenerar la escena Z01. Menú **Qazrix → Ver → Malla de navegación (capa azul)**: muestra u oculta la ayuda visual de la malla de navegación, que se oculta sola al abrir el editor.
 
 ## Ejecución sin interfaz (headless)
 

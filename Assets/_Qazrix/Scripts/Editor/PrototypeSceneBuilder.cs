@@ -376,12 +376,8 @@ namespace Qazrix.EditorTools
 
         private static void AddToBuildSettings()
         {
-            // Quita entradas a escenas que ya no existen y deja Prototype la primera.
-            var scenes = EditorBuildSettings.scenes
-                .Where(s => s.path != ScenePath && File.Exists(s.path))
-                .ToList();
-            scenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
-            EditorBuildSettings.scenes = scenes.ToArray();
+            // Quita entradas a escenas que ya no existen; el juego empieza en Z01 y Prototype va detrás (D50).
+            BuildSceneOrder.Apply();
         }
     }
 }
