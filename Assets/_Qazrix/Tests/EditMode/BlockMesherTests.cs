@@ -52,6 +52,29 @@ namespace Qazrix.Tests
         }
 
         [Test]
+        public void WallUvs_FollowTheFacadeAndTheHeight_AtRealScale()
+        {
+            // Celda de 1 m con tejado a 6 m y pie a 0 m; la textura se repite cada 3 m.
+            BlockMeshChunk box = BlockMesher.Build(new[] { 6f }, 1, 1, 1f, 10f, 20f, Bases(1, 1), 16)[0];
+            float[] uvs = BlockMesher.Uvs(box, 3f);
+            Assert.AreEqual(box.VertexCount * 2, uvs.Length);
+
+            for (int t = 0; t < box.WallTriangles.Length / 3; t++)
+            {
+                float minU = float.MaxValue, maxU = float.MinValue, minV = float.MaxValue, maxV = float.MinValue;
+                for (int k = 0; k < 3; k++)
+                {
+                    int n = box.WallTriangles[t * 3 + k];
+                    Assert.AreEqual(box.Vertices[n * 3 + 1] / 3f, uvs[n * 2 + 1], 1e-5f, "v es la altura a escala");
+                    minU = System.Math.Min(minU, uvs[n * 2]); maxU = System.Math.Max(maxU, uvs[n * 2]);
+                    minV = System.Math.Min(minV, uvs[n * 2 + 1]); maxV = System.Math.Max(maxV, uvs[n * 2 + 1]);
+                }
+                Assert.AreEqual(1f / 3f, maxU - minU, 1e-5f, $"el muro {t} mide 1 m de ancho: un tercio de textura");
+                Assert.AreEqual(2f, maxV - minV, 1e-5f, $"el muro {t} mide 6 m de alto: dos repeticiones");
+            }
+        }
+
+        [Test]
         public void Walls_ReachDownToTheBase()
         {
             BlockMeshChunk box = BlockMesher.Build(new[] { 5f }, 1, 1, 1f, 0f, 0f, Bases(1, 1, -1.5f), 16)[0];

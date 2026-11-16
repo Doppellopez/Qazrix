@@ -53,6 +53,40 @@ namespace Qazrix.Simulation.World
             return chunks;
         }
 
+        /// <summary>
+        /// Coordenadas de textura (u, v seguidos) a escala real: una repetición cada
+        /// <paramref name="metersPerTile"/> metros. En los muros u corre a lo largo de la fachada y v es
+        /// la altura; en los tejados se proyecta en planta. Los muros no comparten vértices con el tejado.
+        /// </summary>
+        public static float[] Uvs(BlockMeshChunk chunk, float metersPerTile)
+        {
+            if (chunk == null) throw new ArgumentNullException(nameof(chunk));
+            if (!(metersPerTile > 0f)) throw new ArgumentException("El tamaño de la repetición debe ser positivo.");
+
+            float[] v = chunk.Vertices;
+            var uvs = new float[chunk.VertexCount * 2];
+            for (int n = 0; n < chunk.VertexCount; n++)
+            {
+                uvs[n * 2] = v[n * 3] / metersPerTile;
+                uvs[n * 2 + 1] = v[n * 3 + 2] / metersPerTile;
+            }
+
+            int[] walls = chunk.WallTriangles;
+            for (int t = 0; t + 2 < walls.Length; t += 3)
+            {
+                int a = walls[t], b = walls[t + 1], c = walls[t + 2];
+                // Fachada norte-sur (x constante): u sigue a z; si no, sigue a x.
+                bool alongZ = v[a * 3] == v[b * 3] && v[b * 3] == v[c * 3];
+                for (int k = 0; k < 3; k++)
+                {
+                    int n = walls[t + k];
+                    uvs[n * 2] = (alongZ ? v[n * 3 + 2] : v[n * 3]) / metersPerTile;
+                    uvs[n * 2 + 1] = v[n * 3 + 1] / metersPerTile;
+                }
+            }
+            return uvs;
+        }
+
         public static bool IsBuilt(float[] roofs, int columns, int rows, int column, int row)
         {
             return column >= 0 && column < columns && row >= 0 && row < rows && !float.IsNaN(roofs[row * columns + column]);

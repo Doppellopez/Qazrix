@@ -1,10 +1,10 @@
 # Build de Windows
 
-- Fecha: 2026-11-15 19:00
+- Fecha: 2026-11-16 10:05
 - Resultado: **Succeeded** · errores: 0 · avisos: 0
 - Unity: 6000.3.6f1 · juego: Qazrix v0.1
 - Plataforma: StandaloneWindows64 · opciones: ForceOptimizeScriptCompilation, Il2CPP, CompressTextures, StripDebugSymbols, ShaderLivelinkSupport, Development
-- Salida: `Builds/Windows/Qazrix.exe` · tamaño: 158,7 MB · duración: 16 s
+- Salida: `Builds/Windows/Qazrix.exe` · tamaño: 158,7 MB · duración: 32 s
 
 ## Escenas incluidas
 

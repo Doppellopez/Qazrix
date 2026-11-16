@@ -168,9 +168,9 @@ namespace Qazrix.EditorTools
             if (roofs == null || roofsMeta == null)
                 throw new FileNotFoundException($"Faltan los datos de tejados ({RoofsPath}). Ejecuta Tools/GIS/make_city_blocks.py (README).");
 
-            // Colores planos de volumetría: teja y piedra. Es la apariencia actual, no la de 1229.
+            // Teja de color plano y muro con textura de piedra (CC0-006). No es la apariencia de 1229.
             Material roof = PrototypeSceneBuilder.GetOrCreateMaterial("Ciudad_Tejado", new Color(0.62f, 0.36f, 0.26f));
-            Material wall = PrototypeSceneBuilder.GetOrCreateMaterial("Ciudad_Muro", new Color(0.74f, 0.70f, 0.62f));
+            Material wall = CityWallMaterial.Ensure();
 
             var city = new GameObject(CityName).AddComponent<CityBlocks>();
             city.Configure(roofs, roofsMeta, terrain, roof, wall);
@@ -194,7 +194,7 @@ namespace Qazrix.EditorTools
             if (steps == null || stepsMeta == null)
                 throw new FileNotFoundException($"Faltan los datos de la escalinata ({StairsPath}). Ejecuta Tools/GIS/make_plaza_stairs.py (README).");
 
-            Material stone = PrototypeSceneBuilder.GetOrCreateMaterial("Ciudad_Peldano", new Color(0.66f, 0.63f, 0.57f));
+            Material stone = CityWallMaterial.EnsureSteps(); // losa de granito (CC0-008)
             var stairs = new GameObject(StairsName).AddComponent<CityBlocks>();
             stairs.Configure(steps, stepsMeta, terrain, stone, stone, 0.05f);
             stairs.Climbable = false; // se suben andando, no trepando

@@ -1,0 +1,23 @@
+## Incremento ART-02: textura de piedra en los muros de los edificios
+
+- Objetivo/gate: que las paredes de los edificios de Z01 se vean de piedra y no de color liso (petición de Jorge, 2026-11-16). Aspecto provisional de F2; no cierra ningún gate.
+- Cambios de código/escenas/assets:
+  - `Assets/_Qazrix/Art/Environment/CastleWall/`: `castle_wall_varriation_diff_1k.jpg` y `castle_wall_varriation_nor_gl_1k.jpg` (CC0-006).
+  - `BlockMesher.Uvs` (Simulation): coordenadas de textura a escala real; en los muros, a lo largo de la fachada y en altura.
+  - `CityBlocks`: asigna esas coordenadas y calcula tangentes; campo `textureMeters` (3 m por repetición).
+  - `CityWallMaterial` (Editor; menú Qazrix → Arte → Aplicar piedra a los muros): pone color y relieve en `Ciudad_Muro.mat`. `Z01GeoBuilder` lo usa al regenerar la escena.
+  - Test nuevo `WallUvs_FollowTheFacadeAndTheHeight_AtRealScale`.
+  - La escena no se ha regenerado: ya referenciaba `Ciudad_Muro`.
+- Comandos ejecutados (Unity 6000.3.6f1, sin interfaz): `CityWallMaterial.ApplyBatch` (salida 0), tests EditMode, `PrototypePreview.CaptureZ01Batch` (salida 0), tests PlayMode, `VerifyProject.RunBatch` (salida 0).
+- Pruebas: aprobadas 79/79 EditMode y 28/28 PlayMode; `VerifyProject` salida 0. No ejecutadas: jugar a mano; build de Windows y de Linux con la textura (los de `Builds/` son anteriores).
+- Build y plataforma: sin build nuevo.
+- Evidencia: `Reports/QA/z01_muros_piedra_plaza.png` (Plaza Mayor a pie de calle), `Reports/QA/z01_vista_aerea.png`, `Reports/QA/z01_vista_cenital.png`, `Reports/QA/wall-apply.log`.
+- Derechos/licencias de activos nuevos: CC0-006, Castle Wall Variation, Poly Haven, CC0 1.0; descarga autorizada por Jorge el 2026-11-16; fila en `Research/ASSET_LICENSES.csv`.
+- Decisiones tomadas: D47.
+- Problemas conocidos:
+  - La piedra queda oscura en las fachadas en sombra, más que el color liso anterior.
+  - En las fachadas en diagonal se ven franjas verticales claras y oscuras: son los escalones de la rejilla de 1 m, que ya existían y ahora se notan más.
+  - La textura se repite cada 3 m y el patrón se aprecia en muros grandes y desde lejos.
+  - Es mampostería genérica, no piedra de Cáceres. Tejados y peldaños siguen con color plano.
+  - `Z01_Relieve.unity` y `Reports/QA/build-windows-latest.md` aparecen modificados en git por cambios ajenos a este incremento (editor abierto por Jorge).
+- Próximo paso más pequeño: que Jorge lo mire jugando y diga si aclarar la piedra o cambiar el tamaño de la repetición; después, textura de teja en los tejados.

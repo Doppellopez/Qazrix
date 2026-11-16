@@ -38,6 +38,8 @@ namespace Qazrix.World
         // ambos hay muro. En una escalinata es menor que la contrahuella.
         [SerializeField] private float roofStep = 0.5f;
         [SerializeField] private bool climbable = true;
+        // Metros de muro que cubre una repetición de la textura.
+        [SerializeField] private float textureMeters = 3f;
 
         /// <summary>¿Puede el jugador trepar por estos muros? Los edificios sí; los peldaños no.</summary>
         public bool Climbable
@@ -134,7 +136,14 @@ namespace Qazrix.World
                 mesh.subMeshCount = 2;
                 mesh.SetTriangles(chunk.RoofTriangles, 0);
                 mesh.SetTriangles(chunk.WallTriangles, 1);
+
+                float[] flatUvs = BlockMesher.Uvs(chunk, textureMeters > 0f ? textureMeters : 3f);
+                var uvs = new Vector2[vertices.Length];
+                for (int v = 0; v < uvs.Length; v++) uvs[v] = new Vector2(flatUvs[v * 2], flatUvs[v * 2 + 1]);
+                mesh.uv = uvs;
+
                 mesh.RecalculateNormals();
+                mesh.RecalculateTangents(); // el mapa de relieve del muro las necesita
                 mesh.RecalculateBounds();
                 _meshes.Add(mesh);
                 triangles += (chunk.RoofTriangles.Length + chunk.WallTriangles.Length) / 3;
