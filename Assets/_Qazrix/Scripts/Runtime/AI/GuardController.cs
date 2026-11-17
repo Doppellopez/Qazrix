@@ -1,3 +1,4 @@
+using Qazrix.Prototype;
 using Qazrix.Simulation.AI;
 using UnityEngine;
 using UnityEngine.AI;
@@ -31,7 +32,8 @@ namespace Qazrix.AI
         [SerializeField] private float runSpeed = 4.2f;
         [SerializeField] private float turnSpeedDegrees = 240f;
         [SerializeField] private float arriveDistance = 0.5f;
-        [SerializeField] private float catchDistance = 1.1f;
+        [SerializeField] private float catchDistance = 0.85f; // alcance de contacto en horizontal: los dos cuerpos casi se tocan
+        [SerializeField] private float bodyHeight = 1.9f;     // altura del guardia: con la del jugador decide si de verdad le toca
         [SerializeField] private float lookAroundDegreesPerSecond = 60f;
 
         [Header("Navegación")]
@@ -40,6 +42,7 @@ namespace Qazrix.AI
         [SerializeField] private float cornerReach = 0.3f;
 
         private CharacterController _controller;
+        private CharacterWalkAnimator _animator;
         private AlertStateMachine _machine;
         private MaterialPropertyBlock _block;
         private int _waypointIndex;
@@ -106,6 +109,10 @@ namespace Qazrix.AI
             _machine.Tick(Time.deltaTime, new GuardPercept(visibility, heard, IsAtPost()));
             Act(visibility);
             UpdateIndicator();
+
+            // Persiguiendo, lleva el brazo y la cimitarra en alto; en cualquier otro estado, abajo.
+            if (_animator == null) _animator = GetComponentInChildren<CharacterWalkAnimator>();
+            if (_animator != null) _animator.WeaponRaised = State == AlertState.Alert;
         }
 
         private void Sense(out float visibility, out bool heard)
@@ -146,7 +153,9 @@ namespace Qazrix.AI
 
                 case AlertState.Alert:
                     MoveTo(_lastKnown, runSpeed);
-                    if (visibility > 0f && FlatDistance(transform.position, target.transform.position) <= catchDistance)
+                    // Solo si le toca: pasar por encima o por debajo del guardia (un tejado, otro piso) no le captura.
+                    if (visibility > 0f && StealthRules.Touches(FlatDistance(transform.position, target.transform.position),
+                            transform.position.y, bodyHeight, target.transform.position.y, target.BodyHeight, catchDistance))
                     {
                         target.Caught();
                         _machine.GiveUp();

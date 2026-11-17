@@ -85,6 +85,144 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator ArrowKeys_MoveAlongFacing_AndTurnTheBody()
+        {
+            yield return LoadScene();
+            Transform body = _player.transform;
+            Vector3 start = body.position;
+            Vector3 facing = body.forward;
+
+            // Flecha arriba: avanza hacia donde mira, sin girar.
+            Press(_keyboard.upArrowKey);
+            yield return Frames(45);
+            Release(_keyboard.upArrowKey);
+            yield return Frames(20);
+            Vector3 forward = body.position - start;
+            Assert.Greater(Vector3.Dot(forward, facing), 0.5f, "la flecha arriba debe avanzar hacia donde mira");
+            Assert.Less(Vector3.Angle(body.forward, facing), 3f, "avanzar no debe girarlo");
+
+            // Flecha abajo: retrocede sin darse la vuelta.
+            Vector3 before = body.position;
+            Press(_keyboard.downArrowKey);
+            yield return Frames(45);
+            Release(_keyboard.downArrowKey);
+            yield return Frames(20);
+            Assert.Less(Vector3.Dot(body.position - before, facing), -0.3f, "la flecha abajo debe retroceder");
+            Assert.Less(Vector3.Angle(body.forward, facing), 3f, "retroceder no debe girarlo");
+
+            // Flechas laterales: giran un poco a cada lado, sin desplazarlo.
+            before = body.position;
+            Press(_keyboard.rightArrowKey);
+            yield return Frames(30);
+            Release(_keyboard.rightArrowKey);
+            yield return Frames(5);
+            float right = Vector3.SignedAngle(facing, body.forward, Vector3.up);
+            Assert.Greater(right, 20f, "la flecha derecha gira hacia la derecha");
+            Assert.Less(right, 120f, "pero solo un poco");
+
+            Press(_keyboard.leftArrowKey);
+            yield return Frames(60);
+            Release(_keyboard.leftArrowKey);
+            yield return Frames(5);
+            Assert.Less(Vector3.SignedAngle(facing, body.forward, Vector3.up), right - 20f, "la flecha izquierda gira hacia el otro lado");
+            Assert.Less(Vector3.Distance(body.position, before), 0.2f, "girar no debe desplazarlo");
+        }
+
+        private static float FlatYaw(Transform t)
+        {
+            Vector3 f = t.forward;
+            f.y = 0f;
+            return Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg;
+        }
+
+        [UnityTest]
+        public IEnumerator Camera_FollowsWhereTheCharacterFaces_WhenTurningWithArrows()
+        {
+            yield return LoadScene();
+            var orbit = Object.FindFirstObjectByType<PrototypeOrbitCamera>();
+            Assert.IsNotNull(orbit, "la escena no tiene cámara orbital");
+            Transform cam = orbit.transform, body = _player.transform;
+            Assert.Less(Mathf.Abs(Mathf.DeltaAngle(FlatYaw(cam), FlatYaw(body))), 10f, "al empezar, la cámara mira por donde mira el personaje");
+
+            // Quieto, sin pulsar nada, la cámara no se mueve.
+            float before = FlatYaw(cam);
+            yield return Frames(30);
+            Assert.AreEqual(0f, Mathf.DeltaAngle(before, FlatYaw(cam)), 0.5f, "sin pulsar nada, la cámara se queda quieta");
+
+            // Gira con la flecha derecha y avanza: la cámara se coloca detrás de la nueva dirección.
+            Press(_keyboard.rightArrowKey);
+            yield return Frames(45);
+            Release(_keyboard.rightArrowKey);
+            // Hay que dejar pasar un fotograma entre soltar una tecla y pulsar otra: cada pulsación del teclado simulado
+            // encola el estado completo del teclado y, si no, la tecla soltada seguiría pulsada.
+            yield return Frames(3);
+            float turned = Mathf.DeltaAngle(before, FlatYaw(body));
+            Assert.Greater(turned, 30f, "el personaje debe haber girado a la derecha");
+
+            Press(_keyboard.upArrowKey);
+            int following = 0;
+            float started = Time.time;
+            string samples = string.Empty;
+            for (int i = 0; i < 120; i++)
+            {
+                if (orbit.IsFollowingFacing) following++;
+                if (i % 20 == 0) samples += $" [{i}: cám {FlatYaw(cam):0}° pers {FlatYaw(body):0}°]";
+                yield return null;
+            }
+            Debug.Log("[Qazrix] Seguimiento de cámara:" + samples + $" · suavizado {orbit.FollowSmoothSeconds:0.00} s");
+            float seconds = Time.time - started;
+            Release(_keyboard.upArrowKey);
+            yield return Frames(10);
+
+            float gap = Mathf.Abs(Mathf.DeltaAngle(FlatYaw(cam), FlatYaw(body)));
+            Assert.Less(gap, 12f, $"la cámara debe quedar detrás de donde mira el personaje (diferencia {gap:0.0}°; siguió {following}/120 fotogramas en {seconds:0.00} s; personaje giró {turned:0.0}°)");
+            Assert.Greater(Mathf.DeltaAngle(before, FlatYaw(cam)), 25f, "y haber girado con él hacia la derecha");
+        }
+
+        [UnityTest]
+        public IEnumerator Camera_TurnsAround180_WhenBackIsPressed_AndTheCharacterTurnsToo()
+        {
+            yield return LoadScene();
+            var orbit = Object.FindFirstObjectByType<PrototypeOrbitCamera>();
+            Assert.IsNotNull(orbit);
+            Transform cam = orbit.transform, body = _player.transform;
+            float startCam = FlatYaw(cam), startBody = FlatYaw(body);
+            Vector3 startPosition = body.position;
+
+            // Al pulsar atrás empieza una media vuelta lenta (no instantánea).
+            Press(_keyboard.sKey);
+            yield return Frames(20);
+            Assert.IsTrue(orbit.IsTurningAround, "al pulsar atrás la cámara empieza a dar la vuelta");
+            float partial = Mathf.Abs(Mathf.DeltaAngle(startCam, FlatYaw(cam)));
+            Assert.Greater(partial, 1f, "ya ha empezado a girar");
+            Assert.Less(partial, 170f, "pero va despacio: no se ha dado la vuelta de golpe");
+
+            // Manteniendo atrás: acaba a 180° y se queda ahí.
+            float limit = Time.time + 6f;
+            while (Time.time < limit && orbit.IsTurningAround) yield return null;
+            Assert.IsFalse(orbit.IsTurningAround, "la media vuelta debe terminar");
+            yield return Frames(5);
+            float afterTurn = FlatYaw(cam);
+            Assert.AreEqual(180f, Mathf.Abs(Mathf.DeltaAngle(startCam, afterTurn)), 4f, "la cámara gira 180°");
+            yield return Frames(60);
+            Assert.AreEqual(0f, Mathf.DeltaAngle(afterTurn, FlatYaw(cam)), 1f, "y se queda ahí aunque se siga manteniendo atrás");
+
+            // El personaje se ha dado la vuelta con ella y ha ido hacia donde miraba la cámara al final.
+            Release(_keyboard.sKey);
+            yield return Frames(10);
+            Assert.AreEqual(180f, Mathf.Abs(Mathf.DeltaAngle(startBody, FlatYaw(body))), 25f, "el personaje también gira 180°");
+            Assert.Less(Mathf.Abs(Mathf.DeltaAngle(FlatYaw(cam), FlatYaw(body))), 25f, "y la cámara queda detrás de él");
+            Vector3 moved = body.position - startPosition;
+            Vector3 oldBack = Quaternion.Euler(0f, startCam + 180f, 0f) * Vector3.forward;
+            Assert.Greater(Vector3.Dot(moved, oldBack), 2f, "ha ido hacia atrás (hacia donde mira ahora), no ha vuelto sobre sus pasos");
+
+            // Al soltar, se queda quieta.
+            float resting = FlatYaw(cam);
+            yield return Frames(40);
+            Assert.AreEqual(0f, Mathf.DeltaAngle(resting, FlatYaw(cam)), 1f, "al soltar atrás la cámara se queda quieta");
+        }
+
+        [UnityTest]
         public IEnumerator Space_MakesThePlayerJump()
         {
             yield return LoadScene();

@@ -18,7 +18,8 @@ Especificación completa: [`QAZRIX_SPEC_v1.md`](QAZRIX_SPEC_v1.md).
 
 | Acción | Teclado / ratón | Mando |
 |---|---|---|
-| Mover | WASD / flechas | stick izquierdo |
+| Mover (relativo a la cámara) | WASD | stick izquierdo |
+| Avanzar / retroceder y girar (control de tanque) | flechas: arriba/abajo avanzan y retroceden, izquierda/derecha giran | — |
 | Correr | Mayús izq. | L3 o gatillo derecho |
 | Saltar | Espacio | A / Cruz |
 | Agacharse | C o Ctrl | B / Círculo |

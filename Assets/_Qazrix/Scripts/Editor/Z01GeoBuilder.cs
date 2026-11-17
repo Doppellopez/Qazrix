@@ -127,6 +127,11 @@ namespace Qazrix.EditorTools
             PrototypeSceneBuilder.CreateLetter(play, pole, new Vector3(sx - 8f, deckTop + 0.25f, sz + 6f));
             PrototypeSceneBuilder.CreateCheckpoint(play, "tras el murete", new Vector3(sx, Ground(sx, sz + 9f) + 1f, sz + 9f), new Vector3(4f, 2.4f, 2f));
 
+            // Atalaya en la Torre de Bujaco con salto de fe a un pajar en la calle (F2-04, D55).
+            Material hayMaterial = PrototypeSceneBuilder.GetOrCreateMaterial("Proto_Pajar", new Color(0.83f, 0.68f, 0.28f));
+            string atalaya = Z01AtalayaBuilder.Place(play, city, terrain, new Vector2(sx, sz), pole, hayMaterial);
+            Debug.Log($"[Qazrix] Atalaya de Bujaco: {atalaya}");
+
             var hud = new GameObject("HUD").AddComponent<PrototypeHud>();
             hud.Configure(player, input);
 
@@ -161,6 +166,18 @@ namespace Qazrix.EditorTools
         public const string RoofsMetaPath = "Assets/_Qazrix/Data/Zones/Z01/z01_tejados_1m.json";
         public const string CityName = "Ciudad";
 
+        /// <summary>
+        /// Chaflán de las esquinas salientes de los edificios: la diagonal une dos puntos a esta distancia (m) de la
+        /// esquina por cada lado; 0 las deja rectas.
+        /// </summary>
+        public const int CityCornerRounding = 2;
+
+        /// <summary>Metros que se endereza cada pared de un edificio al pasar de la rejilla del LiDAR a polígonos.</summary>
+        public const float CityFootprintTolerance = 1.5f;
+
+        /// <summary>Metros de corte en diagonal de cada esquina de un edificio.</summary>
+        public const float CityFootprintChamfer = 2f;
+
         private static CityBlocks CreateCity(Terrain terrain)
         {
             var roofs = AssetDatabase.LoadAssetAtPath<TextAsset>(RoofsPath);
@@ -174,6 +191,11 @@ namespace Qazrix.EditorTools
 
             var city = new GameObject(CityName).AddComponent<CityBlocks>();
             city.Configure(roofs, roofsMeta, terrain, roof, wall);
+            // Huellas poligonales (D65): paredes rectas, también en diagonal, y las esquinas cortadas en diagonal.
+            city.UseFootprints = true;
+            city.FootprintTolerance = CityFootprintTolerance;
+            city.FootprintChamfer = CityFootprintChamfer;
+            city.WithMachicolations = true; // unos pocos matacanes en torres y edificios altos (D66)
             city.SetOpenings(FacadeOpeningMaterial.Ensure()); // ventanas y saeteras dibujadas (GEN-003)
             city.Build(); // las mallas no se guardan en la escena; hacen falta ahora para la malla de navegación
             EditorUtility.SetDirty(city);

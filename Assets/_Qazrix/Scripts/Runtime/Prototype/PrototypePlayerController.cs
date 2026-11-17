@@ -24,6 +24,7 @@ namespace Qazrix.Prototype
         [SerializeField] private float deceleration = 24f;
         [SerializeField] private float airControl = 0.35f;
         [SerializeField] private float turnSpeedDegrees = 720f;
+        [SerializeField] private float tankTurnDegrees = 100f; // °/s al girar con las flechas izquierda/derecha
 
         [Header("Salto")]
         [SerializeField] private float jumpHeight = 1.2f;
@@ -43,6 +44,8 @@ namespace Qazrix.Prototype
         private CharacterController _controller;
         private PlayerParkour _parkour;
         private PlayerWallClimb _climb;
+        private PrototypeOrbitCamera _orbit;
+        private PlayerFaithLeap _leap;
         private Vector3 _horizontalVelocity;
         private float _verticalVelocity;
         private float _sinceGrounded;
@@ -70,6 +73,12 @@ namespace Qazrix.Prototype
         /// <summary>Está agarrado a una fachada, trepando o encaramándose al tejado.</summary>
         public bool IsClimbing => _climb != null && _climb.IsActive;
 
+        /// <summary>Está en el borde de una atalaya y puede lanzarse con la tecla de salto.</summary>
+        public bool FaithLeapAvailable => _leap != null && _leap.Available;
+
+        /// <summary>Está en pleno salto de fe.</summary>
+        public bool IsLeaping => _leap != null && _leap.IsActive;
+
         /// <summary>Nombre del último checkpoint alcanzado; vacío si aún reaparece en el inicio.</summary>
         public string CheckpointLabel { get; private set; } = string.Empty;
 
@@ -95,6 +104,7 @@ namespace Qazrix.Prototype
             _controller = GetComponent<CharacterController>();
             _parkour = GetComponent<PlayerParkour>(); // opcional: sin él solo hay salto normal
             _climb = GetComponent<PlayerWallClimb>();  // opcional: sin él no trepa fachadas
+            _leap = GetComponent<PlayerFaithLeap>();   // opcional: sin él no hay salto de fe
             _spawnPosition = transform.position;
             _spawnRotation = transform.rotation;
             ApplyHeight(standHeight);
@@ -127,12 +137,33 @@ namespace Qazrix.Prototype
                 }
             }
 
+            if (_leap != null)
+            {
+                // En pleno salto de fe el cuerpo sigue su trayectoria: sin control.
+                if (_leap.IsActive)
+                {
+                    if (!_leap.Tick(dt)) FinishParkour();
+                    return;
+                }
+
+                // En el borde de una atalaya, la tecla de salto lanza al vacío.
+                if (IsGrounded && !IsCrouching && input.JumpPressed && _leap.TryBegin())
+                {
+                    _horizontalVelocity = Vector3.zero;
+                    _verticalVelocity = 0f;
+                    _sinceJumpPressed = 999f;
+                    IsRunning = false;
+                    IsGrounded = false;
+                    return;
+                }
+            }
+
             if (_climb != null)
             {
                 // Trepando, la palanca sube, baja o desplaza de lado; agacharse suelta la pared.
                 if (_climb.IsActive)
                 {
-                    _climb.Tick(dt, input.Move, input.Crouch);
+                    _climb.Tick(dt, input.Move, input.Crouch, input.JumpPressed);
                     if (!_climb.IsActive) FinishClimb();
                     return;
                 }
@@ -175,6 +206,17 @@ namespace Qazrix.Prototype
                 FinishParkour();
                 return;
             }
+            if (_climb.EndedWithBackJump)
+            {
+                // Salto hacia atrás: sale despedido de la pared con la velocidad que fijan las reglas.
+                Vector3 launch = _climb.BackJumpVelocity;
+                _horizontalVelocity = new Vector3(launch.x, 0f, launch.z);
+                _verticalVelocity = launch.y;
+                _sinceGrounded = 999f;      // ya no vale el margen de salto del suelo
+                _sinceJumpPressed = 999f;   // y la pulsación no se reutiliza para otro salto
+                IsGrounded = false;
+                return;
+            }
             // Se ha soltado: cae desde donde estaba.
             _verticalVelocity = 0f;
             _sinceGrounded = 999f;
@@ -207,14 +249,31 @@ namespace Qazrix.Prototype
         /// <summary>Dirección horizontal pedida con la palanca, relativa a la cámara.</summary>
         private Vector3 Wished(InputFrame input)
         {
-            if (input.Move.sqrMagnitude <= 0.0001f) return Vector3.zero;
-            float yaw = cameraTransform != null ? cameraTransform.eulerAngles.y : transform.eulerAngles.y;
+            if (input.Move.sqrMagnitude <= 0.0001f)
+            {
+                // Flechas: arriba/abajo avanzan o retroceden en la dirección en que mira el personaje.
+                if (Mathf.Abs(input.Tank.y) <= 0.0001f) return Vector3.zero;
+                Vector3 forward = transform.forward;
+                forward.y = 0f;
+                return forward.normalized * input.Tank.y;
+            }
+            // Con la cámara orbital, la orientación de WASD es la suya salvo durante su media vuelta al pulsar «atrás»
+            // (entonces es la de antes de empezarla: el personaje sigue yendo hacia el mismo sitio).
+            if (_orbit == null && cameraTransform != null) _orbit = cameraTransform.GetComponent<PrototypeOrbitCamera>();
+            float yaw = _orbit != null ? _orbit.MovementYaw
+                : cameraTransform != null ? cameraTransform.eulerAngles.y : transform.eulerAngles.y;
             return Quaternion.Euler(0f, yaw, 0f) * new Vector3(input.Move.x, 0f, input.Move.y);
         }
 
         private void UpdateHorizontal(InputFrame input, float dt)
         {
             Vector3 wished = Wished(input);
+
+            // Flechas izquierda/derecha giran al personaje sobre sí mismo, también en movimiento.
+            bool tankDrive = input.Move.sqrMagnitude <= 0.0001f && Mathf.Abs(input.Tank.y) > 0.0001f;
+            if (Mathf.Abs(input.Tank.x) > 0.0001f)
+                transform.Rotate(0f, input.Tank.x * tankTurnDegrees * dt, 0f, Space.World);
+            if (tankDrive) wished = Wished(input); // con el giro ya aplicado
 
             float topSpeed = IsCrouching ? crouchSpeed : (input.Run ? runSpeed : walkSpeed);
             Vector3 target = wished * topSpeed;
@@ -223,7 +282,7 @@ namespace Qazrix.Prototype
             if (!IsGrounded) rate *= airControl;
             _horizontalVelocity = Vector3.MoveTowards(_horizontalVelocity, target, rate * dt);
 
-            if (wished.sqrMagnitude > 0.0001f)
+            if (!tankDrive && wished.sqrMagnitude > 0.0001f)
             {
                 Quaternion look = Quaternion.LookRotation(wished, Vector3.up);
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, look, turnSpeedDegrees * dt);
@@ -271,6 +330,7 @@ namespace Qazrix.Prototype
         public void Respawn()
         {
             if (_climb != null) _climb.Cancel();
+            if (_leap != null) _leap.Cancel();
             _controller.enabled = false;
             transform.SetPositionAndRotation(_spawnPosition, _spawnRotation);
             _controller.enabled = true;

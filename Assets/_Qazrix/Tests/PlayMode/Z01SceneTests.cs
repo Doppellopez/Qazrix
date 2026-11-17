@@ -50,6 +50,25 @@ namespace Qazrix.Tests.PlayMode
             for (int i = 0; i < 40; i++) yield return null;
         }
 
+        /// <summary>
+        /// Fachada de un edificio de la ciudad al norte del punto dado, mirando al sur, y de al menos 9 m de alto:
+        /// con una más baja el jugador se encarama al tejado antes de que la prueba lo suelte. Al cambiar la forma
+        /// de las esquinas cambia qué fachada se encuentra primero, así que se pide la altura en vez de fiarse.
+        /// </summary>
+        private bool FindTallFacade(Vector3 from, out RaycastHit wall)
+        {
+            for (float dx = -20f; dx <= 20f; dx += 2f)
+            {
+                var origin = new Vector3(from.x + dx, from.y + 1.3f, from.z);
+                if (!Physics.Raycast(origin, Vector3.forward, out wall, 150f)) continue;
+                if (wall.collider.GetComponentInParent<CityBlocks>() != _city || wall.normal.z >= -0.9f) continue;
+                Vector3 above = wall.point + Vector3.forward * 0.5f + Vector3.up * 80f;
+                if (Physics.Raycast(above, Vector3.down, out RaycastHit roof, 160f) && roof.point.y > from.y + 9f) return true;
+            }
+            wall = default;
+            return false;
+        }
+
         private static IEnumerator Capture(string fileName)
         {
             yield return new WaitForEndOfFrame();
@@ -66,8 +85,8 @@ namespace Qazrix.Tests.PlayMode
             Debug.Log($"[Qazrix] Ciudad en Play: {_city.ChunkCount} trozos, {_city.TriangleCount} triángulos, {_city.BuildSeconds:0.00} s");
 
             Assert.Greater(_city.BuiltCells, 100000, "el casco antiguo ocupa más de 10 hectáreas construidas");
-            Assert.Greater(_city.ChunkCount, 50);
-            Assert.Greater(_city.TriangleCount, 200000);
+            Assert.Greater(_city.ChunkCount, 20);
+            Assert.Greater(_city.TriangleCount, 20000, "los edificios son polígonos: muchos menos triángulos que por celdas");
             Assert.Less(_city.BuildSeconds, 10f, "levantar la ciudad no debe tardar más de 10 s");
 
             Vector3 p = _player.transform.position;
@@ -211,17 +230,10 @@ namespace Qazrix.Tests.PlayMode
             var climb = _player.GetComponent<PlayerWallClimb>();
             Assert.IsNotNull(climb, "el jugador no tiene PlayerWallClimb");
 
-            // Primera fachada de la ciudad al norte de la plaza que mire al sur (W lleva hacia el norte).
+            // Primera fachada alta de la ciudad al norte de la plaza que mire al sur (W lleva hacia el norte).
             Vector3 spawn = _player.transform.position;
-            RaycastHit wall = default;
-            bool found = false;
-            for (float dx = -12f; dx <= 12f && !found; dx += 3f)
-            {
-                var from = new Vector3(spawn.x + dx, spawn.y + 1.3f, spawn.z);
-                found = Physics.Raycast(from, Vector3.forward, out wall, 150f)
-                        && wall.collider.GetComponentInParent<CityBlocks>() == _city && wall.normal.z < -0.9f;
-            }
-            Assert.IsTrue(found, "no se encontró una fachada al norte de la plaza");
+            bool found = FindTallFacade(spawn, out RaycastHit wall);
+            Assert.IsTrue(found, "no se encontró una fachada alta al norte de la plaza");
             Assert.IsTrue(Physics.Raycast(wall.point + new Vector3(0f, 1f, -0.9f), Vector3.down, out RaycastHit ground, 40f));
 
             var body = _player.GetComponent<CharacterController>();
@@ -247,6 +259,7 @@ namespace Qazrix.Tests.PlayMode
             float widestGap = 0f;
             for (int i = 0; i < 40; i++)
             {
+                Assert.AreEqual(0, CapeClipping.PenetratingPoints(_player.transform), "trepando, el cuerpo no debe atravesar la capa");
                 Assert.Greater(animator.LeftArmAngle, 100f, "trepando, el brazo izquierdo va levantado");
                 Assert.Greater(animator.RightArmAngle, 100f, "y el derecho también");
                 widestGap = Mathf.Max(widestGap, Mathf.Abs(animator.LeftArmAngle - animator.RightArmAngle));
@@ -287,6 +300,304 @@ namespace Qazrix.Tests.PlayMode
             Assert.Greater(top.y, groundY + 2.4f);
             Debug.Log($"[Qazrix] Trepada: tejado a {top.y - groundY:0.0} m sobre la calle");
             yield return Capture("play_z01_tejado.png");
+        }
+
+        [UnityTest]
+        public IEnumerator Watchtower_Synchronizes_AndTheFaithLeapEndsInTheHay()
+        {
+            yield return LoadScene();
+            var viewpoint = Object.FindFirstObjectByType<Qazrix.Gameplay.ViewpointZone>();
+            var leapZone = Object.FindFirstObjectByType<Qazrix.Gameplay.FaithLeapZone>();
+            var leap = _player.GetComponent<PlayerFaithLeap>();
+            Assert.IsNotNull(viewpoint, "la escena no tiene atalaya");
+            Assert.IsNotNull(leapZone, "la atalaya no tiene zona de salto de fe");
+            Assert.IsNotNull(leap, "el jugador no tiene PlayerFaithLeap");
+            Assert.IsNotNull(leapZone.Target, "la zona de salto no tiene pajar");
+            Assert.IsFalse(viewpoint.IsSynchronized);
+
+            var body = _player.GetComponent<CharacterController>();
+
+            // Sube a la azotea (la trepada ya está probada aparte) y se sincroniza.
+            Vector3 roof = viewpoint.transform.position;
+            Assert.IsTrue(Physics.Raycast(roof + Vector3.up * 5f, Vector3.down, out RaycastHit top, 20f, ~0, QueryTriggerInteraction.Ignore),
+                "bajo la atalaya debe haber azotea (los triggers de la zona no cuentan)");
+            body.enabled = false;
+            _player.transform.position = top.point + Vector3.up * 0.1f;
+            body.enabled = true;
+            for (int i = 0; i < 20; i++) yield return null;
+            Assert.IsTrue(viewpoint.IsSynchronized, "pisar la azotea debe sincronizar la atalaya");
+            Assert.AreEqual(viewpoint.Label, _player.CheckpointLabel);
+            Assert.IsTrue(_player.IsGrounded, "en la azotea el jugador está de pie");
+
+            // Al borde: se ofrece el salto de fe.
+            body.enabled = false;
+            _player.transform.position = leapZone.transform.position - Vector3.up * 1.4f;
+            body.enabled = true;
+            for (int i = 0; i < 15; i++) yield return null;
+            Assert.IsTrue(_player.IsGrounded);
+            Assert.IsTrue(_player.FaithLeapAvailable, "en el borde debe ofrecerse el salto de fe");
+            float roofY = _player.transform.position.y;
+            yield return Capture("play_z01_atalaya_borde.png");
+
+            Press(_keyboard.spaceKey);
+            yield return null;
+            Release(_keyboard.spaceKey);
+            Assert.IsTrue(_player.IsLeaping, "espacio en el borde debe lanzar el salto de fe");
+
+            // A mitad de vuelo: en el aire, muy por debajo de la azotea, con los brazos arriba.
+            float limit = Time.time + 3f;
+            while (Time.time < limit && leap.Progress < 0.6f) yield return null;
+            var animator = _player.GetComponentInChildren<CharacterWalkAnimator>();
+            Assert.Greater(animator.LeftArmAngle, 100f, "en el salto de fe los brazos van arriba");
+            yield return Capture("play_z01_salto_de_fe.png");
+
+            limit = Time.time + 6f;
+            while (Time.time < limit && _player.IsLeaping) yield return null;
+            for (int i = 0; i < 20; i++) yield return null;
+
+            Vector3 end = _player.transform.position;
+            Assert.AreEqual(1, leap.LeapsDone, "debe completar un salto");
+            Assert.IsTrue(leap.LastLeapSafe, "debe acabar sobre el pajar");
+            Assert.AreEqual(1, leapZone.Target.LandingsDone);
+            Assert.Less(Vector3.Distance(new Vector3(end.x, 0f, end.z), new Vector3(leapZone.Target.transform.position.x, 0f, leapZone.Target.transform.position.z)),
+                leapZone.Target.Radius, "debe quedar dentro del radio del pajar");
+            Assert.Less(end.y, roofY - 8f, "debe haber bajado muchos metros");
+            Assert.IsTrue(_player.IsGrounded, "y quedar de pie en la calle");
+            Assert.IsFalse(_player.IsLeaping);
+            Debug.Log($"[Qazrix] Salto de fe: {roofY - end.y:0.0} m de desnivel");
+            yield return Capture("play_z01_pajar.png");
+        }
+
+        [UnityTest]
+        public IEnumerator Player_ClimbingJumpsBackwards_OffTheWall()
+        {
+            yield return LoadScene();
+            var climb = _player.GetComponent<PlayerWallClimb>();
+            Assert.IsNotNull(climb);
+            _guard.gameObject.SetActive(false); // si lo alcanza el guardia, reaparece y gira: no es lo que se prueba aquí
+
+            // Primera fachada alta al norte de la plaza que mire al sur (W lleva hacia el norte).
+            Vector3 spawn = _player.transform.position;
+            bool found = FindTallFacade(spawn, out RaycastHit wall);
+            Assert.IsTrue(found, "no se encontró una fachada alta al norte de la plaza");
+            Assert.IsTrue(Physics.Raycast(wall.point + new Vector3(0f, 1f, -0.9f), Vector3.down, out RaycastHit ground, 40f));
+
+            var body = _player.GetComponent<CharacterController>();
+            body.enabled = false;
+            _player.transform.position = ground.point + Vector3.up * 0.1f;
+            body.enabled = true;
+            for (int i = 0; i < 20; i++) yield return null;
+            float groundY = _player.transform.position.y;
+
+            // Sube hasta unos 3 m por la fachada.
+            Press(_keyboard.leftShiftKey);
+            Press(_keyboard.wKey);
+            float limit = Time.time + 4f;
+            while (Time.time < limit && !_player.IsClimbing) yield return null;
+            Assert.IsTrue(_player.IsClimbing, "debe agarrarse a la fachada");
+            limit = Time.time + 5f;
+            while (Time.time < limit && _player.transform.position.y < groundY + 3f) yield return null;
+            // Una tecla por fotograma: dos eventos de teclado en el mismo fotograma pueden pisarse entre sí.
+            Release(_keyboard.wKey);
+            yield return null;
+            Release(_keyboard.leftShiftKey);
+            yield return null;
+            yield return null;
+            Assert.IsFalse(_keyboard.wKey.isPressed, "la tecla W debe estar suelta antes de saltar");
+            Assert.IsTrue(_player.IsClimbing, "sigue colgado de la pared");
+
+            Vector3 hang = _player.transform.position;
+            Press(_keyboard.spaceKey);
+            yield return null;
+            Release(_keyboard.spaceKey);
+
+            // Sale de la pared: ya no está trepando, se aleja hacia atrás (al sur) y sube un poco antes de caer.
+            float peak = hang.y, farthest = 0f;
+            bool grabbedAgain = false;
+            var facing = new System.Text.StringBuilder();
+            float nextSample = Time.time;
+            limit = Time.time + 1.2f;
+            while (Time.time < limit)
+            {
+                Vector3 p = _player.transform.position;
+                if (Time.time >= nextSample)
+                {
+                    facing.Append($"[{Time.time - (limit - 1.2f):0.0}s fz={_player.transform.forward.z:0.00} z={p.z - hang.z:0.0} grounded={_player.IsGrounded} w={_keyboard.wKey.isPressed} shift={_keyboard.leftShiftKey.isPressed} v={_player.HorizontalSpeed:0.0}] ");
+                    nextSample += 0.15f;
+                }
+                peak = Mathf.Max(peak, p.y);
+                farthest = Mathf.Max(farthest, hang.z - p.z);
+                grabbedAgain |= _player.IsClimbing;
+                yield return null;
+            }
+            Assert.AreEqual(1, climb.BackJumpsDone, "se ha contado un salto hacia atrás");
+            Assert.IsFalse(grabbedAgain, "no se vuelve a agarrar al instante a la misma pared");
+            Assert.Greater(farthest, 1.5f, "debe separarse de la pared hacia atrás");
+            Assert.Greater(peak, hang.y + 0.4f, "y subir un poco");
+            Assert.Less(_player.transform.forward.z, -0.5f, "mirando hacia donde salta, no hacia la pared: " + facing);
+            yield return Capture("play_z01_salto_atras.png");
+
+            limit = Time.time + 4f;
+            while (Time.time < limit && !_player.IsGrounded) yield return null;
+            Assert.IsTrue(_player.IsGrounded, "acaba cayendo al suelo");
+            Debug.Log($"[Qazrix] Salto hacia atrás desde {hang.y - groundY:0.0} m: se separó {farthest:0.0} m y subió {peak - hang.y:0.0} m");
+        }
+
+        [UnityTest]
+        public IEnumerator City_BuildingsArePolygons_WithStraightWalls_AndDiagonalCorners()
+        {
+            yield return LoadScene();
+            Assert.IsTrue(_city.UseFootprints, "la ciudad de Z01 se levanta con huellas poligonales");
+            var parts = _city.Parts;
+            Assert.IsNotNull(parts);
+            Assert.Greater(parts.Count, 300, "cientos de edificios");
+
+            int simplified = 0, cellRoofs = 0, edges = 0, shortEdges = 0, diagonal = 0, long5 = 0;
+            foreach (Qazrix.Simulation.World.BuildingPart part in parts)
+            {
+                if (part.Simplified) simplified++;
+                if (part.CellRoof) cellRoofs++;
+                foreach (Qazrix.Simulation.World.Vec2[] loop in part.Loops)
+                {
+                    for (int i = 0; i < loop.Length; i++)
+                    {
+                        Qazrix.Simulation.World.Vec2 a = loop[i], b = loop[(i + 1) % loop.Length];
+                        double dx = b.X - a.X, dz = b.Z - a.Z, length = System.Math.Sqrt(dx * dx + dz * dz);
+                        edges++;
+                        if (length < 1.0) shortEdges++;
+                        if (length >= 5.0) long5++;
+                        double angle = System.Math.Abs(System.Math.Atan2(dz, dx) * 180.0 / System.Math.PI) % 90.0;
+                        if (angle > 8.0 && angle < 82.0) diagonal++;
+                    }
+                }
+            }
+            Debug.Log($"[Qazrix] Huellas: {parts.Count} partes, {simplified} simplificadas, {cellRoofs} con tejado por celdas, " +
+                      $"{edges} lados ({long5} de 5 m o más, {shortEdges} de menos de 1 m, {diagonal} en diagonal)");
+            yield return Capture("play_z01_poligonos.png");
+
+            // Vista cenital de varias manzanas alrededor de la plaza.
+            var topObject = new GameObject("CamaraCenital");
+            Camera top = topObject.AddComponent<Camera>();
+            top.depth = 50f;
+            top.orthographic = true;
+            top.orthographicSize = 38f;
+            top.farClipPlane = 600f;
+            Vector3 around = _player.transform.position;
+            topObject.transform.position = new Vector3(around.x, around.y + 150f, around.z);
+            topObject.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            yield return null;
+            yield return Capture("play_z01_poligonos_cenital.png");
+
+            // Y más de cerca, 18 m de lado.
+            top.orthographicSize = 18f;
+            yield return null;
+            yield return Capture("play_z01_poligonos_cenital_cerca.png");
+            Object.Destroy(topObject);
+
+            Assert.Greater(simplified, parts.Count * 8 / 10, "casi todos los contornos se enderezan");
+            Assert.LessOrEqual(cellRoofs, parts.Count / 50, "casi ningún tejado necesita el relleno por celdas");
+            Assert.Greater(diagonal, 100, "hay paredes en diagonal");
+            Assert.Greater(long5, edges / 8, "muchas paredes son largas y rectas, no dientes de sierra");
+            Assert.Less(shortEdges, edges / 6, "pocos lados quedan por debajo de 1 m: sin muescas ni chaflanes a mitad de pared");
+
+        }
+
+        [UnityTest]
+        public IEnumerator City_HasAFewMachicolations_VisualOnly_AndOneIsPhotographedUpClose()
+        {
+            yield return LoadScene();
+            Assert.IsTrue(_city.WithMachicolations, "la ciudad de Z01 lleva matacanes");
+            Debug.Log($"[Qazrix] Matacanes: {_city.MachicolationCount} ({_city.Machicolations.Count(m => m.Tower)} en torres)");
+            Assert.That(_city.MachicolationCount, Is.InRange(150, 400), "muchos matacanes, sin pasar del tope");
+            Assert.Greater(_city.Machicolations.Count(m => m.Tower), 0, "al menos uno en una torre");
+            Assert.Greater(_city.Machicolations.Count(m => !m.Tower), 50, "y muchos en edificios altos");
+            var all = _city.Machicolations;
+            double nearest2 = double.MaxValue;
+            for (int i = 0; i < all.Count; i++)
+                for (int j = i + 1; j < all.Count; j++)
+                {
+                    if (all[i].Tower && all[j].Tower) continue; // las torres tienen prioridad y no se separan entre sí
+                    double dx = all[i].X - all[j].X, dz = all[i].Z - all[j].Z;
+                    nearest2 = System.Math.Min(nearest2, dx * dx + dz * dz);
+                }
+            Assert.GreaterOrEqual(System.Math.Sqrt(nearest2), 6.0 - 1e-6, "ningún matacán de edificio alto a menos de 6 m de otro");
+
+            // Solo visuales: ni la malla de piedra ni la de los huecos llevan colisionador.
+            foreach (string name in new[] { "Ciudad_Matacanes", "Ciudad_Matacanes_Huecos" })
+            {
+                Transform child = _city.transform.Find(name);
+                Assert.IsNotNull(child, $"falta la malla {name}");
+                Assert.IsNull(child.GetComponent<Collider>(), $"{name} no debe llevar colisionador: no estorba trepar ni encaramarse");
+                var renderer = child.GetComponent<MeshRenderer>();
+                var filter = child.GetComponent<MeshFilter>();
+                Debug.Log($"[Qazrix] {name}: activo {child.gameObject.activeInHierarchy}, render {renderer.enabled}, material {(renderer.sharedMaterial != null ? renderer.sharedMaterial.name : "NINGUNO")}, " +
+                          $"{filter.sharedMesh.vertexCount} vértices, {filter.sharedMesh.triangles.Length / 3} triángulos, límites {renderer.bounds}");
+            }
+
+            // Foto de cerca del más cercano al jugador, con una cámara temporal puesta fuera de la pared.
+            Qazrix.Simulation.World.Machicolation nearest = _city.Machicolations
+                .OrderBy(m => (m.X - _player.transform.position.x) * (m.X - _player.transform.position.x)
+                            + (m.Z - _player.transform.position.z) * (m.Z - _player.transform.position.z)).First();
+            var cameraObject = new GameObject("CamaraMatacan");
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.depth = 50f;
+            camera.farClipPlane = 800f;
+            var wall = new Vector3((float)nearest.X, nearest.RoofHeight - 0.9f, (float)nearest.Z);
+            var outward = new Vector3(nearest.NormalX, 0f, nearest.NormalZ);
+            var along = new Vector3(nearest.TangentX, 0f, nearest.TangentZ);
+            Debug.Log($"[Qazrix] Matacán a ({nearest.X:0.0}, {nearest.Z:0.0}), tejado {nearest.RoofHeight:0.0} m, normal ({nearest.NormalX:0.00}, {nearest.NormalZ:0.00}), largo {nearest.Length:0.0} m");
+
+            // Diagnóstico: dónde está la pared de verdad y dónde ha quedado la malla del matacán.
+            Vector3 probe = new Vector3((float)nearest.X, nearest.RoofHeight - 0.7f, (float)nearest.Z) + outward * 2f;
+            bool hitWall = Physics.Raycast(probe, -outward, out RaycastHit wallHit, 6f);
+            Debug.Log($"[Qazrix] Pared a {(hitWall ? wallHit.distance.ToString("0.00") : "sin impacto")} m del punto a 2 m del borde previsto (debería ser ~2,00); choca con {(hitWall ? wallHit.collider.name : "-")}");
+            Transform stone = _city.transform.Find("Ciudad_Matacanes");
+            Mesh stoneMesh = stone.GetComponent<MeshFilter>().sharedMesh;
+            Vector3[] verts = stoneMesh.vertices;
+            float minD = float.MaxValue, maxD = float.MinValue, minY = float.MaxValue, maxY = float.MinValue; int near = 0;
+            foreach (Vector3 v in verts)
+            {
+                if (Mathf.Abs(v.x - (float)nearest.X) > 3f || Mathf.Abs(v.z - (float)nearest.Z) > 3f) continue;
+                near++;
+                float d = (v.x - (float)nearest.X) * nearest.NormalX + (v.z - (float)nearest.Z) * nearest.NormalZ;
+                minD = Mathf.Min(minD, d); maxD = Mathf.Max(maxD, d); minY = Mathf.Min(minY, v.y); maxY = Mathf.Max(maxY, v.y);
+            }
+            Debug.Log($"[Qazrix] Malla del matacán cerca: {near} vértices; hacia fuera de {minD:0.00} a {maxD:0.00} m; altura de {minY:0.00} a {maxY:0.00} m (tejado {nearest.RoofHeight:0.00})");
+
+            var slab = new Vector3((float)nearest.X, nearest.RoofHeight - 1.2f, (float)nearest.Z);
+
+            // Perfil: desde un lado, a la altura de la losa, mirando a lo largo de la pared: el vuelo se ve de canto.
+            cameraObject.transform.position = slab + along * 7f + outward * 0.4f;
+            cameraObject.transform.LookAt(slab + outward * 0.4f);
+            yield return null;
+            yield return Capture("play_z01_matacan.png");
+
+            // De frente y de cerca, un poco desde abajo.
+            cameraObject.transform.position = slab + outward * 4.5f - Vector3.up * 1.3f;
+            cameraObject.transform.LookAt(slab);
+            yield return null;
+            yield return Capture("play_z01_matacan_frente.png");
+
+            // Y desde la calle, de más lejos y desde abajo.
+            cameraObject.transform.position = wall + outward * 8f - Vector3.up * 3.5f;
+            cameraObject.transform.LookAt(wall);
+            yield return null;
+            yield return Capture("play_z01_matacan_abajo.png");
+
+            // Vista de calle de varios a la vez: desde el jugador hacia el grupo de matacanes más cercano.
+            Vector3 eye = _player.transform.position + Vector3.up * 1.7f;
+            var group = _city.Machicolations
+                .Where(m => (m.X - eye.x) * (m.X - eye.x) + (m.Z - eye.z) * (m.Z - eye.z) < 60f * 60f)
+                .OrderBy(m => (m.X - eye.x) * (m.X - eye.x) + (m.Z - eye.z) * (m.Z - eye.z)).Take(6).ToList();
+            if (group.Count > 0)
+            {
+                float gx = (float)group.Average(m => m.X), gz = (float)group.Average(m => m.Z), gy = group.Average(m => m.RoofHeight) - 1.5f;
+                cameraObject.transform.position = eye;
+                cameraObject.transform.LookAt(new Vector3(gx, gy, gz));
+                yield return null;
+                yield return Capture("play_z01_matacanes_calle.png");
+            }
+            Object.Destroy(cameraObject);
         }
 
         [UnityTest]

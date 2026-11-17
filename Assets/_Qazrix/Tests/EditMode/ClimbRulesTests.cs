@@ -22,6 +22,36 @@ namespace Qazrix.Tests
         }
 
         [Test]
+        public void BackJump_NeedsToBeHangingOnTheWall_NotMantling()
+        {
+            Assert.IsTrue(ClimbRules.CanJumpBack(true, false, true));
+            Assert.IsFalse(ClimbRules.CanJumpBack(false, false, true), "sin estar agarrado no hay salto hacia atrás");
+            Assert.IsFalse(ClimbRules.CanJumpBack(true, true, true), "encaramándose al tejado no hay de dónde impulsarse");
+            Assert.IsFalse(ClimbRules.CanJumpBack(true, false, false), "sin pulsar salto no salta");
+        }
+
+        [Test]
+        public void BackJump_LeavesTheWall_AndGoesUp()
+        {
+            // La pared está hacia +Z: se sale hacia -Z, con la velocidad horizontal de las medidas.
+            Float3 v = ClimbRules.BackJumpVelocity(new Float3(0f, 0f, 1f), Limits);
+            Assert.AreEqual(0f, v.X, 1e-5f);
+            Assert.AreEqual(-Limits.BackJumpSpeed, v.Z, 1e-4f, "se separa de la pared");
+            Assert.AreEqual(Limits.BackJumpUp, v.Y, 1e-5f, "y sube");
+
+            // En diagonal la velocidad horizontal sigue siendo la misma, no mayor.
+            Float3 d = ClimbRules.BackJumpVelocity(new Float3(1f, 0f, 1f), Limits);
+            Assert.AreEqual(Limits.BackJumpSpeed, (float)System.Math.Sqrt(d.X * d.X + d.Z * d.Z), 1e-4f);
+            Assert.Less(d.X, 0f);
+            Assert.Less(d.Z, 0f);
+
+            // Sin dirección de pared conocida, solo salta hacia arriba (no se inventa una dirección).
+            Float3 none = ClimbRules.BackJumpVelocity(new Float3(0f, 0f, 0f), Limits);
+            Assert.AreEqual(0f, none.X);
+            Assert.AreEqual(0f, none.Z);
+        }
+
+        [Test]
         public void VerticalSpeed_FollowsTheStick_WithADeadZone()
         {
             Assert.AreEqual(Limits.UpSpeed, ClimbRules.VerticalSpeed(1f, Limits), 1e-5f);

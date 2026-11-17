@@ -1,0 +1,17 @@
+## Incremento ART-16: edificios con huellas poligonales y paredes diagonales
+
+- Objetivo/gate: que los edificios puedan tener paredes en diagonal, sin quiebros ni chaflanes a mitad de pared, y con las esquinas cortadas en diagonal (peticiones de Jorge, 2026-11-17).
+- Cambios de código/escenas/assets:
+  - `Scripts/Simulation/World/BuildingFootprints.cs` (nuevo, lógica pura): agrupa celdas en volúmenes (cota de tejado con salto ≤ 0,5 m), recorre el contorno, lo endereza (Douglas–Peucker, tolerancia 1,5 m), funde los lados de menos de 2 m (`MergeShortEdges`), corta en diagonal las esquinas (`Chamfer`: 2 m o el 30 % del lado, solo con lados ≥ 4 m), comprueba que el contorno siga siendo simple y triangula el tejado con patios (`TriangulateLoops`). Si algo falla, vuelve al contorno de la rejilla y, en último caso, al tejado por celdas. Incluye `FootprintIndex` para saber si hay edificio en un punto.
+  - `Scripts/Simulation/World/FootprintMesher.cs` (nuevo): malla de tejado plano y muros hasta el terreno (tramos de 3 m); `FootprintOpenings`: ventanas y saeteras sobre cada pared, también en diagonal, con normal unitaria (`FacadeOpening.NormalX/NormalZ` pasan a decimal).
+  - `CityBlocks`: `UseFootprints`, `FootprintTolerance`, `FootprintChamfer`, `Parts`; `HasBuildingAt` usa los polígonos. `Z01GeoBuilder` activa las huellas (tolerancia 1,5 m, corte 2 m). La escalinata sigue por celdas.
+  - Tests: `BuildingFootprintsTests` (EditMode, 20: rectángulo, L, patio, pared dentada, peldaño, escalera en diagonal, esquinas que se tocan, alturas distintas, ciudad pseudoaleatoria, malla, tramos, huecos, índice, entradas inválidas) y `Z01SceneTests.City_BuildingsArePolygons_WithStraightWalls_AndDiagonalCorners` (PlayMode, con capturas).
+- Comandos ejecutados (Unity 6000.3.6f1): tests EditMode y PlayMode, Z01GeoBuilder.BuildBatch y VerifyProject.RunBatch, en cuatro vueltas hasta ajustar la tolerancia, los lados cortos y los cortes de esquina.
+- Pruebas: VerifyProject 0 errores; PlayMode 40/40; EditMode 173/174 en la última pasada: fallaba solo el área esperada de un test (74,13 m² reales, bien calculados a mano; el test estaba mal y se corrigió; sin repetir aún la pasada completa).
+- Resultado en Z01: 592 edificios, 0 con tejado por celdas; lados 19.037 → 9.585; ≥ 5 m: 1.993; < 1 m: 4.741 → 84; 82.931 triángulos (antes unos 400.000); levantar la ciudad 0,2 s.
+- Build y plataforma: sin build nuevo.
+- Evidencia: `Reports/QA/play_z01_poligonos.png` (calle: paredes largas y rectas con ventanas alineadas), `play_z01_poligonos_cenital.png` y `play_z01_poligonos_cenital_cerca.png` (planta: polígonos de lados rectos y diagonales).
+- Derechos/licencias de activos nuevos: ninguno.
+- Decisiones tomadas: D65.
+- Problemas conocidos: sin jugar a mano; cada edificio se simplifica por separado, así que entre vecinos pueden quedar rendijas o solapes pequeños (alternativa con paredes compartidas sin usar: `Tools/GIS/make_city_footprints.py`); las masas de LiDAR son orgánicas y salen polígonos de muchos lados, no rectángulos; la colisión y la navegación salen ahora de las mallas poligonales (la trepada y el guardia siguen pasando sus pruebas); el panel de ayuda tapa parte de las capturas.
+- Próximo paso más pequeño: que Jorge lo vea en Unity (trepar una pared diagonal, andar por las calles) y decir si quiere más o menos enderezado (tolerancia 1,5 m) o paredes compartidas entre vecinos.

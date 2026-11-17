@@ -1,4 +1,5 @@
 using Qazrix.Input;
+using Qazrix.Simulation.Movement;
 using UnityEngine;
 
 namespace Qazrix.Prototype
@@ -33,11 +34,35 @@ namespace Qazrix.Prototype
         [SerializeField] private float followSmoothTime = 0.06f;
         [SerializeField] private float distanceRecoverSpeed = 6f;
 
+        [Header("Seguir hacia donde mira")]
+        [SerializeField] private bool followFacing = true;
+        [SerializeField] private float followSmoothSeconds = 0.35f; // cuanto menor, más rápido se coloca detrás
+        [SerializeField] private float manualHoldSeconds = 1.5f;    // tras mover la cámara a mano, no se recoloca
+
+        [Header("Media vuelta al pulsar atrás")]
+        [SerializeField] private bool turnAround = true;
+        [SerializeField] private float turnAroundDegreesPerSecond = 90f; // 180° en unos 2 s
+
         private float _yaw;
+        private float _yawVelocity;
+        private bool _turning, _latched, _backWasPressed;
+        private float _turnTarget, _latchedYaw;
+        private float _sinceManualLook = 999f;
         private float _pitch = 18f;
         private float _currentDistance;
         private Vector3 _pivot;
         private Vector3 _pivotVelocity;
+
+        /// <summary>En este fotograma la cámara se está colocando detrás de donde mira el personaje.</summary>
+        public bool IsFollowingFacing { get; private set; }
+
+        public float FollowSmoothSeconds => followSmoothSeconds;
+
+        /// <summary>La cámara está dando la media vuelta que provoca pulsar «atrás».</summary>
+        public bool IsTurningAround => _turning;
+
+        /// <summary>Orientación con la que el jugador interpreta WASD (ver <see cref="CameraFollowRules.MovementYaw"/>).</summary>
+        public float MovementYaw => CameraFollowRules.MovementYaw(_yaw, _latchedYaw, _latched);
 
         public void Configure(Transform followTarget, QazrixInput reader)
         {
@@ -68,6 +93,39 @@ namespace Qazrix.Prototype
             if (Cursor.lockState == CursorLockMode.Locked) look += input.LookPointer * mouseDegreesPerPixel;
 
             _yaw += look.x;
+
+            // Una cámara movida a mano cancela la media vuelta en curso.
+            if (look.sqrMagnitude > 0.0001f) { _sinceManualLook = 0f; _turning = false; }
+            else _sinceManualLook += dt;
+
+            // Pulsar «atrás»: la cámara da media vuelta despacio y se queda ahí; el personaje se da la vuelta con ella
+            // porque WASD se sigue interpretando con la orientación de antes mientras se mantenga «atrás».
+            bool backPressed = input.Move.y < -CameraFollowRules.Deadzone;
+            if (!backPressed) _latched = false;
+            if (CameraFollowRules.ShouldStartTurnAround(turnAround, blocked, _sinceManualLook, manualHoldSeconds,
+                    input.Move.y, _backWasPressed, _turning))
+            {
+                _turning = true;
+                _turnTarget = _yaw + 180f;
+                _latchedYaw = _yaw;
+                _latched = true;
+            }
+            _backWasPressed = backPressed;
+
+            if (_turning)
+            {
+                _yaw = CameraFollowRules.TurnAroundStep(_yaw, _turnTarget, turnAroundDegreesPerSecond, dt);
+                if (Mathf.Approximately(_yaw, _turnTarget)) _turning = false;
+            }
+
+            // La cámara se coloca detrás de donde mira el personaje, salvo que el jugador la haya movido a mano hace poco.
+            IsFollowingFacing = !_turning && CameraFollowRules.ShouldFollow(followFacing, blocked, _sinceManualLook, manualHoldSeconds,
+                input.Move.y, input.Tank.x, input.Tank.y);
+            if (IsFollowingFacing)
+                _yaw = Mathf.SmoothDampAngle(_yaw, target.eulerAngles.y, ref _yawVelocity, followSmoothSeconds);
+            else
+                _yawVelocity = 0f;
+
             _pitch = Mathf.Clamp(_pitch + (invertY ? look.y : -look.y), minPitch, maxPitch);
             distance = Mathf.Clamp(distance - input.Zoom * zoomSpeed * dt * 10f, minDistance, maxDistance);
 

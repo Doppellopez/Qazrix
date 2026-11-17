@@ -112,6 +112,17 @@ namespace Qazrix.Simulation.AI
             return running ? RunNoiseRadius : WalkNoiseRadius;
         }
 
+        /// <summary>
+        /// ¿Le está tocando el guardia? Hace falta contacto de verdad: estar a menos de <paramref name="reach"/> en
+        /// horizontal y que los dos cuerpos coincidan en altura (los pies de cada uno por debajo de la cabeza del otro).
+        /// Pasar por encima del guardia, o por debajo de él (otro piso, un tejado), no cuenta.
+        /// </summary>
+        public static bool Touches(float flatDistance, float guardFeetY, float guardHeight, float targetFeetY, float targetHeight, float reach)
+        {
+            if (flatDistance > reach) return false;
+            return targetFeetY < guardFeetY + guardHeight && targetFeetY + targetHeight > guardFeetY;
+        }
+
         public static bool Hears(float distance, float noiseRadius)
         {
             return noiseRadius > 0f && distance <= noiseRadius;

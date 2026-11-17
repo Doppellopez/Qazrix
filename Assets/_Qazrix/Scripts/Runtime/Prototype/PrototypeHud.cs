@@ -50,6 +50,8 @@ namespace Qazrix.Prototype
         {
             if (player == null) return "\n";
             if (_interactor != null && _interactor.Current != null) return $"<b>E / X: {_interactor.Current.Prompt}</b>\n";
+            if (player.IsClimbing) return "<b>Espacio / A: saltar hacia atrás</b>\n";
+            if (player.FaithLeapAvailable) return "<b>Espacio / A: salto de fe</b>\n";
             switch (player.AvailableParkour)
             {
                 case ParkourAction.Vault: return "<b>Espacio / A: saltar el obstáculo</b>\n";
@@ -107,10 +109,11 @@ namespace Qazrix.Prototype
                 (guard != null ? $"Guardia: {StateName(guard.State)} · sospecha {guard.Awareness * 100f:0} %\n" : "") +
                 ProgressLine() +
                 ParkourHint() + "\n" +
-                "Mover: WASD / flechas · stick izq.\n" +
+                "Mover: WASD · stick izq.\n" +
+                "Flechas: arriba/abajo avanzar y retroceder · izq./der. girar\n" +
                 "Correr: Mayús izq. · L3 / gatillo der.\n" +
                 "Saltar: Espacio · A\n" +
-                "Trepar: correr contra una fachada · agacharse suelta\n" +
+                "Trepar: correr contra una fachada · agacharse suelta · Espacio salta hacia atrás\n" +
                 "Agacharse: C / Ctrl · B\n" +
                 "Interactuar: E · X\n" +
                 "Cámara: ratón (clic captura, Esc suelta) · stick der.\n" +
@@ -119,7 +122,7 @@ namespace Qazrix.Prototype
                 "Cambiar teclas: F2 · Start\n" +
                 "Cambiar de escena: F3";
 
-            var area = new Rect(12f, 12f, 420f, 332f);
+            var area = new Rect(12f, 12f, 420f, 364f);
             GUI.Box(area, GUIContent.none);
             GUI.Label(new Rect(area.x + 10f, area.y + 8f, area.width - 20f, area.height - 16f), text, _style);
         }

@@ -17,6 +17,7 @@ namespace Qazrix.Input
         public const string Gamepad = "Gamepad";
 
         public const string Move = "Move";
+        public const string Tank = "Tank";
         public const string LookPointer = "LookPointer";
         public const string LookStick = "LookStick";
         public const string Zoom = "Zoom";
@@ -32,7 +33,7 @@ namespace Qazrix.Input
 
         public static readonly string[] AllActions =
         {
-            Move, LookPointer, LookStick, Zoom, Run, Crouch, Jump, Interact,
+            Move, Tank, LookPointer, LookStick, Zoom, Run, Crouch, Jump, Interact,
             ToggleHud, ToggleControls, SwitchScene, CaptureCursor, ReleaseCursor
         };
 
@@ -56,12 +57,16 @@ namespace Qazrix.Input
                 .With("Down", "<Keyboard>/s", KeyboardMouse)
                 .With("Left", "<Keyboard>/a", KeyboardMouse)
                 .With("Right", "<Keyboard>/d", KeyboardMouse);
-            move.AddCompositeBinding("2DVector")
+            move.AddBinding("<Gamepad>/leftStick", processors: "stickDeadzone(min=0.2)", groups: Gamepad);
+
+            // Flechas: control «de tanque». Arriba y abajo avanzan y retroceden en la dirección en que mira
+            // el personaje; izquierda y derecha lo giran sobre sí mismo (y = avance, x = giro).
+            InputAction tank = map.AddAction(Tank, InputActionType.Value, expectedControlLayout: "Vector2");
+            tank.AddCompositeBinding("2DVector")
                 .With("Up", "<Keyboard>/upArrow", KeyboardMouse)
                 .With("Down", "<Keyboard>/downArrow", KeyboardMouse)
                 .With("Left", "<Keyboard>/leftArrow", KeyboardMouse)
                 .With("Right", "<Keyboard>/rightArrow", KeyboardMouse);
-            move.AddBinding("<Gamepad>/leftStick", processors: "stickDeadzone(min=0.2)", groups: Gamepad);
 
             // El ratón entrega píxeles por fotograma y el stick un valor -1..1: son acciones distintas
             // porque la cámara los escala de forma diferente.

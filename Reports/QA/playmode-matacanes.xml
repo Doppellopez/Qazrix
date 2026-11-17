@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Passed" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-17 17:12:03Z" end-time="2026-11-17 17:12:06Z" duration="2,5846021">
+  <test-suite type="TestSuite" id="1057" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="42" result="Passed" start-time="2026-11-17 17:12:03Z" end-time="2026-11-17 17:12:06Z" duration="2.584602" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1050" name="Qazrix.Tests.PlayMode.dll" fullname="C:/Users/Propietario/Qazrix/Library/ScriptAssemblies/Qazrix.Tests.PlayMode.dll" runstate="Runnable" testcasecount="42" result="Passed" start-time="2026-11-17 17:12:03Z" end-time="2026-11-17 17:12:06Z" duration="2.571512" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="26176" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1051" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="42" result="Passed" start-time="2026-11-17 17:12:03Z" end-time="2026-11-17 17:12:06Z" duration="2.566913" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1052" name="Tests" fullname="Qazrix.Tests" runstate="Runnable" testcasecount="42" result="Passed" start-time="2026-11-17 17:12:03Z" end-time="2026-11-17 17:12:06Z" duration="2.563083" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1053" name="PlayMode" fullname="Qazrix.Tests.PlayMode" runstate="Runnable" testcasecount="42" result="Passed" start-time="2026-11-17 17:12:03Z" end-time="2026-11-17 17:12:06Z" duration="2.558962" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1037" name="Z01SceneTests" fullname="Qazrix.Tests.PlayMode.Z01SceneTests" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-11-17 17:12:03Z" end-time="2026-11-17 17:12:06Z" duration="2.553673" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1047" name="City_HasAFewMachicolations_VisualOnly_AndOneIsPhotographedUpClose" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.City_HasAFewMachicolations_VisualOnly_AndOneIsPhotographedUpClose" methodname="City_HasAFewMachicolations_VisualOnly_AndOneIsPhotographedUpClose" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="2027072821" result="Passed" start-time="2026-11-17 17:12:03Z" end-time="2026-11-17 17:12:06Z" duration="2.536856" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Qazrix] Matacanes: 300 (49 en torres)
+[Qazrix] Ciudad_Matacanes: activo True, render True, material Ciudad_Muro, 115200 vértices, 57600 triángulos, límites Center: (162.00, 4.57, -24.00), Extents: (256.70, 38.39, 288.70)
+[Qazrix] Ciudad_Matacanes_Huecos: activo True, render True, material Ciudad_Hueco, 3600 vértices, 1800 triángulos, límites Center: (162.00, 4.60, -24.00), Extents: (256.38, 37.66, 288.38)
+[Qazrix] Matacán a (-8,1, 90,2), tejado 8,5 m, normal (0,82, -0,57), largo 3,5 m
+[Qazrix] Pared a 2,00 m del punto a 2 m del borde previsto (debería ser ~2,00); choca con Ciudad_032
+[Qazrix] Malla del matacán cerca: 384 vértices; hacia fuera de -0,05 a 0,70 m; altura de 6,86 a 8,31 m (tejado 8,51)
+Saving results to: C:/Users/Propietario/AppData/LocalLow/DefaultCompany/Qazrix\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

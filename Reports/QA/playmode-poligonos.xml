@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Failed(Child)" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-17 16:07:13Z" end-time="2026-11-17 16:07:15Z" duration="2,4266138">
+  <test-suite type="TestSuite" id="1054" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="40" result="Failed" site="Child" start-time="2026-11-17 16:07:13Z" end-time="2026-11-17 16:07:15Z" duration="2.426614" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1047" name="Qazrix.Tests.PlayMode.dll" fullname="C:/Users/Propietario/Qazrix/Library/ScriptAssemblies/Qazrix.Tests.PlayMode.dll" runstate="Runnable" testcasecount="40" result="Failed" site="Child" start-time="2026-11-17 16:07:13Z" end-time="2026-11-17 16:07:15Z" duration="2.410347" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="25536" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1048" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="40" result="Failed" site="Child" start-time="2026-11-17 16:07:13Z" end-time="2026-11-17 16:07:15Z" duration="2.404178" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1049" name="Tests" fullname="Qazrix.Tests" runstate="Runnable" testcasecount="40" result="Failed" site="Child" start-time="2026-11-17 16:07:13Z" end-time="2026-11-17 16:07:15Z" duration="2.400438" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1050" name="PlayMode" fullname="Qazrix.Tests.PlayMode" runstate="Runnable" testcasecount="40" result="Failed" site="Child" start-time="2026-11-17 16:07:13Z" end-time="2026-11-17 16:07:15Z" duration="2.396803" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1035" name="Z01SceneTests" fullname="Qazrix.Tests.PlayMode.Z01SceneTests" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-11-17 16:07:13Z" end-time="2026-11-17 16:07:15Z" duration="2.391936" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1044" name="City_BuildingsArePolygons_WithStraightWalls_AndDiagonalCorners" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.City_BuildingsArePolygons_WithStraightWalls_AndDiagonalCorners" methodname="City_BuildingsArePolygons_WithStraightWalls_AndDiagonalCorners" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="589684126" result="Failed" start-time="2026-11-17 16:07:13Z" end-time="2026-11-17 16:07:15Z" duration="2.375042" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  muchas paredes son largas y rectas, no dientes de sierra
+  Expected: greater than 3807
+  But was:  1194
+]]></message>
+                  <stack-trace><![CDATA[at Qazrix.Tests.PlayMode.Z01SceneTests+<City_BuildingsArePolygons_WithStraightWalls_AndDiagonalCorners>d__18.MoveNext () [0x0062f] in C:\Users\Propietario\Qazrix\Assets\_Qazrix\Tests\PlayMode\Z01SceneTests.cs:500
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0004e] in .\Library\PackageCache\com.unity.test-framework@0b7a23ab2e1d\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:44
+]]></stack-trace>
+                </failure>
+                <output><![CDATA[[Qazrix] Huellas: 592 partes, 592 simplificadas, 0 con tejado por celdas, 19037 lados (1194 de 5 m o más, 4741 de menos de 1 m, 14772 en diagonal)
+Saving results to: C:/Users/Propietario/AppData/LocalLow/DefaultCompany/Qazrix\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

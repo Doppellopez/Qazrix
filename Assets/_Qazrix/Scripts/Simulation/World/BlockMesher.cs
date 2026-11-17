@@ -29,10 +29,15 @@ namespace Qazrix.Simulation.World
         /// <param name="stepHeight">Salto de cota (m) a partir del cual dos celdas vecinas son volúmenes
         /// distintos: cada una conserva su tejado y entre ambas se levanta un muro. Por defecto no hay
         /// escalones y toda la superficie es continua.</param>
+        /// <param name="cuts">Celdas cortadas en diagonal (chaflán de una esquina), una por celda: 0 = entera, 1..4 =
+        /// con el triángulo de esa esquina quitado (<see cref="CornerRounding"/>). Esa celda lleva un tejado
+        /// triangular y un muro diagonal en lugar de los dos lados que tocan la esquina. Opcional.</param>
         public static List<BlockMeshChunk> Build(float[] roofs, int columns, int rows, float cellSize,
-            float westX, float northZ, float[] baseHeights, int chunkCells, float stepHeight = float.PositiveInfinity)
+            float westX, float northZ, float[] baseHeights, int chunkCells, float stepHeight = float.PositiveInfinity,
+            byte[] cuts = null)
         {
             if (!(stepHeight > 0f)) throw new ArgumentException("El salto entre volúmenes debe ser positivo.");
+            if (cuts != null && cuts.Length != roofs?.Length) throw new ArgumentException("Hay que dar un corte por celda.");
             if (roofs == null) throw new ArgumentNullException(nameof(roofs));
             if (baseHeights == null) throw new ArgumentNullException(nameof(baseHeights));
             if (columns < 1 || rows < 1 || roofs.Length != columns * rows) throw new ArgumentException("La rejilla de tejados no cuadra con sus dimensiones.");
@@ -45,7 +50,7 @@ namespace Qazrix.Simulation.World
             {
                 for (int c0 = 0; c0 < columns; c0 += chunkCells)
                 {
-                    BlockMeshChunk chunk = BuildChunk(roofs, stepHeight, baseHeights, columns, rows, cellSize, westX, northZ,
+                    BlockMeshChunk chunk = BuildChunk(roofs, cuts, stepHeight, baseHeights, columns, rows, cellSize, westX, northZ,
                         c0, r0, Math.Min(c0 + chunkCells, columns), Math.Min(r0 + chunkCells, rows));
                     if (chunk != null) chunks.Add(chunk);
                 }
@@ -115,7 +120,7 @@ namespace Qazrix.Simulation.World
             return sum / n; // n >= 1: la propia celda siempre cuenta
         }
 
-        private static BlockMeshChunk BuildChunk(float[] roofs, float step, float[] bases, int columns, int rows,
+        private static BlockMeshChunk BuildChunk(float[] roofs, byte[] cuts, float step, float[] bases, int columns, int rows,
             float cell, float westX, float northZ, int c0, int r0, int c1, int r1)
         {
             int width = c1 - c0;
@@ -159,6 +164,11 @@ namespace Qazrix.Simulation.World
             {
                 bool open = !IsBuilt(roofs, columns, rows, nc, nr);
                 if (!open && !(roofs[r * columns + c] - roofs[nr * columns + nc] > step)) return;
+                WallBetween(c, r, nc, nr, open, ai, aj, bi, bj);
+            }
+
+            void WallBetween(int c, int r, int nc, int nr, bool open, int ai, int aj, int bi, int bj)
+            {
                 float aTop = Top(c, r, ai, aj), bTop = Top(c, r, bi, bj);
                 float aBase = Math.Min(open ? bases[aj * stride + ai] : Top(nc, nr, ai, aj), aTop);
                 float bBase = Math.Min(open ? bases[bj * stride + bi] : Top(nc, nr, bi, bj), bTop);
@@ -176,13 +186,42 @@ namespace Qazrix.Simulation.World
 
                     int nw = RoofVertex(c, r, c, r), ne = RoofVertex(c, r, c + 1, r);
                     int sw = RoofVertex(c, r, c, r + 1), se = RoofVertex(c, r, c + 1, r + 1);
-                    roofTriangles.Add(sw); roofTriangles.Add(nw); roofTriangles.Add(ne);
-                    roofTriangles.Add(sw); roofTriangles.Add(ne); roofTriangles.Add(se);
 
-                    Wall(c, r, c, r - 1, c, r, c + 1, r);         // norte: NO → NE
-                    Wall(c, r, c + 1, r, c + 1, r, c + 1, r + 1); // este:  NE → SE
-                    Wall(c, r, c, r + 1, c + 1, r + 1, c, r + 1); // sur:   SE → SO
-                    Wall(c, r, c - 1, r, c, r + 1, c, r);         // oeste: SO → NO
+                    int cut = cuts != null ? cuts[r * columns + c] : 0;
+                    if (cut == 0)
+                    {
+                        roofTriangles.Add(sw); roofTriangles.Add(nw); roofTriangles.Add(ne);
+                        roofTriangles.Add(sw); roofTriangles.Add(ne); roofTriangles.Add(se);
+
+                        Wall(c, r, c, r - 1, c, r, c + 1, r);         // norte: NO → NE
+                        Wall(c, r, c + 1, r, c + 1, r, c + 1, r + 1); // este:  NE → SE
+                        Wall(c, r, c, r + 1, c + 1, r + 1, c, r + 1); // sur:   SE → SO
+                        Wall(c, r, c - 1, r, c, r + 1, c, r);         // oeste: SO → NO
+                        continue;
+                    }
+
+                    // Celda cortada en diagonal: queda el triángulo que no contiene la esquina quitada.
+                    // Esquinas en sentido horario (NO, NE, SE, SO); se conservan las otras tres en el mismo orden.
+                    int removed = cut - 1;
+                    int[] corner = { nw, ne, se, sw };
+                    roofTriangles.Add(corner[(removed + 1) % 4]);
+                    roofTriangles.Add(corner[(removed + 2) % 4]);
+                    roofTriangles.Add(corner[(removed + 3) % 4]);
+
+                    // Los dos lados que tocan la esquina quitada desaparecen; los otros dos son muros normales.
+                    if (removed != 0 && removed != 1) Wall(c, r, c, r - 1, c, r, c + 1, r);         // norte
+                    if (removed != 1 && removed != 2) Wall(c, r, c + 1, r, c + 1, r, c + 1, r + 1); // este
+                    if (removed != 2 && removed != 3) Wall(c, r, c, r + 1, c + 1, r + 1, c, r + 1); // sur
+                    if (removed != 3 && removed != 0) Wall(c, r, c - 1, r, c, r + 1, c, r);         // oeste
+
+                    // Muro diagonal entre las dos esquinas vecinas a la quitada, con la cara hacia ella.
+                    int[] ci = { c, c + 1, c + 1, c }, cj = { r, r, r + 1, r + 1 };
+                    int a = (removed + 1) % 4, b = (removed + 3) % 4;
+                    float dx = (ci[b] - ci[a]) * cell, dz = -(cj[b] - cj[a]) * cell;       // A → B en el mundo (z hacia el norte)
+                    float outX = (ci[removed] - (ci[a] + ci[b]) * 0.5f) * cell;
+                    float outZ = -(cj[removed] - (cj[a] + cj[b]) * 0.5f) * cell;
+                    if (-dz * outX + dx * outZ < 0f) { int swap = a; a = b; b = swap; }  // normal = (A→B) × arriba
+                    WallBetween(c, r, c, r, true, ci[a], cj[a], ci[b], cj[b]);
                 }
             }
 

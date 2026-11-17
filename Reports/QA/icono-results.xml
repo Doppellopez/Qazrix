@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Passed" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-17 17:22:49Z" end-time="2026-11-17 17:22:53Z" duration="4,0909703">
+  <test-suite type="TestSuite" id="1057" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="42" result="Passed" start-time="2026-11-17 17:22:49Z" end-time="2026-11-17 17:22:53Z" duration="4.090970" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1050" name="Qazrix.Tests.PlayMode.dll" fullname="C:/Users/Propietario/Qazrix/Library/ScriptAssemblies/Qazrix.Tests.PlayMode.dll" runstate="Runnable" testcasecount="42" result="Passed" start-time="2026-11-17 17:22:49Z" end-time="2026-11-17 17:22:53Z" duration="4.077698" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="24912" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1051" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="42" result="Passed" start-time="2026-11-17 17:22:49Z" end-time="2026-11-17 17:22:53Z" duration="4.073169" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1052" name="Tests" fullname="Qazrix.Tests" runstate="Runnable" testcasecount="42" result="Passed" start-time="2026-11-17 17:22:49Z" end-time="2026-11-17 17:22:53Z" duration="4.069232" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1053" name="PlayMode" fullname="Qazrix.Tests.PlayMode" runstate="Runnable" testcasecount="42" result="Passed" start-time="2026-11-17 17:22:49Z" end-time="2026-11-17 17:22:53Z" duration="4.065365" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1017" name="IconCaptureTests" fullname="Qazrix.Tests.PlayMode.IconCaptureTests" classname="Qazrix.Tests.PlayMode.IconCaptureTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-11-17 17:22:49Z" end-time="2026-11-17 17:22:53Z" duration="4.058783" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1018" name="GuardChasingThePlayer_IsCaptured_AsTheSourceOfTheGameIcon" fullname="Qazrix.Tests.PlayMode.IconCaptureTests.GuardChasingThePlayer_IsCaptured_AsTheSourceOfTheGameIcon" methodname="GuardChasingThePlayer_IsCaptured_AsTheSourceOfTheGameIcon" classname="Qazrix.Tests.PlayMode.IconCaptureTests" runstate="Runnable" seed="1997116572" result="Passed" start-time="2026-11-17 17:22:49Z" end-time="2026-11-17 17:22:53Z" duration="4.040618" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Qazrix] Toma A del icono guardada (piernas abiertas 38 grados).
+[Qazrix] Toma B del icono guardada (piernas abiertas 36 grados).
+[Qazrix] Toma C del icono guardada (piernas abiertas 38 grados).
+Saving results to: C:/Users/Propietario/AppData/LocalLow/DefaultCompany/Qazrix\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

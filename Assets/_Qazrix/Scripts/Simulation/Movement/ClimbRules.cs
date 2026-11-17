@@ -14,6 +14,8 @@ namespace Qazrix.Simulation.Movement
         public float MaxWallTilt = 0.3f;    // |normal.y| máximo para que cuente como pared
         public float GrabHeight = 1.1f;     // altura sobre los pies a la que se agarra
         public float MantleSeconds = 0.4f;  // tiempo de encaramarse al borde
+        public float BackJumpSpeed = 5f;    // m/s horizontales al saltar hacia atrás, separándose de la pared
+        public float BackJumpUp = 5.5f;     // m/s hacia arriba en ese salto
     }
 
     /// <summary>
@@ -32,6 +34,28 @@ namespace Qazrix.Simulation.Movement
             if (limits == null) throw new ArgumentNullException(nameof(limits));
             if (!wantsRun || !isMoving || isCrouching || !climbable) return false;
             return facing >= limits.MinFacing && Math.Abs(wallNormalY) <= limits.MaxWallTilt;
+        }
+
+        /// <summary>
+        /// ¿Puede saltar hacia atrás? Solo agarrado a la pared y sin estar pasando ya al tejado; con el
+        /// cuerpo en pleno encaramado el salto no tiene de dónde impulsarse.
+        /// </summary>
+        public static bool CanJumpBack(bool isClimbing, bool isMantling, bool jumpPressed)
+        {
+            return isClimbing && !isMantling && jumpPressed;
+        }
+
+        /// <summary>
+        /// Velocidad de salida del salto hacia atrás: se separa de la pared (opuesto a <paramref name="intoWall"/>,
+        /// que apunta hacia dentro de ella) y sube. La componente horizontal de la entrada se normaliza.
+        /// </summary>
+        public static Float3 BackJumpVelocity(Float3 intoWall, ClimbLimits limits)
+        {
+            if (limits == null) throw new ArgumentNullException(nameof(limits));
+            double length = Math.Sqrt(intoWall.X * intoWall.X + intoWall.Z * intoWall.Z);
+            if (length < 1e-6) return new Float3(0f, limits.BackJumpUp, 0f);
+            float awayX = (float)(-intoWall.X / length), awayZ = (float)(-intoWall.Z / length);
+            return new Float3(awayX * limits.BackJumpSpeed, limits.BackJumpUp, awayZ * limits.BackJumpSpeed);
         }
 
         /// <summary>Velocidad vertical según la palanca (adelante sube, atrás baja).</summary>

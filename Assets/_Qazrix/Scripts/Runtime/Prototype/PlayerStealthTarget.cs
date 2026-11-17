@@ -20,6 +20,8 @@ namespace Qazrix.Prototype
 
         public override Vector3 AimPoint => transform.position + Vector3.up * (Player.CurrentHeight * 0.6f);
 
+        public override float BodyHeight => Player.CurrentHeight;
+
         public override float Exposure => StealthRules.Exposure(Player.IsCrouching);
 
         public override float NoiseRadius => StealthRules.NoiseRadius(

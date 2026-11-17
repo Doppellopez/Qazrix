@@ -1,5 +1,6 @@
 using System.Collections;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using Qazrix.AI;
 using Qazrix.Prototype;
@@ -83,6 +84,51 @@ namespace Qazrix.Tests.PlayMode
             Assert.IsTrue(wasAlert, "con el jugador de frente y a la vista debe dar la alarma");
             Assert.AreEqual(1, _player.TimesCaught, "al alcanzarlo, el jugador vuelve al punto de salida");
             Assert.AreEqual(AlertState.Return, _guard.State, "tras alcanzarlo, el guardia vuelve a su puesto");
+        }
+
+        [UnityTest]
+        public IEnumerator ChasingGuard_HoldsTheArmAndScimitarHigh_AndLowersThemAfterwards()
+        {
+            yield return LoadScene();
+            var animator = _guard.GetComponentInChildren<Qazrix.Prototype.CharacterWalkAnimator>();
+            Assert.IsNotNull(animator, "el guardia no tiene animador");
+            Transform grip = _guard.GetComponentsInChildren<Transform>().First(t => t.name == "Sable");
+            Transform tip = _guard.GetComponentsInChildren<Transform>().First(t => t.name == "Curva_5");
+
+            // En patrulla lleva el arma abajo: brazo recto y hoja apuntando hacia delante, no hacia arriba.
+            Assert.AreEqual(0f, animator.WeaponRaiseWeight, 1e-3f);
+            Assert.Less(animator.RightArmAngle, 20f, "patrullando, el brazo del sable cuelga");
+            // La hoja es curva y su punta sube un poco aun con el brazo caído: se mide como punto de partida.
+            float loweredTip = tip.position.y - grip.position.y;
+            Assert.Less(loweredTip, 0.3f, "y la hoja no apunta hacia arriba");
+
+            var post = new Vector3(-4f, 0f, -4f);
+            _guard.SetPost(post, Facing(post, _player.transform.position));
+
+            // Persiguiendo (alarma): brazo en alto y hoja hacia arriba.
+            float raisedArm = 0f, tipAboveGrip = float.MinValue, weight = 0f;
+            float end = Time.time + 5f;
+            while (Time.time < end && _guard.State != AlertState.Alert) yield return null;
+            Assert.AreEqual(AlertState.Alert, _guard.State, "el guardia debe llegar a perseguir");
+            end = Time.time + 0.8f;
+            while (Time.time < end && _player.TimesCaught == 0)
+            {
+                raisedArm = Mathf.Max(raisedArm, animator.RightArmAngle);
+                tipAboveGrip = Mathf.Max(tipAboveGrip, tip.position.y - grip.position.y);
+                weight = Mathf.Max(weight, animator.WeaponRaiseWeight);
+                yield return null;
+            }
+            Assert.Greater(weight, 0.9f, "persiguiendo, el arma sube del todo");
+            Assert.Greater(raisedArm, 110f, "el brazo del sable queda por encima del hombro");
+            Assert.Greater(tipAboveGrip, loweredTip + 0.3f, $"y la punta de la hoja mucho más arriba que con el brazo caído ({loweredTip:0.00} → {tipAboveGrip:0.00} m)");
+
+            // Pasada la persecución vuelve a bajar.
+            end = Time.time + 20f;
+            while (Time.time < end && _guard.State == AlertState.Alert) yield return null; // acaba alcanzando al jugador y vuelve a su puesto
+            yield return Seconds(1.5f);
+            Assert.AreNotEqual(AlertState.Alert, _guard.State, "la persecución debe acabar");
+            Assert.Less(animator.WeaponRaiseWeight, 0.05f, "al dejar de perseguir baja el arma");
+            Assert.Less(animator.RightArmAngle, 20f);
         }
 
         [UnityTest]

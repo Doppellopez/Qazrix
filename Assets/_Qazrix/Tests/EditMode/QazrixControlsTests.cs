@@ -65,6 +65,19 @@ namespace Qazrix.Tests
         }
 
         [Test]
+        public void ArrowKeys_DriveTheTankAction_NotTheCameraRelativeMove()
+        {
+            string[] arrows = { "<Keyboard>/upArrow", "<Keyboard>/downArrow", "<Keyboard>/leftArrow", "<Keyboard>/rightArrow" };
+            string[] tank = Find(_controls, QazrixControls.Tank).bindings.Select(b => b.path).ToArray();
+            string[] move = Find(_controls, QazrixControls.Move).bindings.Select(b => b.path).ToArray();
+            foreach (string arrow in arrows)
+            {
+                CollectionAssert.Contains(tank, arrow, "las flechas deben mover al personaje de tanque");
+                CollectionAssert.DoesNotContain(move, arrow, "y no la acción de movimiento relativa a la cámara");
+            }
+        }
+
+        [Test]
         public void EveryBinding_BelongsToAControlScheme()
         {
             foreach (InputBinding b in _controls.FindActionMap(QazrixControls.GameplayMap, true).bindings)

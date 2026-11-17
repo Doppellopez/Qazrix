@@ -39,6 +39,16 @@ namespace Qazrix.Prototype
 
         public int RoofsReached { get; private set; }
 
+        /// <summary>La última trepada terminó con un salto hacia atrás (y no soltándose ni en el tejado).</summary>
+        public bool EndedWithBackJump { get; private set; }
+
+        /// <summary>Velocidad con la que sale ese salto (válida si <see cref="EndedWithBackJump"/>).</summary>
+        public Vector3 BackJumpVelocity { get; private set; }
+
+        public int BackJumpsDone { get; private set; }
+
+        private float _noGrabUntil;
+
         private void Awake()
         {
             _controller = GetComponent<CharacterController>();
@@ -49,6 +59,7 @@ namespace Qazrix.Prototype
         public bool TryBegin(Vector3 wished, bool wantsRun, bool isCrouching)
         {
             if (IsActive || !wantsRun || wished.sqrMagnitude < 0.25f) return false;
+            if (Time.time < _noGrabUntil) return false; // recién saltado hacia atrás: no se vuelve a agarrar al instante
             wished.y = 0f;
             wished.Normalize();
             if (!FindWall(transform.position, wished, _controller.radius + reach, out RaycastHit wall)) return false;
@@ -66,15 +77,34 @@ namespace Qazrix.Prototype
             _mantling = false;
             IsActive = true;
             EndedStanding = false;
+            EndedWithBackJump = false;
             _controller.enabled = false; // mientras trepa el cuerpo va pegado a la pared, no lo mueve la física
             SnapTo(wall);
             return true;
         }
 
-        /// <summary>Avanza la trepada. <paramref name="move"/>: x de lado, y arriba/abajo.</summary>
-        public void Tick(float deltaTime, Vector2 move, bool letGo)
+        /// <summary>
+        /// Avanza la trepada. <paramref name="move"/>: x de lado, y arriba/abajo. Con
+        /// <paramref name="jumpPressed"/> salta hacia atrás, separándose de la pared.
+        /// </summary>
+        public void Tick(float deltaTime, Vector2 move, bool letGo, bool jumpPressed = false)
         {
             if (!IsActive) return;
+
+            if (ClimbRules.CanJumpBack(true, _mantling, jumpPressed))
+            {
+                Float3 v = ClimbRules.BackJumpVelocity(ToFloat3(_into), limits);
+                BackJumpVelocity = new Vector3(v.X, v.Y, v.Z);
+                // De cara al sitio al que salta, algo separado de la pared para no quedar dentro de ella.
+                transform.rotation = Quaternion.LookRotation(-_into, Vector3.up);
+                transform.position += -_into * 0.1f;
+                BackJumpsDone++;
+                _noGrabUntil = Time.time + 0.4f;
+                End(false);
+                EndedWithBackJump = true;
+                return;
+            }
+
             transform.rotation = Quaternion.RotateTowards(transform.rotation,
                 Quaternion.LookRotation(_into, Vector3.up), 720f * deltaTime);
 

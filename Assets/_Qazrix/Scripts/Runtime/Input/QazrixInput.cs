@@ -7,6 +7,7 @@ namespace Qazrix.Input
     public struct InputFrame
     {
         public Vector2 Move;        // x = derecha, y = adelante; magnitud máxima 1
+        public Vector2 Tank;        // flechas: x = girar (derecha +), y = avanzar (+) o retroceder (-)
         public Vector2 LookPointer; // píxeles de ratón de este fotograma
         public Vector2 LookStick;   // stick derecho, -1..1
         public float Zoom;          // >0 acerca, <0 aleja
@@ -34,7 +35,7 @@ namespace Qazrix.Input
         [SerializeField] private InputActionAsset actions;
 
         private InputActionMap _map;
-        private InputAction _move, _lookPointer, _lookStick, _zoom, _run, _crouch, _jump, _interact;
+        private InputAction _move, _tank, _lookPointer, _lookStick, _zoom, _run, _crouch, _jump, _interact;
         private InputAction _toggleHud, _toggleControls, _switchScene, _captureCursor, _releaseCursor;
         private bool _warned;
 
@@ -54,6 +55,7 @@ namespace Qazrix.Input
 
             _map = actions.FindActionMap(QazrixControls.GameplayMap, throwIfNotFound: true);
             _move = _map.FindAction(QazrixControls.Move, true);
+            _tank = _map.FindAction(QazrixControls.Tank, true);
             _lookPointer = _map.FindAction(QazrixControls.LookPointer, true);
             _lookStick = _map.FindAction(QazrixControls.LookStick, true);
             _zoom = _map.FindAction(QazrixControls.Zoom, true);
@@ -95,6 +97,7 @@ namespace Qazrix.Input
             if (GameplayBlocked) return frame;
 
             frame.Move = Vector2.ClampMagnitude(_move.ReadValue<Vector2>(), 1f);
+            frame.Tank = Vector2.ClampMagnitude(_tank.ReadValue<Vector2>(), 1f);
             frame.LookPointer = _lookPointer.ReadValue<Vector2>();
             frame.LookStick = _lookStick.ReadValue<Vector2>();
             frame.Zoom = Mathf.Clamp(_zoom.ReadValue<float>(), -1f, 1f);

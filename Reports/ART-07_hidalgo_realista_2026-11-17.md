@@ -1,0 +1,15 @@
+## Incremento ART-07: hidalgo más realista
+- Objetivo/gate: a petición de Jorge («hacer los muñecos más realistas»), mejorar el aspecto del hidalgo (jugador) por código, sin descargar modelos. El guardia queda para después (D56).
+- Cambios de código/escenas/assets:
+  - `CharacterKit`: texturas de 256 px (antes 128) con patrones en coordenadas relativas y ruido sin costura. Sarga fina con hilos de grosor variable, pliegues suaves con roce, cuero con arrugas y zonas gastadas, piel con variación de tono y acero con vetas de pulido.
+  - `HidalgoBuilder`: sayo en dos cuerpos (pecho y cintura) con hombros redondeados; tres botones; golilla de lino; cara con ojos, cejas, orejas, bigote y nuca de pelo; manga abullonada, antebrazo, puño de lino, mano aplanada y pulgar; botas con borde doblado, pie redondeado y suela; bolsa de cuero; broche; pliegues en la capa; cinta en el bonete. Los pivotes de animación y los nombres que usan los tests no cambian.
+  - Dos materiales nuevos (`Hidalgo_Lino`, `Hidalgo_Oscuro`) y todas las texturas del hidalgo y del guardia regeneradas en `Assets/_Qazrix/Art/Characters/`.
+  - Escenas `Prototype` y `Z01_Relieve` regeneradas.
+- Comandos ejecutados: `PrototypeSceneBuilder.RebuildBatch`, `Z01GeoBuilder.BuildBatch`, `VerifyProject.RunBatch`, `-runTests` EditMode y PlayMode (Unity 6000.3.6f1).
+- Pruebas: aprobadas. VerifyProject 0 errores; EditMode 96/96; PlayMode 32/32. Prueba nueva `Player_HasFace_Collar_Buttons_AndCuffs` (ojos simétricos y en la cara, golilla, botones, puños, suela). Una pasada intermedia (por otra sesión, con las escenas sin regenerar) falló en `Ojo_izq`, como era de esperar.
+- Build y plataforma: sin build nuevo.
+- Evidencia: `Reports/QA/play_hidalgo_frente.png` (cuerpo entero de frente), `Reports/QA/play_hidalgo_busto.png` (busto) y `Reports/QA/play_hidalgo.png` (cámara del juego, de espaldas). La primera captura de frente mostró dos defectos (botones enterrados en el pecho y una losa verde de la capa de hombros sobre el pecho); se corrigieron y se repitió la verificación completa.
+- Derechos/licencias de activos nuevos: texturas y materiales generados por código propio; ampliada la fila GEN-002 (sin activos externos).
+- Decisiones tomadas: D56.
+- Problemas conocidos: sigue siendo de primitivas, con un pivote por brazo y pierna (sin rodillas ni codos) y formas todavía muy simples; en sombra las telas quedan oscuras; sin jugar a mano; el guardia mantiene su modelo (solo mejoran sus texturas).
+- Próximo paso más pequeño: dar el mismo tratamiento al guardia, o que Jorge diga qué más del hidalgo no le parece real.

@@ -26,7 +26,19 @@ namespace Qazrix.Prototype
         private bool _hasLast;
         private float _phase;
         private float _leftLeg, _rightLeg, _leftArm, _rightArm;
+        [SerializeField] private Transform weaponGrip; // puño del arma (solo el guardia): sube con el brazo
+        private float _raise;
+
+        /// <summary>Pide el brazo y el arma en alto (guardia persiguiendo) o abajo.</summary>
+        public bool WeaponRaised { get; set; }
+
+        /// <summary>Cuánto está en alto el arma, de 0 (abajo) a 1 (arriba del todo).</summary>
+        public float WeaponRaiseWeight => _raise;
+
+        /// <summary>Indica qué nodo es el puño del arma que acompaña al brazo derecho.</summary>
+        public void SetWeapon(Transform grip) => weaponGrip = grip;
         private PlayerWallClimb _climb;
+        private PlayerFaithLeap _leap;
         private bool _lookedForClimb;
         private float _climbPhase;
         private float _lastHeight;
@@ -86,9 +98,11 @@ namespace Qazrix.Prototype
             if (!_lookedForClimb)
             {
                 _climb = root.GetComponent<PlayerWallClimb>(); // solo el jugador trepa fachadas
+                _leap = root.GetComponent<PlayerFaithLeap>();  // y hace el salto de fe
                 _lookedForClimb = true;
             }
             bool climbing = _climb != null && _climb.IsActive;
+            bool diving = _leap != null && _leap.IsActive;
             float climbed = _hasLastHeight ? position.y - _lastHeight : 0f;
             _lastHeight = position.y;
             _hasLastHeight = true;
@@ -114,7 +128,14 @@ namespace Qazrix.Prototype
 
             float targetLeftLeg, targetRightLeg, targetLeftArm, targetRightArm;
             bool bothArms = false;
-            if (climbing && _climb.IsMantling)
+            if (diving)
+            {
+                // Salto de fe: brazos arriba y piernas rectas, ligeramente hacia atrás.
+                targetLeftArm = targetRightArm = LeapRules.DiveArm;
+                targetLeftLeg = targetRightLeg = LeapRules.DiveLeg;
+                bothArms = true;
+            }
+            else if (climbing && _climb.IsMantling)
             {
                 // Encaramándose al tejado: los brazos empujan hacia abajo y una pierna sube al borde.
                 float t = _climb.MantleProgress;
@@ -159,6 +180,13 @@ namespace Qazrix.Prototype
             }
             if (!swingRightArm && !bothArms) targetRightArm = 0f; // para trepar hacen falta las dos manos
 
+            // Con el arma en alto (el guardia que persigue) el brazo derecho sube y la hoja apunta arriba y adelante.
+            if (weaponGrip != null)
+            {
+                _raise = WeaponRaise.Blend(_raise, WeaponRaised, Time.deltaTime);
+                if (_raise > 0f) targetRightArm = WeaponRaise.ArmAngle(targetRightArm, _raise, Time.time);
+            }
+
             float step = blendDegreesPerSecond * Time.deltaTime;
             _leftLeg = Mathf.MoveTowards(_leftLeg, targetLeftLeg, step);
             _rightLeg = Mathf.MoveTowards(_rightLeg, targetRightLeg, step);
@@ -170,6 +198,8 @@ namespace Qazrix.Prototype
             Apply(rightLeg, _rightLeg);
             Apply(leftArm, _leftArm);
             Apply(rightArm, _rightArm);
+            // El puño del arma cuelga del brazo: se le suma el giro del brazo para que la hoja quede donde toca.
+            if (weaponGrip != null) weaponGrip.localRotation = Quaternion.Euler(WeaponRaise.GripAngle(_raise, _rightArm), 0f, 0f);
         }
 
         private static void Apply(Transform pivot, float forwardDegrees)

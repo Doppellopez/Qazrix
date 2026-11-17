@@ -17,6 +17,9 @@ namespace Qazrix.AI
         /// <summary>Radio en metros en el que se le oye ahora mismo; 0 si no hace ruido.</summary>
         public abstract float NoiseRadius { get; }
 
+        /// <summary>Altura del cuerpo en metros (con los pies en el origen): sirve para saber si un guardia le toca de verdad.</summary>
+        public virtual float BodyHeight => 1.8f;
+
         /// <summary>Un guardia le ha alcanzado.</summary>
         public abstract void Caught();
     }

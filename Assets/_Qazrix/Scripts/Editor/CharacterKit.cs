@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using Qazrix.Simulation.World;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,15 +21,69 @@ namespace Qazrix.EditorTools
         public static Transform Part(string name, PrimitiveType type, Transform parent, Vector3 position, Vector3 size,
             Material material, Vector3 euler = default)
         {
-            GameObject go = GameObject.CreatePrimitive(type);
-            go.name = name;
-            Object.DestroyImmediate(go.GetComponent<Collider>()); // el cuerpo no colisiona: lo hace el CharacterController
+            // No usa CreatePrimitive: la malla es la nuestra, con diez veces los triángulos y el mismo tamaño
+            // que la de Unity (ART-11). Sin colisionador: el cuerpo no colisiona, lo hace el CharacterController.
+            var go = new GameObject(name);
+            go.AddComponent<MeshFilter>().sharedMesh = MeshFor(type);
+            go.AddComponent<MeshRenderer>().sharedMaterial = material;
             go.transform.SetParent(parent, false);
             go.transform.localPosition = position;
             go.transform.localRotation = Quaternion.Euler(euler);
             go.transform.localScale = size;
-            go.GetComponent<MeshRenderer>().sharedMaterial = material;
             return go.transform;
+        }
+
+        public const string MeshFolder = "Assets/_Qazrix/Art/Characters/Meshes";
+
+        private static readonly Dictionary<PrimitiveType, Mesh> MeshCache = new Dictionary<PrimitiveType, Mesh>();
+
+        /// <summary>
+        /// Malla de alta resolución de una primitiva (esfera, cápsula, cilindro o cubo), guardada como activo
+        /// generado en <see cref="MeshFolder"/>. Se rellena una vez por sesión del editor, así que cambiar las
+        /// subdivisiones en <see cref="PrimitiveGeometry"/> se aplica al regenerar.
+        /// </summary>
+        public static Mesh MeshFor(PrimitiveType type)
+        {
+            if (MeshCache.TryGetValue(type, out Mesh cached) && cached != null) return cached;
+
+            MeshData data;
+            switch (type)
+            {
+                case PrimitiveType.Sphere: data = PrimitiveGeometry.Sphere(); break;
+                case PrimitiveType.Capsule: data = PrimitiveGeometry.Capsule(); break;
+                case PrimitiveType.Cylinder: data = PrimitiveGeometry.Cylinder(); break;
+                case PrimitiveType.Cube: data = PrimitiveGeometry.Box(); break;
+                default: throw new System.ArgumentException($"Sin malla de alta resolución para {type}", nameof(type));
+            }
+
+            Directory.CreateDirectory(MeshFolder);
+            string path = $"{MeshFolder}/Qazrix_{type}.asset";
+            var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+            bool isNew = mesh == null;
+            if (isNew) mesh = new Mesh();
+
+            mesh.Clear();
+            mesh.name = $"Qazrix_{type}";
+            mesh.indexFormat = data.VertexCount > 65000 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16;
+            var vertices = new List<Vector3>(data.VertexCount);
+            var normals = new List<Vector3>(data.VertexCount);
+            var uvs = new List<Vector2>(data.VertexCount);
+            for (int i = 0; i < data.VertexCount; i++)
+            {
+                vertices.Add(new Vector3(data.Vertices[i * 3], data.Vertices[i * 3 + 1], data.Vertices[i * 3 + 2]));
+                normals.Add(new Vector3(data.Normals[i * 3], data.Normals[i * 3 + 1], data.Normals[i * 3 + 2]));
+                uvs.Add(new Vector2(data.Uvs[i * 2], data.Uvs[i * 2 + 1]));
+            }
+            mesh.SetVertices(vertices);
+            mesh.SetNormals(normals);
+            mesh.SetUVs(0, uvs);
+            mesh.SetTriangles(data.Triangles, 0);
+            mesh.RecalculateBounds();
+
+            if (isNew) AssetDatabase.CreateAsset(mesh, path);
+            else EditorUtility.SetDirty(mesh);
+            MeshCache[type] = mesh;
+            return mesh;
         }
 
         /// <summary>Nodo vacío que sirve de pivote (cadera, hombro, empuñadura).</summary>
@@ -40,10 +96,14 @@ namespace Qazrix.EditorTools
             return pivot;
         }
 
+        /// <summary>Resolución por defecto de las texturas de personaje, en píxeles por lado.</summary>
+        public const int DefaultResolution = 256;
+
         /// <summary>Material con textura generada. El color va en la textura; el material queda en blanco.</summary>
-        public static Material Textured(string folder, string name, Color color, Pattern pattern, float tiling, bool metal = false)
+        public static Material Textured(string folder, string name, Color color, Pattern pattern, float tiling,
+            bool metal = false, int resolution = DefaultResolution)
         {
-            Texture2D texture = GetOrCreateTexture(folder, name, color, pattern);
+            Texture2D texture = GetOrCreateTexture(folder, name, color, pattern, metal, resolution);
             Material material = PrototypeSceneBuilder.GetOrCreateMaterial(name, Color.white, folder);
             foreach (string property in new[] { "_BaseMap", "_MainTex" })
             {
@@ -57,43 +117,96 @@ namespace Qazrix.EditorTools
             return material;
         }
 
-        /// <summary>Textura de 128 px generada por código, siempre igual para el mismo nombre.</summary>
-        private static Texture2D GetOrCreateTexture(string folder, string name, Color color, Pattern pattern)
+        /// <summary>
+        /// Ruido de Perlin que se repite sin costura al tilear la textura. <paramref name="u"/> y
+        /// <paramref name="v"/> van de 0 a 1 dentro de la textura; <paramref name="frequency"/> es el número
+        /// de «manchas» por lado; <paramref name="offset"/> separa unas capas de otras.
+        /// </summary>
+        private static float TileNoise(float u, float v, float frequency, float offset)
         {
-            const int size = 128;
+            float a = Mathf.PerlinNoise(u * frequency + offset, v * frequency + offset);
+            float b = Mathf.PerlinNoise((u - 1f) * frequency + offset, v * frequency + offset);
+            float c = Mathf.PerlinNoise(u * frequency + offset, (v - 1f) * frequency + offset);
+            float d = Mathf.PerlinNoise((u - 1f) * frequency + offset, (v - 1f) * frequency + offset);
+            return Mathf.Lerp(Mathf.Lerp(a, b, u), Mathf.Lerp(c, d, u), v);
+        }
+
+        /// <summary>
+        /// Textura generada por código, siempre igual para el mismo nombre. Los patrones se definen en
+        /// coordenadas relativas (0–1), así que la escala visual no cambia con la resolución.
+        /// </summary>
+        private static Texture2D GetOrCreateTexture(string folder, string name, Color color, Pattern pattern,
+            bool metal, int size)
+        {
             Directory.CreateDirectory(folder);
             string path = $"{folder}/{name}.png";
 
             var random = new System.Random(StableSeed(name));
+            // Cada hilo de la trama tiene un grosor algo distinto: es lo que hace que la tela no parezca un damero.
+            int thread = Mathf.Max(1, size / 64);
+            int threads = size / thread + 1;
+            var warp = new float[threads];
+            var weft = new float[threads];
+            for (int i = 0; i < threads; i++)
+            {
+                warp[i] = (float)random.NextDouble();
+                weft[i] = (float)random.NextDouble();
+            }
+
             var pixels = new Color[size * size];
             for (int y = 0; y < size; y++)
             {
+                float v = y / (float)size;
                 for (int x = 0; x < size; x++)
                 {
+                    float u = x / (float)size;
                     float noise = (float)random.NextDouble();
                     float shade;
+                    float warm = 0f; // desplaza el tono hacia cálido (+) o frío (-)
                     switch (pattern)
                     {
-                        case Pattern.Weave: // trama de hilos cruzados
-                            shade = (((x / 2) + (y / 2)) % 2 == 0 ? 0.90f : 1.04f) * (0.94f + 0.10f * noise);
+                        case Pattern.Weave: // sarga fina: hilos en diagonal, con hilos más claros y más oscuros
+                        {
+                            int tx = x / thread, ty = y / thread;
+                            float twill = (tx + ty) % 4 < 2 ? 1.05f : 0.89f;
+                            float yarn = 0.93f + 0.10f * warp[tx] + 0.06f * weft[ty];
+                            float slub = 0.94f + 0.12f * TileNoise(u, v, 5f, 11.3f); // vetas de hilo grueso
+                            shade = twill * yarn * slub * (0.97f + 0.05f * noise);
                             break;
-                        case Pattern.Pleats: // pliegues verticales de una tela amplia
-                            float fold = Mathf.Abs(Mathf.Sin(x * Mathf.PI * 9f / size));
-                            shade = (0.70f + 0.36f * fold) * (0.96f + 0.07f * noise);
+                        }
+                        case Pattern.Pleats: // pliegues verticales y suaves de una tela amplia, con roce
+                        {
+                            float fold = Mathf.Pow(Mathf.Abs(Mathf.Sin(u * Mathf.PI * 9f)), 0.6f);
+                            float wear = 0.90f + 0.14f * TileNoise(u, v, 6f, 5.7f);
+                            shade = (0.70f + 0.36f * fold) * wear * (0.97f + 0.05f * noise);
                             break;
-                        case Pattern.Leather: // manchas irregulares
-                            float blotch = Mathf.PerlinNoise(x * 0.09f + 3.1f, y * 0.09f + 7.7f);
-                            shade = 0.78f + 0.34f * blotch + 0.06f * (noise - 0.5f);
+                        }
+                        case Pattern.Leather: // manchas, arrugas finas y zonas gastadas más claras
+                        {
+                            float blotch = TileNoise(u, v, 11f, 3.1f);
+                            float ridge = 1f - Mathf.Abs(2f * TileNoise(u, v, 5f, 21.4f) - 1f);
+                            float worn = Mathf.Clamp01((TileNoise(u, v, 3f, 8.8f) - 0.62f) * 4f);
+                            shade = 0.80f + 0.26f * blotch - 0.16f * ridge * ridge * ridge + 0.10f * worn
+                                    + 0.05f * (noise - 0.5f);
                             break;
-                        default:
-                            shade = 0.97f + 0.05f * noise;
+                        }
+                        default: // piel o metal liso
+                        {
+                            float tone = TileNoise(u, v, 3f, 14.2f);
+                            shade = 0.96f + 0.08f * tone + 0.03f * (noise - 0.5f);
+                            warm = tone - 0.5f;
+                            if (metal) shade *= 0.90f + 0.14f * TileNoise(u, v * 12f, 2f, 2.5f); // vetas de pulido en horizontal
                             break;
+                        }
                     }
-                    pixels[y * size + x] = new Color(Mathf.Clamp01(color.r * shade), Mathf.Clamp01(color.g * shade), Mathf.Clamp01(color.b * shade), 1f);
+                    float r = color.r * shade * (1f + 0.05f * warm);
+                    float g = color.g * shade;
+                    float b = color.b * shade * (1f - 0.05f * warm);
+                    pixels[y * size + x] = new Color(Mathf.Clamp01(r), Mathf.Clamp01(g), Mathf.Clamp01(b), 1f);
                 }
             }
 
-            var generated = new Texture2D(size, size, TextureFormat.RGB24, false);
+            var generated = new Texture2D(size, size, TextureFormat.RGB24, true);
             generated.SetPixels(pixels);
             generated.Apply();
             File.WriteAllBytes(path, generated.EncodeToPNG());

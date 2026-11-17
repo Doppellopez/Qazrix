@@ -11,11 +11,11 @@ namespace Qazrix.Simulation.World
         ArrowSlit
     }
 
-    /// <summary>Hueco dibujado sobre una fachada: centro, normal horizontal hacia fuera y tipo.</summary>
+    /// <summary>Hueco dibujado sobre una fachada: centro, normal horizontal hacia fuera (unitaria; en diagonal si la pared lo es) y tipo.</summary>
     public struct FacadeOpening
     {
         public float X, Y, Z;
-        public int NormalX, NormalZ;
+        public float NormalX, NormalZ;
         public OpeningKind Kind;
     }
 

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Failed(Child)" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-17 14:14:01Z" end-time="2026-11-17 14:14:05Z" duration="4,6948035">
+  <test-suite type="TestSuite" id="1050" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="36" result="Failed" site="Child" start-time="2026-11-17 14:14:01Z" end-time="2026-11-17 14:14:05Z" duration="4.694804" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1043" name="Qazrix.Tests.PlayMode.dll" fullname="C:/Users/Propietario/Qazrix/Library/ScriptAssemblies/Qazrix.Tests.PlayMode.dll" runstate="Runnable" testcasecount="36" result="Failed" site="Child" start-time="2026-11-17 14:14:01Z" end-time="2026-11-17 14:14:05Z" duration="4.682368" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="24760" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1044" name="Qazrix" fullname="Qazrix" runstate="Runnable" testcasecount="36" result="Failed" site="Child" start-time="2026-11-17 14:14:01Z" end-time="2026-11-17 14:14:05Z" duration="4.678109" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1045" name="Tests" fullname="Qazrix.Tests" runstate="Runnable" testcasecount="36" result="Failed" site="Child" start-time="2026-11-17 14:14:01Z" end-time="2026-11-17 14:14:05Z" duration="4.674389" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1046" name="PlayMode" fullname="Qazrix.Tests.PlayMode" runstate="Runnable" testcasecount="36" result="Failed" site="Child" start-time="2026-11-17 14:14:01Z" end-time="2026-11-17 14:14:05Z" duration="4.670771" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1031" name="Z01SceneTests" fullname="Qazrix.Tests.PlayMode.Z01SceneTests" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-11-17 14:14:01Z" end-time="2026-11-17 14:14:05Z" duration="4.665788" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1039" name="Player_ClimbingJumpsBackwards_OffTheWall" fullname="Qazrix.Tests.PlayMode.Z01SceneTests.Player_ClimbingJumpsBackwards_OffTheWall" methodname="Player_ClimbingJumpsBackwards_OffTheWall" classname="Qazrix.Tests.PlayMode.Z01SceneTests" runstate="Runnable" seed="819920263" result="Failed" start-time="2026-11-17 14:14:01Z" end-time="2026-11-17 14:14:05Z" duration="4.648546" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  mirando hacia donde salta, no hacia la pared: [0,0s fz=-1,00 z=-0,1 grounded=False w=True shift=False v=5,0] [0,2s fz=0,33 z=-0,8 grounded=False w=True shift=False v=3,7] [0,3s fz=1,00 z=-1,2 grounded=False w=True shift=False v=2,4] [0,5s fz=1,00 z=-1,5 grounded=False w=True shift=False v=1,4] [0,6s fz=1,00 z=-1,6 grounded=False w=True shift=False v=0,4] [0,8s fz=1,00 z=-1,6 grounded=False w=True shift=False v=0,5] [0,9s fz=1,00 z=-1,4 grounded=True w=True shift=False v=2,2] [1,1s fz=1,00 z=-1,1 grounded=True w=True shift=False v=2,2] 
+  Expected: less than -0.5f
+  But was:  1.0f
+]]></message>
+                  <stack-trace><![CDATA[at Qazrix.Tests.PlayMode.Z01SceneTests+<Player_ClimbingJumpsBackwards_OffTheWall>d__16.MoveNext () [0x007e5] in C:\Users\Propietario\Qazrix\Assets\_Qazrix\Tests\PlayMode\Z01SceneTests.cs:428
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0004e] in .\Library\PackageCache\com.unity.test-framework@0b7a23ab2e1d\UnityEngine.TestRunner\NUnitExtensions\Attributes\TestEnumerator.cs:44
+]]></stack-trace>
+                </failure>
+                <output><![CDATA[Saving results to: C:/Users/Propietario/AppData/LocalLow/DefaultCompany/Qazrix\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

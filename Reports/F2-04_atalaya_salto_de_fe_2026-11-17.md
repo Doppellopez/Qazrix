@@ -1,0 +1,23 @@
+## Incremento F2-04: atalaya y salto de fe
+
+- Objetivo/gate: mecánica de género «atalaya y salto de fe» pedida por Jorge (2026-11-17). No cierra ningún gate.
+- Cambios de código/escenas/assets:
+  - `Scripts/Simulation/Movement/LeapRules.cs` (nuevo, puro): alcance (`CanLeap`), duración (`FlightTime`) y trayectoria (`Position`) del salto; constantes de la pose de buceo.
+  - `Scripts/Runtime/Gameplay/`: `HayLanding` (pajar), `FaithLeapZone` (borde), `ViewpointZone` (sincronización: reaparición en la azotea).
+  - `Scripts/Runtime/Prototype/PlayerFaithLeap.cs` (nuevo) integrado en `PrototypePlayerController` (tecla de salto en el borde, `FaithLeapAvailable`, `IsLeaping`, cancelación al reaparecer), `PrototypeHud` («Espacio / A: salto de fe») y `CharacterWalkAnimator` (pose de buceo).
+  - `Scripts/Editor/Z01AtalayaBuilder.cs` (nuevo), llamado desde `Z01GeoBuilder.Build`; `PrototypeSceneBuilder.CreatePlayer` añade `PlayerFaithLeap`. Material `Proto_Pajar`.
+  - Escena `Z01_Relieve` regenerada: azotea a 11,8 m (cota local), desnivel 18,5 m, pajar en (32,8; 87,2). `Prototype` no cambia de contenido.
+  - Tests: `Tests/EditMode/LeapRulesTests.cs` (6) y `Z01SceneTests.Watchtower_Synchronizes_AndTheFaithLeapEndsInTheHay`.
+- Comandos ejecutados: `Z01GeoBuilder.BuildBatch` (exit 0), `VerifyProject.RunBatch`, tests EditMode (sin interfaz) y tests PlayMode (dos pasadas: la primera falló mi prueba porque el rayo de colocación chocaba con el trigger de la zona y dejaba al jugador 4 m en el aire; corregido con `QueryTriggerInteraction.Ignore`).
+- Pruebas: `VerifyProject` 0 errores y 1 aviso (D06 abierta); EditMode **96/96** (incluye los 6 de `LeapRulesTests` y el de flechas de la sesión de controles); PlayMode **31/32**: pasan `Watchtower_Synchronizes_AndTheFaithLeapEndsInTheHay` (19,0 m de desnivel) y `ArrowKeys_MoveAlongFacing_AndTurnTheBody`; falla `CharacterModelTests.Player_HasFace_Collar_Buttons_AndCuffs` («falta la pieza Ojo_izq»), que pertenece al trabajo del hidalgo en curso en otra sesión, no a este incremento. Sin errores de compilación. No ejecutadas: jugar a mano.
+- Build y plataforma: sin build nuevo.
+- Evidencia: `Reports/QA/play_z01_atalaya_borde.png` (en el borde, con la ayuda «Espacio / A: salto de fe» y reaparición «atalaya de Bujaco»), `play_z01_salto_de_fe.png` (en pleno vuelo, brazos arriba), `play_z01_pajar.png`, `editmode-results.xml`, `playmode-results.xml`.
+- Derechos/licencias de activos nuevos: ninguno (material de color plano generado por código).
+- Decisiones tomadas: D55.
+- Problemas conocidos:
+  - El salto es cinemático hacia un destino fijo, no caída libre: no se puede fallar el pajar.
+  - Sin daño por caída ni letalidad fuera del pajar; tirarse de otro sitio sigue sin consecuencias.
+  - Sin cabeceo del cuerpo en el buceo (un pivote por extremidad).
+  - Sin jugar a mano. La azotea se alcanza trepando la fachada, no probado a mano.
+  - Hay cambios ajenos sin commit (`CharacterKit.cs`, texturas de los personajes, F1-08, informes QA): otra tarea en curso, no tocados aquí.
+- Próximo paso más pequeño: que Jorge suba a la torre trepando la fachada y se tire, y diga si la sensación convence; después, caída libre con aterrizaje blando o mortal según el sitio.

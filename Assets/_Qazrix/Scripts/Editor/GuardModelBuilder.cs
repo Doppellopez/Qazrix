@@ -66,6 +66,8 @@ namespace Qazrix.EditorTools
             var animator = model.gameObject.AddComponent<CharacterWalkAnimator>();
             // El brazo derecho no se balancea: lleva el sable.
             animator.Configure(guard, body, leftLeg, rightLeg, leftArm, rightArm, rightArmSwings: false);
+            // Al perseguir sube el brazo y la hoja apunta hacia arriba (WeaponRaise).
+            animator.SetWeapon(rightArm.Find("Sable"));
             return animator;
         }
 

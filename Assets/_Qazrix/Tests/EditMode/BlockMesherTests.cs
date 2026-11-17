@@ -27,6 +27,79 @@ namespace Qazrix.Tests
         }
 
         [Test]
+        public void CutCell_HasATriangularRoof_AndADiagonalWallFacingTheCutCorner()
+        {
+            // Bloque de 3 x 3 celdas de 1 m, tejado a 5 m, con x de 0 a 3 y z de 0 (sur) a 3 (norte).
+            // A la celda noroeste (la de arriba a la izquierda) se le corta en diagonal su esquina noroeste.
+            var roofs = new float[9];
+            for (int i = 0; i < roofs.Length; i++) roofs[i] = 5f;
+            var cuts = new byte[9];
+            cuts[0] = CornerRounding.CutNorthWest;
+
+            BlockMeshChunk block = BlockMesher.Build(roofs, 3, 3, 1f, 0f, 3f, Bases(3, 3), 16, float.PositiveInfinity, cuts)[0];
+
+            // Tejado: 8 celdas de 1 m² y media celda: 8,5 m² (el triángulo de la esquina cortada vale 0,5).
+            float area = 0f;
+            float[] v = block.Vertices;
+            for (int t = 0; t < block.RoofTriangles.Length / 3; t++)
+            {
+                (float nx, float ny, float nz) = Normal(block, block.RoofTriangles, t);
+                Assert.Greater(ny, 0f, "todos los triángulos de tejado miran hacia arriba");
+                area += ny * 0.5f;
+            }
+            Assert.AreEqual(8.5f, area, 1e-4f);
+
+            // Muros: el borde exterior de 3 x 3 tiene 12 lados; faltan los dos de la celda cortada y hay una diagonal:
+            // 11 muros de dos triángulos.
+            Assert.AreEqual(11 * 2, block.WallTriangles.Length / 3);
+
+            // La diagonal une (1, 3) con (0, 2) y mira hacia el noroeste (−x, +z).
+            bool found = false;
+            for (int t = 0; t < block.WallTriangles.Length / 3; t++)
+            {
+                (float nx, float ny, float nz) = Normal(block, block.WallTriangles, t);
+                if (nx < -0.1f && nz > 0.1f)
+                {
+                    Assert.AreEqual(0f, ny, 1e-4f, "el muro es vertical");
+                    found = true;
+                }
+            }
+            Assert.IsTrue(found, "hay un muro diagonal con la cara hacia la esquina cortada");
+        }
+
+        [Test]
+        public void CutCells_OfEveryCorner_FaceOutwards()
+        {
+            // Un bloque 3 x 3 con las cuatro esquinas cortadas: ningún muro mira hacia el interior del edificio.
+            var roofs = new float[9];
+            for (int i = 0; i < roofs.Length; i++) roofs[i] = 5f;
+            var cuts = new byte[9];
+            cuts[0] = CornerRounding.CutNorthWest;
+            cuts[2] = CornerRounding.CutNorthEast;
+            cuts[6] = CornerRounding.CutSouthWest;
+            cuts[8] = CornerRounding.CutSouthEast;
+
+            BlockMeshChunk block = BlockMesher.Build(roofs, 3, 3, 1f, 0f, 3f, Bases(3, 3), 16, float.PositiveInfinity, cuts)[0];
+            float[] v = block.Vertices;
+            for (int t = 0; t < block.WallTriangles.Length / 3; t++)
+            {
+                (float nx, float ny, float nz) = Normal(block, block.WallTriangles, t);
+                int a = block.WallTriangles[t * 3] * 3;
+                // Centro del triángulo respecto al centro del edificio (1,5; 1,5): la normal debe apuntar hacia fuera.
+                float cx = (v[a] + v[block.WallTriangles[t * 3 + 1] * 3] + v[block.WallTriangles[t * 3 + 2] * 3]) / 3f - 1.5f;
+                float cz = (v[a + 2] + v[block.WallTriangles[t * 3 + 1] * 3 + 2] + v[block.WallTriangles[t * 3 + 2] * 3 + 2]) / 3f - 1.5f;
+                Assert.Greater(nx * cx + nz * cz, 0f, $"el muro {t} mira hacia dentro del edificio");
+            }
+        }
+
+        [Test]
+        public void CutsArray_MustMatchTheGrid()
+        {
+            Assert.Throws<System.ArgumentException>(() =>
+                BlockMesher.Build(new[] { 5f, 5f }, 2, 1, 1f, 0f, 0f, Bases(2, 1), 16, float.PositiveInfinity, new byte[3]));
+        }
+
+        [Test]
         public void SingleCell_IsABox_RoofUp_WallsOutwards()
         {
             // Una celda de 1 m con tejado a 5 m, en x de 10 a 11 y z de 19 a 20.

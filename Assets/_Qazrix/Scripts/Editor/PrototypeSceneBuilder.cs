@@ -185,6 +185,7 @@ namespace Qazrix.EditorTools
 
             go.AddComponent<PlayerParkour>();
             go.AddComponent<PlayerWallClimb>();
+            go.AddComponent<PlayerFaithLeap>(); // salto de fe desde atalayas (solo hay una en Z01)
             go.AddComponent<PlayerInteractor>();
             var controller = go.AddComponent<PrototypePlayerController>();
             go.AddComponent<PlayerStealthTarget>();
