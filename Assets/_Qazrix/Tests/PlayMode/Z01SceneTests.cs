@@ -96,6 +96,179 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator RandomLetter_IsInTheOuterRing_Clear_AndReachableOnFoot()
+        {
+            yield return LoadScene();
+            GameObject go = GameObject.Find("Carta_Azar");
+            Assert.IsNotNull(go, "la escena tiene la carta al azar");
+            var placer = go.GetComponent<Qazrix.Gameplay.RandomLetterPlacer>();
+            Assert.IsNotNull(placer);
+            Assert.IsTrue(placer.Placed.HasValue, "se colocó al empezar");
+
+            Vector3 spot = placer.Placed.Value, p = _player.transform.position;
+            float flat = Vector2.Distance(new Vector2(spot.x, spot.z), new Vector2(p.x, p.z));
+            Debug.Log($"[Qazrix] Carta al azar a {flat:0.0} m del jugador");
+            Assert.GreaterOrEqual(flat, 15f, "fuera del claro de la plaza");
+            Assert.LessOrEqual(flat, 56f);
+            Assert.IsTrue(_city.IsClear(spot.x, spot.z, 1.2f), "no está dentro de un edificio");
+
+            var path = new UnityEngine.AI.NavMeshPath();
+            Assert.IsTrue(UnityEngine.AI.NavMesh.CalculatePath(p, spot, UnityEngine.AI.NavMesh.AllAreas, path));
+            Assert.AreEqual(UnityEngine.AI.NavMeshPathStatus.PathComplete, path.status, "se puede llegar andando");
+        }
+
+        /// <summary>Foto desde un lado del jugador (una cámara temporal: desde detrás el cuerpo tapa las piernas).</summary>
+        private IEnumerator CaptureFromSide(string fileName)
+        {
+            yield return new WaitForEndOfFrame();
+            var go = new GameObject("CamaraLateral");
+            var cam = go.AddComponent<Camera>();
+            Vector3 p = _player.transform.position;
+            Vector3 side = _player.transform.right;
+            go.transform.position = p + side * 3.2f + Vector3.up * 0.9f;
+            go.transform.LookAt(p + Vector3.up * 0.75f);
+            cam.fieldOfView = 40f;
+            cam.nearClipPlane = 0.1f;
+            var rt = new RenderTexture(640, 640, 24);
+            cam.targetTexture = rt;
+            cam.Render();
+            RenderTexture previous = RenderTexture.active;
+            RenderTexture.active = rt;
+            var tex = new Texture2D(640, 640, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, 640, 640), 0, 0);
+            tex.Apply();
+            RenderTexture.active = previous;
+            Directory.CreateDirectory("Reports/QA");
+            File.WriteAllBytes("Reports/QA/" + fileName, tex.EncodeToPNG());
+            Object.Destroy(tex);
+            rt.Release();
+            Object.Destroy(go);
+        }
+
+        [UnityTest]
+        public IEnumerator StandingOnTheRandomLetter_CrouchesToPickItUp_ItVanishes_AndGoesToTheInventory()
+        {
+            yield return LoadScene();
+            GameObject go = GameObject.Find("Carta_Azar");
+            var letter = go.GetComponent<Qazrix.Gameplay.LetterPickup>();
+            var placer = go.GetComponent<Qazrix.Gameplay.RandomLetterPlacer>();
+            var interactor = _player.GetComponent<Qazrix.Gameplay.PlayerInteractor>();
+            var animator = _player.GetComponentInChildren<CharacterWalkAnimator>();
+            Assert.IsTrue(placer.Placed.HasValue);
+            Assert.IsEmpty(interactor.Inventory.Entries, "el inventario empieza vacío");
+            Assert.IsFalse(letter.Collected);
+
+            // Se coloca al jugador sobre la carta y se le deja quieto.
+            var body = _player.GetComponent<CharacterController>();
+            Vector3 spot = placer.Placed.Value;
+            body.enabled = false;
+            _player.transform.SetPositionAndRotation(new Vector3(spot.x, spot.y - 0.2f, spot.z), Quaternion.identity);
+            body.enabled = true;
+
+            float limit = Time.time + 3f;
+            while (Time.time < limit && !interactor.IsPickingUp) yield return null;
+            Assert.IsTrue(interactor.IsPickingUp, "parado encima de la carta se agacha a recogerla");
+            Assert.IsTrue(animator.IsPickingUp, "con la animación de agacharse");
+            Assert.IsFalse(letter.Collected, "todavía no la ha cogido");
+
+            // A mitad del gesto, abajo del todo: foto de la pose; ahí la carta pasa al inventario.
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.PickupCycle.CollectAt - 0.05f);
+            yield return CaptureFromSide("play_z01_recoger_carta.png");
+            yield return new WaitForSeconds(0.3f);
+            Assert.IsTrue(letter.Collected, "la carta se coge a mitad del gesto");
+            Assert.IsFalse(letter.GetComponent<Renderer>().enabled, "desaparece de la escena");
+            Assert.AreEqual(1, interactor.Inventory.CountOf("carta"), "y aparece en el inventario");
+
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.PickupCycle.Duration);
+            Assert.IsFalse(interactor.IsPickingUp, "después se levanta");
+            Assert.IsFalse(animator.IsPickingUp);
+            Assert.AreEqual(1, interactor.ItemsCollected);
+        }
+
+        [UnityTest]
+        public IEnumerator SelectingTheLetterInTheInventory_OpensTheMapWithARedCross()
+        {
+            yield return LoadScene();
+            var hud = Object.FindFirstObjectByType<PrototypeHud>();
+            var interactor = _player.GetComponent<Qazrix.Gameplay.PlayerInteractor>();
+            var panel = hud.GetComponent<MapPanel>();
+            var letter = GameObject.Find("Carta_Azar").GetComponent<Qazrix.Gameplay.LetterPickup>();
+            Assert.IsTrue(letter.HasMark, "la carta señala un punto");
+
+            // Se recoge la carta (el gesto de agacharse ya se prueba aparte): aquí solo importa el inventario.
+            interactor.BeginPickup(letter);
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.PickupCycle.Duration + 0.3f);
+            Assert.AreEqual(1, interactor.Inventory.CountOf("carta"));
+            Assert.IsTrue(interactor.Inventory.Entries[0].HasMark, "la carta guardada conserva su marca");
+            Assert.IsFalse(panel.HasMark, "hasta elegirla no hay cruz");
+
+            Press(_keyboard.iKey);
+            yield return null;
+            yield return null;
+            Release(_keyboard.iKey);
+            Assert.IsTrue(hud.IsInventoryOpen);
+
+            hud.SelectInventoryEntry(0);
+            for (int i = 0; i < 12; i++) yield return null;
+            Assert.IsFalse(hud.IsInventoryOpen, "al elegir la carta se cierra el inventario");
+            Assert.IsTrue(hud.IsMapOpen, "y se abre el mapa");
+            Assert.AreEqual(1, panel.MarkCount, "con una cruz roja");
+
+            var entry = interactor.Inventory.Entries[0];
+            Vector3 p = _player.transform.position;
+            float away = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(entry.MarkX, entry.MarkZ));
+            Debug.Log($"[Qazrix] Cruz roja a {away:0} m del jugador, en ({entry.MarkX:0.0}, {entry.MarkZ:0.0})");
+            Assert.Greater(away, 25f, "no está pegada al jugador");
+            Assert.IsTrue(_city.IsClear(entry.MarkX, entry.MarkZ, 1.2f), "ni dentro de un edificio");
+            Assert.IsFalse(_city.IsClear(entry.MarkX, entry.MarkZ, 20f), "está en el interior del casco, con edificios alrededor");
+
+            yield return Capture("play_z01_mapa_cruz.png");
+        }
+
+        [UnityTest]
+        public IEnumerator Map_OpensWithM_BlocksMovement_AndClosesAgain()
+        {
+            yield return LoadScene();
+            var hud = Object.FindFirstObjectByType<PrototypeHud>();
+            Assert.IsNotNull(hud);
+            Assert.IsFalse(hud.IsMapOpen);
+
+            Press(_keyboard.mKey);
+            yield return null;
+            yield return null;
+            Release(_keyboard.mKey);
+            Assert.IsTrue(hud.IsMapOpen, "M abre el mapa");
+            var panel = hud.GetComponent<MapPanel>();
+            Assert.Greater(panel.ExploredCells, 500, "ya ha descubierto el entorno del jugador");
+            Assert.Less(panel.ExploredCells, 4000, "pero no todo el mapa: solo un radio de visión alrededor");
+            Debug.Log($"[Qazrix] Mapa: {panel.ExploredCells} celdas exploradas, {panel.SeenGuards} guardias vistos, {panel.SeenLetters} cartas vistas");
+            for (int i = 0; i < 10; i++) yield return null;
+            yield return Capture("play_z01_mapa.png");
+
+            Press(_keyboard.mKey);
+            yield return null;
+            yield return null;
+            Release(_keyboard.mKey);
+            Assert.IsFalse(hud.IsMapOpen, "M lo cierra");
+        }
+
+        [UnityTest]
+        public IEnumerator PlazaMayor_HasTwoGuards_BothOnTheNavMesh_AndFarFromEachOther()
+        {
+            yield return LoadScene();
+            GuardController[] guards = Object.FindObjectsByType<GuardController>(FindObjectsSortMode.None);
+            Assert.AreEqual(2, guards.Length, "la plaza tiene dos guardias");
+            foreach (GuardController g in guards)
+            {
+                Assert.IsTrue(UnityEngine.AI.NavMesh.SamplePosition(g.transform.position, out _, 1.5f, UnityEngine.AI.NavMesh.AllAreas),
+                    $"{g.name} debe estar sobre la malla de navegación");
+                Assert.IsTrue(_city.IsClear(g.transform.position.x, g.transform.position.z, 0.5f), $"{g.name} no debe nacer dentro de un edificio");
+                Assert.Less(Vector3.Distance(g.transform.position, _player.transform.position), 60f, $"{g.name} está en la plaza");
+            }
+            Assert.Greater(Vector3.Distance(guards[0].transform.position, guards[1].transform.position), 3f, "no nacen apilados");
+        }
+
+        [UnityTest]
         public IEnumerator Monuments_StandWhereTheControlPointsSay()
         {
             yield return LoadScene();
@@ -657,20 +830,29 @@ namespace Qazrix.Tests.PlayMode
         public IEnumerator Guard_PatrolsBetweenTheBuildings_FollowingTheNavMesh()
         {
             yield return LoadScene();
-            Vector3 start = _guard.transform.position;
+            // Hay dos guardias en la plaza: los dos deben patrullar.
+            GuardController[] guards = Object.FindObjectsByType<GuardController>(FindObjectsSortMode.None);
+            var starts = guards.Select(x => x.transform.position).ToArray();
+            var followed = new bool[guards.Length];
 
-            bool followedPath = false;
             float end = Time.time + 4f;
             while (Time.time < end)
             {
-                followedPath |= _guard.IsFollowingPath;
+                for (int i = 0; i < guards.Length; i++) followed[i] |= guards[i].IsFollowingPath;
                 yield return null;
             }
 
-            Assert.Greater(Vector3.Distance(start, _guard.transform.position), 3f, "debería haber avanzado por su ruta");
-            Assert.IsTrue(followedPath, "debería usar la malla de navegación");
-            Vector3 g = _guard.transform.position;
-            Assert.IsFalse(_city.HasBuildingAt(g.x, g.z), "el guardia no debe meterse dentro de un edificio");
+            for (int i = 0; i < guards.Length; i++)
+            {
+                GuardController g = guards[i];
+                bool onMesh = UnityEngine.AI.NavMesh.SamplePosition(g.transform.position, out UnityEngine.AI.NavMeshHit near, 2f, UnityEngine.AI.NavMesh.AllAreas);
+                Debug.Log($"[Qazrix] {g.name}: sale de {starts[i]} y acaba en {g.transform.position} · estado {g.State} · sigue camino {followed[i]} · " +
+                          $"malla a 2 m: {onMesh} ({(onMesh ? near.position.ToString() : "-")}) · sospecha {g.Awareness:0.00}");
+                Assert.Greater(Vector3.Distance(starts[i], g.transform.position), 3f, $"{g.name} debería haber avanzado por su ruta (estado {g.State})");
+                Assert.IsTrue(followed[i], $"{g.name} debería usar la malla de navegación");
+                Vector3 p = g.transform.position;
+                Assert.IsFalse(_city.HasBuildingAt(p.x, p.z), $"{g.name} no debe meterse dentro de un edificio");
+            }
         }
 
         [UnityTest]

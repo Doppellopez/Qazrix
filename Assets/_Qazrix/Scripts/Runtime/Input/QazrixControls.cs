@@ -27,6 +27,8 @@ namespace Qazrix.Input
         public const string Interact = "Interact";
         public const string ToggleHud = "ToggleHud";
         public const string ToggleControls = "ToggleControls";
+        public const string ToggleInventory = "ToggleInventory";
+        public const string ToggleMap = "ToggleMap";
         public const string SwitchScene = "SwitchScene";
         public const string CaptureCursor = "CaptureCursor";
         public const string ReleaseCursor = "ReleaseCursor";
@@ -34,7 +36,7 @@ namespace Qazrix.Input
         public static readonly string[] AllActions =
         {
             Move, Tank, LookPointer, LookStick, Zoom, Run, Crouch, Jump, Interact,
-            ToggleHud, ToggleControls, SwitchScene, CaptureCursor, ReleaseCursor
+            ToggleHud, ToggleControls, ToggleInventory, ToggleMap, SwitchScene, CaptureCursor, ReleaseCursor
         };
 
         /// <summary>Acciones que el jugador puede reasignar desde el panel de controles.</summary>
@@ -87,6 +89,8 @@ namespace Qazrix.Input
             Button(map, Interact, new[] { "<Keyboard>/e" }, new[] { "<Gamepad>/buttonWest" });
             Button(map, ToggleHud, new[] { "<Keyboard>/f1" }, new[] { "<Gamepad>/select" });
             Button(map, ToggleControls, new[] { "<Keyboard>/f2" }, new[] { "<Gamepad>/start" });
+            Button(map, ToggleInventory, new[] { "<Keyboard>/i" }, new[] { "<Gamepad>/buttonNorth" });
+            Button(map, ToggleMap, new[] { "<Keyboard>/m" }, new[] { "<Gamepad>/dpad/left" });
             Button(map, SwitchScene, new[] { "<Keyboard>/f3" }, new string[0]);
             Button(map, CaptureCursor, new[] { "<Mouse>/leftButton" }, new string[0]);
             Button(map, ReleaseCursor, new[] { "<Keyboard>/escape" }, new string[0]);

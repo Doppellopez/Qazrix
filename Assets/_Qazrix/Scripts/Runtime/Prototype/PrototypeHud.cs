@@ -2,6 +2,7 @@ using Qazrix.AI;
 using Qazrix.Gameplay;
 using Qazrix.Input;
 using Qazrix.Simulation.AI;
+using Qazrix.Simulation.Gameplay;
 using Qazrix.Simulation.Movement;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -82,21 +83,115 @@ namespace Qazrix.Prototype
             }
         }
 
+        private bool _inventoryOpen;
+        private CursorLockMode _previousLock;
+
+        public bool IsInventoryOpen => _inventoryOpen;
+
+        private void SetInventoryOpen(bool open)
+        {
+            _inventoryOpen = open;
+            inputReader.GameplayBlocked = open;
+            if (open)
+            {
+                _previousLock = Cursor.lockState;
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Cursor.lockState = _previousLock;
+                Cursor.visible = _previousLock != CursorLockMode.Locked;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_inventoryOpen && inputReader != null) SetInventoryOpen(false);
+        }
+
+        private MapPanel _map;
+
+        public bool IsMapOpen => _map != null && _map.IsOpen;
+
         private void Update()
         {
-            if (inputReader != null && inputReader.Read().ToggleHudPressed) visible = !visible;
+            // El mapa se crea aquí, no en la escena: así lo tienen todas las escenas sin regenerarlas.
+            if (_map == null && inputReader != null && player != null)
+            {
+                _map = GetComponent<MapPanel>();
+                if (_map == null) _map = gameObject.AddComponent<MapPanel>();
+                _map.Configure(inputReader, player.transform);
+            }
+
+            if (inputReader != null)
+            {
+                InputFrame frame = inputReader.Read();
+                if (frame.ToggleHudPressed) visible = !visible;
+                // Con otro panel abierto (controles) el bloqueo ya está puesto: no se abre encima.
+                if (frame.ToggleInventoryPressed && (_inventoryOpen || !inputReader.GameplayBlocked))
+                    SetInventoryOpen(!_inventoryOpen);
+            }
             _smoothedDelta = Mathf.Lerp(_smoothedDelta, Time.unscaledDeltaTime, 0.05f);
+        }
+
+        private void DrawInventory()
+        {
+            if (_interactor == null && player != null) _interactor = player.GetComponent<PlayerInteractor>();
+
+            const float width = 360f, height = 300f;
+            var area = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+            GUI.Box(area, "Inventario");
+
+            Inventory inventory = _interactor != null ? _interactor.Inventory : null;
+            if (inventory == null || inventory.IsEmpty)
+            {
+                GUI.Label(new Rect(area.x + 16f, area.y + 36f, area.width - 32f, 28f), "Vacío", _style);
+            }
+            else
+            {
+                // Cada objeto es un botón; los que señalan un punto del mapa (la carta) lo muestran al elegirlos.
+                float y = area.y + 38f;
+                for (int i = 0; i < inventory.Entries.Count; i++)
+                {
+                    InventoryEntry entry = inventory.Entries[i];
+                    string label = entry.Count > 1 ? $"{entry.Name} ×{entry.Count}" : entry.Name;
+                    if (entry.HasMark) label += "  — ver en el mapa";
+                    GUI.enabled = entry.HasMark;
+                    if (GUI.Button(new Rect(area.x + 16f, y, area.width - 32f, 30f), label)) SelectInventoryEntry(i);
+                    GUI.enabled = true;
+                    y += 34f;
+                }
+            }
+
+            GUI.Label(new Rect(area.x + 16f, area.yMax - 34f, area.width - 32f, 26f), "Cerrar: I · Y", _style);
+        }
+
+        /// <summary>
+        /// Elige un objeto del inventario. Si señala un punto del mundo (una carta), cierra el inventario y abre el mapa
+        /// con una cruz roja en ese punto.
+        /// </summary>
+        public void SelectInventoryEntry(int index)
+        {
+            if (!_inventoryOpen || _interactor == null || _map == null) return;
+            var entries = _interactor.Inventory.Entries;
+            if (index < 0 || index >= entries.Count || !entries[index].HasMark) return;
+
+            InventoryEntry entry = entries[index];
+            SetInventoryOpen(false);
+            _map.OpenAt(new Vector3(entry.MarkX, 0f, entry.MarkZ));
         }
 
         private void OnGUI()
         {
-            if (!visible) return;
-
             if (_style == null)
             {
                 _style = new GUIStyle(GUI.skin.label) { fontSize = 14, richText = true };
                 _style.normal.textColor = Color.white;
             }
+
+            if (_inventoryOpen) DrawInventory();
+            if (!visible) return;
 
             string state = player == null
                 ? "sin jugador"
@@ -116,13 +211,15 @@ namespace Qazrix.Prototype
                 "Trepar: correr contra una fachada · agacharse suelta · Espacio salta hacia atrás\n" +
                 "Agacharse: C / Ctrl · B\n" +
                 "Interactuar: E · X\n" +
+                "Inventario: I · Y\n" +
+                "Mapa: M · cruceta izq.\n" +
                 "Cámara: ratón (clic captura, Esc suelta) · stick der.\n" +
                 "Zoom: rueda · cruceta arriba/abajo\n" +
                 "Ocultar panel: F1 · Select\n" +
                 "Cambiar teclas: F2 · Start\n" +
                 "Cambiar de escena: F3";
 
-            var area = new Rect(12f, 12f, 420f, 364f);
+            var area = new Rect(12f, 12f, 420f, 408f);
             GUI.Box(area, GUIContent.none);
             GUI.Label(new Rect(area.x + 10f, area.y + 8f, area.width - 20f, area.height - 16f), text, _style);
         }

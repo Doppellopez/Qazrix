@@ -1,10 +1,10 @@
 # Build de Linux
 
-- Fecha: 2026-11-17 18:24
+- Fecha: 2026-11-18 17:09
 - Resultado: **Succeeded** · errores: 0 · avisos: 0
 - Unity: 6000.3.6f1 · juego: Qazrix v0.1
 - Plataforma: StandaloneLinux64 · opciones: ForceOptimizeScriptCompilation, Il2CPP, CompressTextures, StripDebugSymbols, ShaderLivelinkSupport, Development
-- Salida: `Builds/Linux/Qazrix.x86_64` · tamaño: 181,0 MB · duración: 19 s
+- Salida: `Builds/Linux/Qazrix.x86_64` · tamaño: 181,7 MB · duración: 30 s
 
 ## Escenas incluidas
 

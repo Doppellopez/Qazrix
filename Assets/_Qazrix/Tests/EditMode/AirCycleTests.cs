@@ -7,6 +7,24 @@ namespace Qazrix.Tests
     public sealed class AirCycleTests
     {
         [Test]
+        public void Knees_BendWhenJumping_RiseApexAndFall()
+        {
+            Assert.AreEqual(AirCycle.RiseLeadKnee, AirCycle.KneeAngle(AirCycle.FullSpeed, 0f, true), 1e-4f);
+            Assert.AreEqual(AirCycle.RiseTrailKnee, AirCycle.KneeAngle(AirCycle.FullSpeed, 0f, false), 1e-4f);
+            Assert.AreEqual(AirCycle.ApexLeadKnee, AirCycle.KneeAngle(0f, 0f, true), 1e-4f);
+            Assert.Greater(AirCycle.KneeAngle(0f, 0f, false), 30f, "en lo alto las piernas van recogidas");
+            Assert.Greater(AirCycle.KneeAngle(-AirCycle.FullSpeed, 0f, true), 10f, "al caer siguen flexionadas");
+            Assert.Less(AirCycle.KneeAngle(-AirCycle.FullSpeed, 0f, true), AirCycle.KneeAngle(0f, 0f, true), "al caer se estiran algo");
+        }
+
+        [Test]
+        public void Landing_BendsKnees_ThenReleases()
+        {
+            Assert.AreEqual(AirCycle.LandingKnee, AirCycle.LandingKneeAngle(0f), 1e-4f);
+            Assert.AreEqual(0f, AirCycle.LandingKneeAngle(AirCycle.LandingSeconds), 1e-4f);
+        }
+
+        [Test]
         public void Blend_FollowsVerticalSpeed_AndIsClamped()
         {
             Assert.AreEqual(0f, AirCycle.Blend(0f), 1e-6f);

@@ -84,6 +84,18 @@ namespace Qazrix.Prototype
         /// <summary>Descarga un tajo con la cimitarra: el brazo baja de golpe (guardia que alcanza al jugador).</summary>
         public void PlayStrike() => _strikeSeconds = 0f;
 
+        // Agacharse a recoger algo del suelo (PickupCycle).
+        private float _pickupSeconds = -1f;
+
+        /// <summary>Empieza el gesto de agacharse a recoger algo del suelo.</summary>
+        public void PlayPickup() => _pickupSeconds = 0f;
+
+        /// <summary>¿Está agachándose a recoger algo?</summary>
+        public bool IsPickingUp => _pickupSeconds >= 0f;
+
+        /// <summary>Segundos desde que empezó el gesto de recoger; -1 si no está en él.</summary>
+        public float PickupSeconds => _pickupSeconds;
+
         /// <summary>¿Está en pleno tajo? (para pruebas)</summary>
         public bool IsStriking => _strikeSeconds >= 0f;
 
@@ -171,7 +183,25 @@ namespace Qazrix.Prototype
             float targetLeftLeg, targetRightLeg, targetLeftArm, targetRightArm;
             bool bothArms = false;
             bool walkingOnGround = false;
-            if (diving)
+            float? airLeftKnee = null, airRightKnee = null;
+            float? pickupWeight = null;
+            if (_pickupSeconds >= 0f)
+            {
+                _pickupSeconds += Time.deltaTime;
+                if (PickupCycle.IsFinished(_pickupSeconds) || airborne || climbing || diving) _pickupSeconds = -1f; // acabó, o algo lo interrumpe
+            }
+            if (_pickupSeconds >= 0f)
+            {
+                // Agachado a recoger algo: sentadilla con el cuerpo inclinado y un brazo hacia el suelo.
+                float w = PickupCycle.Weight(_pickupSeconds);
+                pickupWeight = w;
+                targetLeftLeg = targetRightLeg = PickupCycle.LegAngle(w);
+                targetLeftArm = PickupCycle.ArmAngle(w, false);
+                targetRightArm = PickupCycle.ArmAngle(w, true);
+                bothArms = true;
+                airLeftKnee = airRightKnee = PickupCycle.KneeAngle(w);
+            }
+            else if (diving)
             {
                 // Salto de fe: brazos arriba y piernas rectas, ligeramente hacia atrás.
                 targetLeftArm = targetRightArm = LeapRules.DiveArm;
@@ -205,6 +235,8 @@ namespace Qazrix.Prototype
                 targetRightLeg = AirCycle.LegAngle(_verticalSpeed, _airSeconds, false);
                 targetLeftArm = AirCycle.ArmAngle(_verticalSpeed, _airSeconds, true);
                 targetRightArm = AirCycle.ArmAngle(_verticalSpeed, _airSeconds, false);
+                airLeftKnee = AirCycle.KneeAngle(_verticalSpeed, _airSeconds, true);
+                airRightKnee = AirCycle.KneeAngle(_verticalSpeed, _airSeconds, false);
             }
             else if (IsLandingPose)
             {
@@ -212,6 +244,7 @@ namespace Qazrix.Prototype
                 targetLeftLeg = AirCycle.LandingLegAngle(_sinceLanding, true);
                 targetRightLeg = AirCycle.LandingLegAngle(_sinceLanding, false);
                 targetLeftArm = targetRightArm = AirCycle.LandingArmAngle(_sinceLanding);
+                airLeftKnee = airRightKnee = AirCycle.LandingKneeAngle(_sinceLanding);
             }
             else
             {
@@ -258,7 +291,7 @@ namespace Qazrix.Prototype
             // El puño del arma cuelga del brazo: se le suma el giro del brazo para que la hoja quede donde toca.
             if (weaponGrip != null) weaponGrip.localRotation = Quaternion.Euler(WeaponRaise.GripAngle(_raise, _rightArm), 0f, 0f);
 
-            ApplyRun(walkingOnGround ? speed : 0f, step);
+            ApplyRun(walkingOnGround ? speed : 0f, step, airLeftKnee, airRightKnee, pickupWeight);
         }
 
         /// <summary>
@@ -344,7 +377,7 @@ namespace Qazrix.Prototype
         }
 
         /// <summary>Rodillas, codos, inclinación y rebote del andar y el correr; todo vuelve a cero en el aire, trepando o parado.</summary>
-        private void ApplyRun(float speed, float step)
+        private void ApplyRun(float speed, float step, float? kneeLeftOverride = null, float? kneeRightOverride = null, float? pickupWeight = null)
         {
             if (!_jointsFound)
             {
@@ -363,9 +396,10 @@ namespace Qazrix.Prototype
 
             RunBlend = RunCycle.Blend(speed);
             // Rodillas: se mueven al ritmo de la fase; cada una vuelve a 0 cuando no se anda.
-            _leftKneeAngle = Mathf.MoveTowards(_leftKneeAngle, RunCycle.KneeAngle(_phase, speed, true), step);
-            _rightKneeAngle = Mathf.MoveTowards(_rightKneeAngle, RunCycle.KneeAngle(_phase, speed, false), step);
-            _elbowAngle = Mathf.MoveTowards(_elbowAngle, RunCycle.ElbowAngle(speed), step);
+            // En el aire y al aterrizar mandan las rodillas de AirCycle (flexionadas); en el suelo, las del andar.
+            _leftKneeAngle = Mathf.MoveTowards(_leftKneeAngle, kneeLeftOverride ?? RunCycle.KneeAngle(_phase, speed, true), step);
+            _rightKneeAngle = Mathf.MoveTowards(_rightKneeAngle, kneeRightOverride ?? RunCycle.KneeAngle(_phase, speed, false), step);
+            _elbowAngle = Mathf.MoveTowards(_elbowAngle, pickupWeight.HasValue ? PickupCycle.ElbowAngle(pickupWeight.Value) : RunCycle.ElbowAngle(speed), step);
             // Hacia atrás en la rodilla (+X) y hacia delante en el codo (−X).
             if (_leftKnee != null) _leftKnee.localRotation = Quaternion.Euler(_leftKneeAngle, 0f, 0f);
             if (_rightKnee != null) _rightKnee.localRotation = Quaternion.Euler(_rightKneeAngle, 0f, 0f);
@@ -374,8 +408,8 @@ namespace Qazrix.Prototype
             if (_rightElbow != null) _rightElbow.localRotation = Quaternion.Euler(-(swingRightArm ? _elbowAngle : 0f), 0f, 0f);
 
             float smooth = Mathf.Clamp01(Time.deltaTime * 10f);
-            _lean = Mathf.Lerp(_lean, RunCycle.Lean(speed), smooth);
-            _lift = Mathf.Lerp(_lift, RunCycle.BodyLift(_phase, speed), Mathf.Clamp01(Time.deltaTime * 30f));
+            _lean = Mathf.Lerp(_lean, pickupWeight.HasValue ? PickupCycle.Lean(pickupWeight.Value) : RunCycle.Lean(speed), smooth);
+            _lift = Mathf.Lerp(_lift, pickupWeight.HasValue ? PickupCycle.Drop(pickupWeight.Value) : RunCycle.BodyLift(_phase, speed), Mathf.Clamp01(Time.deltaTime * 30f));
             if (bodyNode != null)
             {
                 float scaleY = bodyNode.parent != null ? Mathf.Max(0.01f, bodyNode.parent.lossyScale.y) : 1f;

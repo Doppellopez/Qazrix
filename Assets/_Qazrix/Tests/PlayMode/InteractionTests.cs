@@ -60,8 +60,11 @@ namespace Qazrix.Tests.PlayMode
             Press(_keyboard.eKey);
             yield return null;
             Release(_keyboard.eKey);
-            yield return null;
+            Assert.IsTrue(_interactor.IsPickingUp, "con E empieza a agacharse a recogerla");
+            Assert.IsFalse(letter.Collected, "todavía no la tiene en la mano");
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.PickupCycle.Duration + 0.3f);
 
+            Assert.IsFalse(_interactor.IsPickingUp, "y se levanta");
             Assert.IsTrue(letter.Collected);
             Assert.AreEqual(1, _interactor.ItemsCollected);
             Assert.IsFalse(letter.GetComponent<Renderer>().enabled, "la carta deja de verse");

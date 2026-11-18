@@ -52,6 +52,27 @@ namespace Qazrix.Simulation.Movement
             return apex + (FallLeg - apex) * fall + (left ? -wave : wave) * FlailLeg * fall;
         }
 
+        /// <summary>Flexión de rodilla (grados, hacia atrás) al subir, en lo alto y al caer: la que va delante se recoge más.</summary>
+        public const float RiseLeadKnee = 85f, RiseTrailKnee = 55f, ApexLeadKnee = 70f, ApexTrailKnee = 60f, FallKnee = 28f;
+        public const float FlailKnee = 10f, LandingKnee = 55f;
+
+        /// <summary>Rodilla en el aire: se dobla al despegar, se recoge arriba y se estira a medias al caer.</summary>
+        public static float KneeAngle(float verticalSpeed, float airSeconds, bool left)
+        {
+            float b = Blend(verticalSpeed);
+            float apex = left ? ApexLeadKnee : ApexTrailKnee;
+            if (b >= 0f) return apex + ((left ? RiseLeadKnee : RiseTrailKnee) - apex) * b;
+            float fall = -b;
+            float wave = (float)Math.Sin(airSeconds * FlailRate * 2.0 * Math.PI);
+            return apex + (FallKnee - apex) * fall + (left ? wave : -wave) * FlailKnee * fall;
+        }
+
+        /// <summary>Al aterrizar las dos rodillas se flexionan para amortiguar y se estiran al acabar la pose.</summary>
+        public static float LandingKneeAngle(float secondsSinceLanding)
+        {
+            return LandingKnee * LandingWeight(secondsSinceLanding);
+        }
+
         /// <summary>¿Sigue la pose de amortiguación tras ese tiempo en el suelo?</summary>
         public static bool IsLanding(float secondsSinceLanding)
         {

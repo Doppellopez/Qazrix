@@ -1,5 +1,7 @@
 using Qazrix.Input;
+using Qazrix.Prototype;
 using Qazrix.Simulation.Gameplay;
+using Qazrix.Simulation.Movement;
 using UnityEngine;
 
 namespace Qazrix.Gameplay
@@ -32,20 +34,115 @@ namespace Qazrix.Gameplay
             inputReader = reader;
         }
 
+        /// <summary>Lo que lleva el jugador. Empieza vacío.</summary>
+        public Inventory Inventory { get; } = new Inventory();
+
         public void AddItem()
         {
             ItemsCollected++;
+            Inventory.Add("carta", "Carta");
+        }
+
+        /// <summary>Guarda una carta en el inventario, con el punto del mapa que señale.</summary>
+        public void AddLetter(LetterPickup letter)
+        {
+            ItemsCollected++;
+            Vector3 mark = letter.MarkPoint;
+            Inventory.Add("carta", "Carta", 1, letter.HasMark, mark.x, mark.z);
+        }
+
+        // Recoger una carta: agacharse (animación), cogerla a mitad del gesto y levantarse.
+        private const float AutoPickupDistance = 0.9f;
+        private const float AutoPickupStillSeconds = 0.2f;
+        private const float StillSpeed = 0.25f;
+
+        private LetterPickup _pickupLetter;
+        private float _pickupSeconds;
+        private bool _pickupTaken;
+        private float _stillSeconds;
+        private PrototypePlayerController _body;
+        private CharacterWalkAnimator _animator;
+
+        /// <summary>¿Se está agachando a recoger algo?</summary>
+        public bool IsPickingUp => _pickupLetter != null;
+
+        /// <summary>Empieza a agacharse a recoger la carta. El juego queda parado hasta que se levanta.</summary>
+        public void BeginPickup(LetterPickup letter)
+        {
+            if (_pickupLetter != null || letter == null || letter.Collected || letter.PickingUp) return;
+            _pickupLetter = letter;
+            letter.PickingUp = true;
+            _pickupSeconds = 0f;
+            _pickupTaken = false;
+            Current = null;
+
+            // Mira hacia la carta para agacharse hacia ella.
+            Vector3 to = letter.transform.position - transform.position;
+            to.y = 0f;
+            if (to.sqrMagnitude > 0.04f) transform.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
+
+            if (_animator == null) _animator = GetComponentInChildren<CharacterWalkAnimator>();
+            if (_animator != null) _animator.PlayPickup();
+            if (inputReader != null) inputReader.GameplayBlocked = true; // sin moverse mientras se agacha
+        }
+
+        private void TickPickup()
+        {
+            _pickupSeconds += Time.deltaTime;
+            if (!_pickupTaken && PickupCycle.HasCollected(_pickupSeconds)) TakeLetter();
+            if (!PickupCycle.IsFinished(_pickupSeconds)) return;
+
+            if (!_pickupTaken) TakeLetter();
+            _pickupLetter = null;
+            if (inputReader != null) inputReader.GameplayBlocked = false;
+        }
+
+        private void TakeLetter()
+        {
+            _pickupTaken = true;
+            _pickupLetter.Collect(this);
+        }
+
+        /// <summary>Parado encima de una carta durante un momento: se agacha a recogerla sin pulsar nada.</summary>
+        private void TryAutoPickup()
+        {
+            if (_body == null) _body = GetComponent<PrototypePlayerController>();
+            var letter = Current as LetterPickup;
+            bool still = _body != null && _body.IsGrounded && !_body.IsCrouching && !_body.IsDead && _body.HorizontalSpeed < StillSpeed;
+            if (letter == null || !still)
+            {
+                _stillSeconds = 0f;
+                return;
+            }
+
+            Vector3 flat = letter.transform.position - transform.position;
+            flat.y = 0f;
+            bool onTop = flat.magnitude <= AutoPickupDistance && Mathf.Abs(letter.transform.position.y - transform.position.y) < 1.6f;
+            _stillSeconds = onTop ? _stillSeconds + Time.deltaTime : 0f;
+            if (_stillSeconds >= AutoPickupStillSeconds)
+            {
+                _stillSeconds = 0f;
+                BeginPickup(letter);
+            }
         }
 
         private void Update()
         {
+            if (_pickupLetter != null)
+            {
+                TickPickup();
+                return;
+            }
+
             Current = FindBest();
             if (Current != null && inputReader != null && inputReader.Read().InteractPressed)
             {
                 Interactable target = Current;
                 Current = null;
                 target.Interact(this);
+                return;
             }
+            TryAutoPickup();
         }
 
         private Interactable FindBest()

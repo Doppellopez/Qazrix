@@ -17,6 +17,8 @@ namespace Qazrix.Input
         public bool InteractPressed;
         public bool ToggleHudPressed;
         public bool ToggleControlsPressed;
+        public bool ToggleInventoryPressed;
+        public bool ToggleMapPressed;
         public bool SwitchScenePressed;
         public bool CaptureCursorPressed;
         public bool ReleaseCursorPressed;
@@ -36,7 +38,7 @@ namespace Qazrix.Input
 
         private InputActionMap _map;
         private InputAction _move, _tank, _lookPointer, _lookStick, _zoom, _run, _crouch, _jump, _interact;
-        private InputAction _toggleHud, _toggleControls, _switchScene, _captureCursor, _releaseCursor;
+        private InputAction _toggleHud, _toggleControls, _toggleInventory, _toggleMap, _switchScene, _captureCursor, _releaseCursor;
         private bool _warned;
 
         /// <summary>Con un panel abierto el juego no recibe movimiento ni cámara; solo las teclas de panel.</summary>
@@ -65,6 +67,8 @@ namespace Qazrix.Input
             _interact = _map.FindAction(QazrixControls.Interact, true);
             _toggleHud = _map.FindAction(QazrixControls.ToggleHud, true);
             _toggleControls = _map.FindAction(QazrixControls.ToggleControls, true);
+            _toggleInventory = _map.FindAction(QazrixControls.ToggleInventory, true);
+            _toggleMap = _map.FindAction(QazrixControls.ToggleMap, true);
             _switchScene = _map.FindAction(QazrixControls.SwitchScene, true);
             _captureCursor = _map.FindAction(QazrixControls.CaptureCursor, true);
             _releaseCursor = _map.FindAction(QazrixControls.ReleaseCursor, true);
@@ -94,6 +98,8 @@ namespace Qazrix.Input
             frame.ToggleHudPressed = _toggleHud.WasPressedThisFrame();
             frame.ToggleControlsPressed = _toggleControls.WasPressedThisFrame();
             frame.ReleaseCursorPressed = _releaseCursor.WasPressedThisFrame();
+            frame.ToggleInventoryPressed = _toggleInventory.WasPressedThisFrame();
+            frame.ToggleMapPressed = _toggleMap.WasPressedThisFrame();
             if (GameplayBlocked) return frame;
 
             frame.Move = Vector2.ClampMagnitude(_move.ReadValue<Vector2>(), 1f);

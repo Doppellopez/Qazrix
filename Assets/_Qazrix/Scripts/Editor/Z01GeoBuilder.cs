@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Qazrix.Input;
 using Qazrix.AI;
+using Qazrix.Gameplay;
 using Qazrix.Prototype;
 using Qazrix.Simulation.Movement;
 using Qazrix.Simulation.World;
@@ -124,7 +125,19 @@ namespace Qazrix.EditorTools
             EditorUtility.SetDirty(player);
 
             // Carta sobre la plataforma y checkpoint al otro lado del murete.
-            PrototypeSceneBuilder.CreateLetter(play, pole, new Vector3(sx - 8f, deckTop + 0.25f, sz + 6f));
+            LetterPickup platformLetter = PrototypeSceneBuilder.CreateLetter(play, pole, new Vector3(sx - 8f, deckTop + 0.25f, sz + 6f));
+
+            // Lo que dice la carta: un punto en el interior de la ciudad, que se ve con una cruz roja en el mapa.
+            Vector3 meeting = ChooseMeetingPoint(city, new Vector2(sx, sz), new Vector3(sx, groundY, sz), Ground);
+            platformLetter.SetMark(meeting);
+            EditorUtility.SetDirty(platformLetter);
+            Debug.Log($"[Qazrix] La carta señala el punto ({meeting.x:0.0}, {meeting.z:0.0}), a {Vector2.Distance(new Vector2(sx, sz), new Vector2(meeting.x, meeting.z)):0} m de la salida");
+            // Segunda carta: cambia de sitio en cada ejecución, en la zona exterior de la plaza (RandomLetterPlacer).
+            LetterPickup randomLetter = PrototypeSceneBuilder.CreateLetter(play, pole, new Vector3(sx + 20f, groundY + 0.3f, sz));
+            randomLetter.name = "Carta_Azar";
+            randomLetter.SetMark(meeting); // las dos cartas dicen lo mismo
+            randomLetter.gameObject.AddComponent<RandomLetterPlacer>().Configure(randomLetter, city, player.transform);
+            EditorUtility.SetDirty(randomLetter);
             PrototypeSceneBuilder.CreateCheckpoint(play, "tras el murete", new Vector3(sx, Ground(sx, sz + 9f) + 1f, sz + 9f), new Vector3(4f, 2.4f, 2f));
 
             // Atalaya en la Torre de Bujaco con salto de fe a un pajar en la calle (F2-04, D55).
@@ -148,6 +161,17 @@ namespace Qazrix.EditorTools
             hud.ShowGuard(guard);
             EditorUtility.SetDirty(hud);
 
+            // Segundo guardia de la Plaza Mayor: rectángulo ancho en sentido contrario, que cruza la ronda del primero.
+            // Se crea después del primero: los tests y el HUD toman el primero que encuentran.
+            var corners2 = new[] { new Vector2(30f, -8f), new Vector2(30f, 10f), new Vector2(-30f, 10f), new Vector2(-30f, -8f) };
+            // Cada esquina se comprueba contra la malla de navegación: un punto sin edificio puede estar en una zona
+            // cerrada y desconectada de la plaza, y el guardia se quedaría parado en la primera.
+            var spawnOnMesh = new Vector3(sx, groundY, sz);
+            Vector3[] route2 = corners2
+                .Select(c => ReachableOpenPoint(city, new Vector2(sx + c.x, sz + c.y), spawnOnMesh, Ground))
+                .ToArray();
+            PrototypeSceneBuilder.CreateGuard("Guardia_2", guardBody, signal, player.GetComponent<StealthTarget>(), route2);
+
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene, ScenePath))
@@ -157,6 +181,56 @@ namespace Qazrix.EditorTools
             AssetDatabase.SaveAssets();
             Debug.Log($"[Qazrix] Escena Z01 creada: {ScenePath} · relieve {terrainGrid.Min:0.0}–{terrainGrid.Max:0.0} m · {points.Count} puntos de control · {terrain.name}");
             Debug.Log($"[Qazrix] Ciudad: {city.BuiltCells} m² construidos, {city.ChunkCount} trozos, {city.TriangleCount} triángulos, {city.BuildSeconds:0.00} s · salida en ({sx:0.0}, {sz:0.0})");
+        }
+
+        /// <summary>
+        /// Punto despejado, sobre la malla de navegación y alcanzable andando desde <paramref name="from"/>, lo más
+        /// cerca posible del deseado. Si no hay ninguno en 24 m, devuelve el despejado más cercano.
+        /// </summary>
+        private static Vector3 ReachableOpenPoint(CityBlocks city, Vector2 wanted, Vector3 from, Func<float, float, float> ground)
+        {
+            var path = new UnityEngine.AI.NavMeshPath();
+            bool hasStart = UnityEngine.AI.NavMesh.SamplePosition(from, out UnityEngine.AI.NavMeshHit start, 3f, UnityEngine.AI.NavMesh.AllAreas);
+            for (float ring = 0f; ring <= 24f; ring += 4f)
+            {
+                int steps = ring == 0f ? 1 : 8;
+                for (int s = 0; s < steps; s++)
+                {
+                    float angle = 2f * Mathf.PI * s / steps;
+                    // 3 m libres alrededor: pegado a una fachada la malla llega más cerca de la pared que el cuerpo del guardia.
+                    Vector2 c = city.FindOpen(wanted.x + Mathf.Cos(angle) * ring, wanted.y + Mathf.Sin(angle) * ring, 3f);
+                    var point = new Vector3(c.x, ground(c.x, c.y) + 0.1f, c.y);
+                    if (!hasStart) return point;
+                    if (!UnityEngine.AI.NavMesh.SamplePosition(point, out UnityEngine.AI.NavMeshHit onMesh, 1.5f, UnityEngine.AI.NavMesh.AllAreas)) continue;
+                    if (UnityEngine.AI.NavMesh.CalculatePath(start.position, onMesh.position, UnityEngine.AI.NavMesh.AllAreas, path)
+                        && path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+                        return onMesh.position + Vector3.up * 0.1f; // a la altura de la malla: sobre peldaños, el terreno queda más bajo
+                }
+            }
+            Vector2 fallback = city.FindOpen(wanted.x, wanted.y, 1.5f);
+            Debug.LogWarning($"[Qazrix] Sin punto alcanzable cerca de ({wanted.x:0}, {wanted.y:0}): se usa el despejado más cercano.");
+            return new Vector3(fallback.x, ground(fallback.x, fallback.y) + 0.1f, fallback.y);
+        }
+
+        /// <summary>
+        /// Punto de encuentro que señala la carta: un claro alcanzable andando, a una distancia razonable de la salida
+        /// y en el interior del casco (con edificios a menos de 20 m, no en un descampado de las afueras).
+        /// </summary>
+        private static Vector3 ChooseMeetingPoint(CityBlocks city, Vector2 spawn, Vector3 from, Func<float, float, float> ground)
+        {
+            var offsets = new[]
+            {
+                new Vector2(45f, -30f), new Vector2(-45f, -30f), new Vector2(40f, 40f), new Vector2(-40f, 40f), new Vector2(0f, -55f)
+            };
+            foreach (Vector2 offset in offsets)
+            {
+                Vector3 p = ReachableOpenPoint(city, spawn + offset, from, ground);
+                float d = Vector2.Distance(spawn, new Vector2(p.x, p.z));
+                if (d < 30f || city.IsClear(p.x, p.z, 20f)) continue; // muy cerca, o sin edificios alrededor
+                return p;
+            }
+            Debug.LogWarning("[Qazrix] Ningún punto de encuentro cumple todo: se usa el primero alcanzable.");
+            return ReachableOpenPoint(city, spawn + offsets[0], from, ground);
         }
 
         /// <summary>Punto deseado de salida del jugador: centro aproximado de la Plaza Mayor, en metros locales.</summary>
