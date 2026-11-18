@@ -601,6 +601,59 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Player_CanPerchInsideAMachicolation_DroppingFromTheRoof_AndItStaysPut()
+        {
+            yield return LoadScene();
+            _guard.enabled = false;
+            Assert.IsNotNull(_city.transform.Find("Ciudad_Matacanes_Colision"), "los matacanes llevan suelo y pretil sólidos");
+
+            // El más cercano al jugador, para que el terreno y los edificios de alrededor estén cargados.
+            var rules = new Qazrix.Simulation.World.MachicolationRules();
+            Qazrix.Simulation.World.Machicolation m = _city.Machicolations
+                .OrderBy(x => (x.X - _player.transform.position.x) * (x.X - _player.transform.position.x)
+                            + (x.Z - _player.transform.position.z) * (x.Z - _player.transform.position.z)).First();
+            double floor = Qazrix.Simulation.World.MachicolationColliders.FloorHeight(m, rules);
+            Qazrix.Simulation.World.MachicolationColliders.WorldPoint(m, 0.0, 0.55, out double px, out double pz);
+            var outward = new Vector3(m.NormalX, 0f, m.NormalZ);
+
+            // Se deja caer desde el tejado, justo encima del suelo del matacán, entre el pretil y la pared.
+            var body = _player.GetComponent<CharacterController>();
+            body.enabled = false;
+            _player.transform.position = new Vector3((float)px, m.RoofHeight + 0.2f, (float)pz);
+            _player.transform.rotation = Quaternion.LookRotation(-outward, Vector3.up);
+            Physics.SyncTransforms();
+            body.enabled = true;
+
+            float end = Time.time + 1.5f;
+            while (Time.time < end) yield return null;
+            Assert.IsTrue(_player.IsGrounded, "aterriza sobre el suelo del matacán");
+            Assert.AreEqual((float)floor, _player.transform.position.y, 0.2f, "pisa la cara de arriba de la losa (el controlador queda ~13 cm por encima por su piel), no cae al vacío");
+            Vector3 settled = _player.transform.position;
+
+            // Se queda ahí: sin más empuje no se mueve ni cae.
+            float later = Time.time + 1.5f;
+            while (Time.time < later) yield return null;
+            Assert.IsTrue(_player.IsGrounded, "sigue apoyado");
+            Assert.Less(Vector3.Distance(settled, _player.transform.position), 0.05f, "se posa y no resbala");
+            double along = (_player.transform.position.x - m.X) * m.TangentX + (_player.transform.position.z - m.Z) * m.TangentZ;
+            double outFrom = (_player.transform.position.x - m.X) * m.NormalX + (_player.transform.position.z - m.Z) * m.NormalZ;
+            Assert.That(outFrom, Is.InRange(-0.05, rules.Overhang), "dentro de la losa, entre la pared y el pretil");
+            Assert.That(System.Math.Abs(along), Is.LessThan(m.Length * 0.5), "y a lo largo de su tramo");
+
+            // Foto de frente y algo desde abajo: el hidalgo asomado en el matacán.
+            var cameraObject = new GameObject("CamaraPosado");
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.depth = 50f;
+            camera.farClipPlane = 800f;
+            Vector3 at = _player.transform.position + Vector3.up * 0.9f;
+            cameraObject.transform.position = at + outward * 6f - Vector3.up * 1.8f;
+            cameraObject.transform.LookAt(at);
+            yield return null;
+            yield return Capture("play_z01_matacan_posado.png");
+            Object.Destroy(cameraObject);
+        }
+
+        [UnityTest]
         public IEnumerator Guard_PatrolsBetweenTheBuildings_FollowingTheNavMesh()
         {
             yield return LoadScene();

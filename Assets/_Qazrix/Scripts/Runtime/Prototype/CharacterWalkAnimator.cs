@@ -65,6 +65,46 @@ namespace Qazrix.Prototype
 
         public float RightLegAngle => _rightLeg;
 
+        // Articulaciones y cuerpo para la carrera (se buscan por nombre bajo cada pierna y brazo: "Rodilla", "Codo").
+        [SerializeField] private Transform bodyNode; // nodo que se inclina y rebota al correr (el modelo)
+        private Transform _leftKnee, _rightKnee, _leftElbow, _rightElbow;
+        private bool _jointsFound;
+        private float _leftKneeAngle, _rightKneeAngle, _elbowAngle, _lean, _lift;
+        private Vector3 _bodyBasePosition;
+        private Quaternion _bodyBaseRotation;
+        private bool _bodyBaseKnown;
+
+        // Tajo del guardia y muerte del jugador.
+        private float _strikeSeconds = -1f;
+        private PrototypePlayerController _playerBody;
+        private bool _lookedForPlayerBody, _wasDead;
+        private Vector3 _hostBasePosition;
+        private Quaternion _hostBaseRotation;
+
+        /// <summary>Descarga un tajo con la cimitarra: el brazo baja de golpe (guardia que alcanza al jugador).</summary>
+        public void PlayStrike() => _strikeSeconds = 0f;
+
+        /// <summary>¿Está en pleno tajo? (para pruebas)</summary>
+        public bool IsStriking => _strikeSeconds >= 0f;
+
+        /// <summary>¿Está mostrando la postura de muerte? (para pruebas)</summary>
+        public bool IsDeathPose { get; private set; }
+
+        /// <summary>Indica el nodo del modelo que se inclina hacia delante y rebota al correr.</summary>
+        public void SetBody(Transform body)
+        {
+            bodyNode = body;
+            _bodyBaseKnown = false;
+        }
+
+        /// <summary>Fuerza de la carrera ahora mismo, de 0 (andando) a 1 (corriendo): para pruebas.</summary>
+        public float RunBlend { get; private set; }
+
+        /// <summary>Doblez actual de la rodilla izquierda y del codo, en grados (para pruebas).</summary>
+        public float LeftKneeAngle => _leftKneeAngle;
+        public float ElbowAngle => _elbowAngle;
+        public float LeanAngle => _lean;
+
         public void Configure(Transform characterRoot, CharacterController controller,
             Transform legLeft, Transform legRight, Transform armLeft, Transform armRight, bool rightArmSwings = true)
         {
@@ -92,6 +132,8 @@ namespace Qazrix.Prototype
             }
             _lastPosition = position;
             _hasLast = true;
+
+            if (UpdateDeathPose()) return;
 
             // Con el CharacterController desactivado (salto de obstáculo) o sin suelo, pose de aire.
             bool airborne = body != null && (!body.enabled || !body.isGrounded);
@@ -128,6 +170,7 @@ namespace Qazrix.Prototype
 
             float targetLeftLeg, targetRightLeg, targetLeftArm, targetRightArm;
             bool bothArms = false;
+            bool walkingOnGround = false;
             if (diving)
             {
                 // Salto de fe: brazos arriba y piernas rectas, ligeramente hacia atrás.
@@ -173,10 +216,12 @@ namespace Qazrix.Prototype
             else
             {
                 _phase = WalkCycle.Advance(_phase, speed, Time.deltaTime);
-                targetLeftLeg = WalkCycle.LegAngle(_phase, speed);
+                float swing = RunCycle.SwingScale(speed); // corriendo abre más piernas y brazos
+                targetLeftLeg = WalkCycle.LegAngle(_phase, speed) * swing;
                 targetRightLeg = -targetLeftLeg;
-                targetLeftArm = WalkCycle.ArmAngle(_phase, speed);
+                targetLeftArm = WalkCycle.ArmAngle(_phase, speed) * swing;
                 targetRightArm = -targetLeftArm;
+                walkingOnGround = true;
             }
             if (!swingRightArm && !bothArms) targetRightArm = 0f; // para trepar hacen falta las dos manos
 
@@ -185,13 +230,25 @@ namespace Qazrix.Prototype
             {
                 _raise = WeaponRaise.Blend(_raise, WeaponRaised, Time.deltaTime);
                 if (_raise > 0f) targetRightArm = WeaponRaise.ArmAngle(targetRightArm, _raise, Time.time);
+
+                // Tajo: el brazo baja de golpe desde lo alto y la hoja se abate; después sigue lo normal.
+                if (_strikeSeconds >= 0f)
+                {
+                    _strikeSeconds += Time.deltaTime;
+                    if (StrikeCycle.IsFinished(_strikeSeconds)) _strikeSeconds = -1f;
+                    else
+                    {
+                        _raise = StrikeCycle.RaiseWeight(_strikeSeconds);
+                        targetRightArm = StrikeCycle.ArmAngle(_strikeSeconds);
+                    }
+                }
             }
 
             float step = blendDegreesPerSecond * Time.deltaTime;
             _leftLeg = Mathf.MoveTowards(_leftLeg, targetLeftLeg, step);
             _rightLeg = Mathf.MoveTowards(_rightLeg, targetRightLeg, step);
             _leftArm = Mathf.MoveTowards(_leftArm, targetLeftArm, step);
-            _rightArm = Mathf.MoveTowards(_rightArm, targetRightArm, step);
+            _rightArm = Mathf.MoveTowards(_rightArm, targetRightArm, _strikeSeconds >= 0f ? step * 3f : step); // el tajo es rápido
 
             // Girar en X negativo lleva el extremo de la extremidad hacia delante (+Z).
             Apply(leftLeg, _leftLeg);
@@ -200,6 +257,131 @@ namespace Qazrix.Prototype
             Apply(rightArm, _rightArm);
             // El puño del arma cuelga del brazo: se le suma el giro del brazo para que la hoja quede donde toca.
             if (weaponGrip != null) weaponGrip.localRotation = Quaternion.Euler(WeaponRaise.GripAngle(_raise, _rightArm), 0f, 0f);
+
+            ApplyRun(walkingOnGround ? speed : 0f, step);
+        }
+
+        /// <summary>
+        /// Postura de muerte del jugador: brazos abiertos, rodillas flojas y el cuerpo entero cae hacia atrás sobre los pies
+        /// (se gira este nodo, que no tiene escala propia que deforme la rotación). Devuelve true mientras dura.
+        /// </summary>
+        private bool UpdateDeathPose()
+        {
+            if (!_lookedForPlayerBody)
+            {
+                _lookedForPlayerBody = true;
+                _playerBody = root != null ? root.GetComponent<PrototypePlayerController>() : null;
+            }
+            float t = _playerBody != null ? _playerBody.DeathSeconds : -1f;
+            if (t < 0f)
+            {
+                if (_wasDead)
+                {
+                    // Reaparece: el nodo vuelve a su sitio y a su giro.
+                    _wasDead = false;
+                    IsDeathPose = false;
+                    transform.localPosition = _hostBasePosition;
+                    transform.localRotation = _hostBaseRotation;
+                }
+                return false;
+            }
+
+            if (!_wasDead)
+            {
+                _wasDead = true;
+                _hostBasePosition = transform.localPosition;
+                _hostBaseRotation = transform.localRotation;
+            }
+            IsDeathPose = true;
+            WeaponRaised = false;
+            _strikeSeconds = -1f;
+
+            DeathPoseSample pose = DeathPoses.Sample(_playerBody.DeathKind, t);
+            float step = blendDegreesPerSecond * 2f * Time.deltaTime;
+            _leftLeg = Mathf.MoveTowards(_leftLeg, pose.LeftLeg, step);
+            _rightLeg = Mathf.MoveTowards(_rightLeg, pose.RightLeg, step);
+            _leftArm = Mathf.MoveTowards(_leftArm, pose.LeftArm, step);
+            _rightArm = Mathf.MoveTowards(_rightArm, pose.RightArm, step);
+            Apply(leftLeg, _leftLeg);
+            Apply(rightLeg, _rightLeg);
+            Apply(leftArm, _leftArm);
+            Apply(rightArm, _rightArm);
+
+            _jointsFound = _jointsFound || FindJoints();
+            _leftKneeAngle = pose.LeftKnee;
+            _rightKneeAngle = pose.RightKnee;
+            _elbowAngle = pose.Elbow;
+            if (_leftKnee != null) _leftKnee.localRotation = Quaternion.Euler(_leftKneeAngle, 0f, 0f);
+            if (_rightKnee != null) _rightKnee.localRotation = Quaternion.Euler(_rightKneeAngle, 0f, 0f);
+            if (_leftElbow != null) _leftElbow.localRotation = Quaternion.Euler(-_elbowAngle, 0f, 0f);
+            if (_rightElbow != null) _rightElbow.localRotation = Quaternion.Euler(-_elbowAngle, 0f, 0f);
+            if (bodyNode != null) bodyNode.localRotation = _bodyBaseKnown ? _bodyBaseRotation : bodyNode.localRotation;
+            _lean = 0f;
+            _lift = 0f;
+
+            // El cuerpo cae sobre los pies (la raíz) hacia donde empuja el golpe.
+            Vector3 fall = _playerBody.DeathDirection;
+            Vector3 axis = Vector3.Cross(Vector3.up, fall);
+            float pitch = pose.Pitch;
+            if (Vector3.Dot(Quaternion.AngleAxis(10f, axis) * Vector3.up, fall) < 0f) axis = -axis;
+            Quaternion tilt = Quaternion.AngleAxis(pitch, axis);
+            Transform parent = transform.parent;
+            Quaternion parentRotation = parent != null ? parent.rotation : Quaternion.identity;
+            Vector3 feet = root.position;
+            Vector3 baseWorld = parent != null ? parent.TransformPoint(_hostBasePosition) : _hostBasePosition;
+            transform.rotation = tilt * (parentRotation * _hostBaseRotation);
+            transform.position = feet + tilt * (baseWorld - feet) + Vector3.up * pose.Lift;
+            return true;
+        }
+
+        private bool FindJoints()
+        {
+            _leftKnee = leftLeg != null ? leftLeg.Find("Rodilla") : null;
+            _rightKnee = rightLeg != null ? rightLeg.Find("Rodilla") : null;
+            _leftElbow = leftArm != null ? leftArm.Find("Codo") : null;
+            _rightElbow = rightArm != null ? rightArm.Find("Codo") : null;
+            return true;
+        }
+
+        /// <summary>Rodillas, codos, inclinación y rebote del andar y el correr; todo vuelve a cero en el aire, trepando o parado.</summary>
+        private void ApplyRun(float speed, float step)
+        {
+            if (!_jointsFound)
+            {
+                _jointsFound = true;
+                _leftKnee = leftLeg != null ? leftLeg.Find("Rodilla") : null;
+                _rightKnee = rightLeg != null ? rightLeg.Find("Rodilla") : null;
+                _leftElbow = leftArm != null ? leftArm.Find("Codo") : null;
+                _rightElbow = rightArm != null ? rightArm.Find("Codo") : null;
+            }
+            if (bodyNode != null && !_bodyBaseKnown)
+            {
+                _bodyBasePosition = bodyNode.localPosition;
+                _bodyBaseRotation = bodyNode.localRotation;
+                _bodyBaseKnown = true;
+            }
+
+            RunBlend = RunCycle.Blend(speed);
+            // Rodillas: se mueven al ritmo de la fase; cada una vuelve a 0 cuando no se anda.
+            _leftKneeAngle = Mathf.MoveTowards(_leftKneeAngle, RunCycle.KneeAngle(_phase, speed, true), step);
+            _rightKneeAngle = Mathf.MoveTowards(_rightKneeAngle, RunCycle.KneeAngle(_phase, speed, false), step);
+            _elbowAngle = Mathf.MoveTowards(_elbowAngle, RunCycle.ElbowAngle(speed), step);
+            // Hacia atrás en la rodilla (+X) y hacia delante en el codo (−X).
+            if (_leftKnee != null) _leftKnee.localRotation = Quaternion.Euler(_leftKneeAngle, 0f, 0f);
+            if (_rightKnee != null) _rightKnee.localRotation = Quaternion.Euler(_rightKneeAngle, 0f, 0f);
+            // El brazo del arma del guardia no se dobla: la hoja apunta donde toca.
+            if (_leftElbow != null) _leftElbow.localRotation = Quaternion.Euler(-_elbowAngle, 0f, 0f);
+            if (_rightElbow != null) _rightElbow.localRotation = Quaternion.Euler(-(swingRightArm ? _elbowAngle : 0f), 0f, 0f);
+
+            float smooth = Mathf.Clamp01(Time.deltaTime * 10f);
+            _lean = Mathf.Lerp(_lean, RunCycle.Lean(speed), smooth);
+            _lift = Mathf.Lerp(_lift, RunCycle.BodyLift(_phase, speed), Mathf.Clamp01(Time.deltaTime * 30f));
+            if (bodyNode != null)
+            {
+                float scaleY = bodyNode.parent != null ? Mathf.Max(0.01f, bodyNode.parent.lossyScale.y) : 1f;
+                bodyNode.localRotation = _bodyBaseRotation * Quaternion.Euler(_lean, 0f, 0f);
+                bodyNode.localPosition = _bodyBasePosition + Vector3.up * (_lift / scaleY);
+            }
         }
 
         private static void Apply(Transform pivot, float forwardDegrees)

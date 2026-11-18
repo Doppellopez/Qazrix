@@ -68,6 +68,7 @@ namespace Qazrix.EditorTools
             animator.Configure(guard, body, leftLeg, rightLeg, leftArm, rightArm, rightArmSwings: false);
             // Al perseguir sube el brazo y la hoja apunta hacia arriba (WeaponRaise).
             animator.SetWeapon(rightArm.Find("Sable"));
+            animator.SetBody(model); // al correr se inclina hacia delante y rebota
             return animator;
         }
 
@@ -98,10 +99,12 @@ namespace Qazrix.EditorTools
         {
             Transform pivot = Pivot(name, model, new Vector3(x, 0.86f, 0f));
             Part("Calzon", PrimitiveType.Sphere, pivot, new Vector3(0f, -0.30f, 0f), new Vector3(0.34f, 0.62f, 0.36f), breeches);
-            Part("Banda", PrimitiveType.Cylinder, pivot, new Vector3(0f, -0.58f, 0f), new Vector3(0.17f, 0.02f, 0.17f), leather);
-            Part("Bota", PrimitiveType.Cylinder, pivot, new Vector3(0f, -0.70f, 0f), new Vector3(0.15f, 0.12f, 0.15f), leather);
-            Part("Pie", PrimitiveType.Cube, pivot, new Vector3(0f, -0.82f, 0.07f), new Vector3(0.13f, 0.08f, 0.30f), leather);
-            Part("Punta", PrimitiveType.Sphere, pivot, new Vector3(0f, -0.80f, 0.22f), new Vector3(0.11f, 0.09f, 0.10f), leather);
+            // Rodilla: de la banda para abajo la pierna cuelga de este nodo, que se dobla al correr (posiciones de antes menos 0,58 m).
+            Transform knee = Pivot("Rodilla", pivot, new Vector3(0f, -0.58f, 0f));
+            Part("Banda", PrimitiveType.Cylinder, knee, new Vector3(0f, 0f, 0f), new Vector3(0.17f, 0.02f, 0.17f), leather);
+            Part("Bota", PrimitiveType.Cylinder, knee, new Vector3(0f, -0.12f, 0f), new Vector3(0.15f, 0.12f, 0.15f), leather);
+            Part("Pie", PrimitiveType.Cube, knee, new Vector3(0f, -0.24f, 0.07f), new Vector3(0.13f, 0.08f, 0.30f), leather);
+            Part("Punta", PrimitiveType.Sphere, knee, new Vector3(0f, -0.22f, 0.22f), new Vector3(0.11f, 0.09f, 0.10f), leather);
             return pivot;
         }
 

@@ -87,6 +87,82 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator GuardTouching_KillsThePlayerWithTheScimitar_WhoFallsBackwardsAndThenRespawns()
+        {
+            yield return LoadScene();
+            var body = _player.GetComponent<PrototypePlayerController>();
+            var legs = _player.GetComponentInChildren<CharacterWalkAnimator>();
+            Transform visual = legs.transform;
+            var guardAnimator = _guard.GetComponentInChildren<CharacterWalkAnimator>();
+            Vector3 spawn = _player.transform.position;
+            Assert.IsFalse(body.IsDead);
+
+            // El guardia le espera de frente, a unos pasos, y echa a correr hacia él.
+            var post = new Vector3(-4f, 0f, -4f);
+            _guard.SetPost(post, Facing(post, _player.transform.position));
+
+            float end = Time.time + 12f;
+            while (Time.time < end && !body.IsDead) yield return null;
+            Assert.IsTrue(body.IsDead, "al tocarle el guardia, el jugador muere");
+            Assert.AreEqual(1, _player.TimesCaught);
+            Vector3 attackerToPlayer = _player.transform.position - _guard.transform.position;
+            attackerToPlayer.y = 0f;
+            Assert.Greater(Vector3.Dot(body.DeathDirection, attackerToPlayer.normalized), 0.9f, "cae alejándose del guardia, no hacia él");
+            Assert.IsTrue(guardAnimator.IsStriking, "el guardia da el tajo en ese instante");
+
+            // Mientras cae el cuerpo se tumba y no responde a los mandos.
+            Press(_keyboard.wKey);
+            float maxPitch = 0f, maxArm = 0f;
+            Vector3 deathSpot = _player.transform.position;
+            float pitchAtHalf = -1f;
+            float t0 = Time.time;
+            while (body.IsDead && Time.time - t0 < DeathSecondsGuard)
+            {
+                float angle = Vector3.Angle(visual.up, Vector3.up);
+                maxPitch = Mathf.Max(maxPitch, angle);
+                maxArm = Mathf.Max(maxArm, legs.LeftArmAngle);
+                if (pitchAtHalf < 0f && body.DeathSeconds > 1.2f) pitchAtHalf = angle;
+                if (body.DeathSeconds > 1.0f && !_captured)
+                {
+                    _captured = true;
+                    var cameraObject = new GameObject("CamaraMuerte");
+                    Camera camera = cameraObject.AddComponent<Camera>();
+                    camera.depth = 50f;
+                    Vector3 side = Vector3.Cross(Vector3.up, body.DeathDirection);
+                    cameraObject.transform.position = _player.transform.position + side * 3.2f + Vector3.up * 1.2f;
+                    cameraObject.transform.LookAt(_player.transform.position + Vector3.up * 0.3f);
+                    yield return null;
+                    yield return new WaitForEndOfFrame();
+                    Texture2D shot = ScreenCapture.CaptureScreenshotAsTexture();
+                    Directory.CreateDirectory("Reports/QA");
+                    File.WriteAllBytes("Reports/QA/play_muerte_cimitarra.png", shot.EncodeToPNG());
+                    Object.Destroy(shot);
+                    Object.Destroy(cameraObject);
+                }
+                yield return null;
+            }
+            Release(_keyboard.wKey);
+            Assert.Greater(maxPitch, 80f, "el cuerpo acaba tumbado en el suelo");
+            Assert.Greater(pitchAtHalf, 60f, "a mitad de la animación ya está casi del todo caído");
+            Assert.Greater(maxArm, 40f, "con los brazos abiertos");
+            Assert.Less(Vector3.Distance(new Vector3(deathSpot.x, 0f, deathSpot.z), new Vector3(_player.transform.position.x, 0f, _player.transform.position.z)), 0.3f,
+                "tumbado no se desplaza aunque pulse avanzar");
+
+            // Reaparece en el punto de salida, de pie y con el cuerpo enderezado.
+            end = Time.time + 2f;
+            while (Time.time < end && body.IsDead) yield return null;
+            yield return null;
+            yield return null;
+            Assert.IsFalse(body.IsDead, "tras quedar tumbado reaparece");
+            Assert.Less(Vector3.Distance(_player.transform.position, spawn), 0.5f, "en el punto de salida");
+            Assert.Less(Vector3.Angle(visual.up, Vector3.up), 1f, "de pie");
+            Assert.IsFalse(legs.IsDeathPose);
+        }
+
+        private const float DeathSecondsGuard = 4f;
+        private bool _captured;
+
+        [UnityTest]
         public IEnumerator ChasingGuard_HoldsTheArmAndScimitarHigh_AndLowersThemAfterwards()
         {
             yield return LoadScene();

@@ -50,9 +50,9 @@ namespace Qazrix.Simulation.World
     public static class PrimitiveGeometry
     {
         // Subdivisiones por defecto. Las pruebas exigen al menos 10 veces los triángulos de la primitiva de Unity.
-        public const int SphereLongitudes = 96, SphereLatitudes = 44;
-        public const int CylinderSides = 64, CylinderLatitudes = 24;
-        public const int CapsuleLongitudes = 128, CapsuleHemisphereRows = 26;
+        public const int SphereLongitudes = 128, SphereLatitudes = 60;
+        public const int CylinderSides = 96, CylinderLatitudes = 32;
+        public const int CapsuleLongitudes = 192, CapsuleHemisphereRows = 40;
         public const int BoxLongitudes = 48, BoxLatitudes = 24;
 
         /// <summary>

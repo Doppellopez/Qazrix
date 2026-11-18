@@ -240,6 +240,133 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Player_Running_BendsKneesAndElbows_LeansForward_AndReturnsToRest()
+        {
+            yield return LoadScene();
+            var legs = _player.GetComponentInChildren<CharacterWalkAnimator>();
+            Assert.IsNotNull(legs);
+            Assert.IsNotNull(FindNamed(_player.transform, "Rodilla"), "las piernas tienen rodilla");
+            Assert.IsNotNull(FindNamed(_player.transform, "Codo"), "los brazos tienen codo");
+            Assert.AreEqual(0f, legs.LeftKneeAngle, 1e-3f, "quieto, rodillas rectas");
+
+            Press(_keyboard.leftShiftKey);
+            Press(_keyboard.wKey);
+            float maxKnee = 0f, minKnee = 999f, maxLean = 0f, maxElbow = 0f, maxBlend = 0f;
+            float end = Time.time + 1.6f;
+            bool shot = false;
+            while (Time.time < end)
+            {
+                if (Time.time > end - 1f)
+                {
+                    maxKnee = Mathf.Max(maxKnee, legs.LeftKneeAngle);
+                    minKnee = Mathf.Min(minKnee, legs.LeftKneeAngle);
+                }
+                maxLean = Mathf.Max(maxLean, legs.LeanAngle);
+                maxElbow = Mathf.Max(maxElbow, legs.ElbowAngle);
+                maxBlend = Mathf.Max(maxBlend, legs.RunBlend);
+                if (!shot && Time.time > end - 1f && legs.LeftKneeAngle > 45f)
+                {
+                    shot = true;
+                    var sideObject = new GameObject("CamaraPerfil");
+                    Camera side = sideObject.AddComponent<Camera>();
+                    side.depth = 50f;
+                    side.nearClipPlane = 0.05f;
+                    sideObject.transform.SetParent(_player.transform, false);
+                    sideObject.transform.localPosition = new Vector3(2.6f, 1.0f, 0f);
+                    sideObject.transform.LookAt(_player.transform.position + Vector3.up * 0.95f);
+                    yield return null;
+                    yield return Capture("play_hidalgo_correr.png");
+                    Object.Destroy(sideObject);
+                }
+                yield return null;
+            }
+            Assert.Greater(maxBlend, 0.95f, "corriendo a fondo");
+            Assert.Greater(maxKnee, 60f, "la rodilla se dobla al correr");
+            Assert.Less(minKnee, 25f, "y se estira al apoyar el pie");
+            Assert.Greater(maxElbow, 80f, "los codos se doblan");
+            Assert.Greater(maxLean, 7f, "el cuerpo se inclina hacia delante");
+
+            Release(_keyboard.wKey);
+            Release(_keyboard.leftShiftKey);
+            float settle = Time.time + 1.5f;
+            while (Time.time < settle) yield return null;
+            Assert.Less(legs.LeftKneeAngle, 1f, "al parar, la rodilla vuelve a recta");
+            Assert.Less(legs.LeanAngle, 0.5f, "y el cuerpo se endereza");
+        }
+
+        private static Transform FindNamed(Transform root, string name)
+        {
+            foreach (Transform t in root.GetComponentsInChildren<Transform>(true)) if (t.name == name) return t;
+            return null;
+        }
+
+        private IEnumerator DropFrom(float metres)
+        {
+            var body = _player.GetComponent<CharacterController>();
+            body.enabled = false;
+            _player.transform.position += Vector3.up * metres;
+            Physics.SyncTransforms();
+            body.enabled = true;
+            float end = Time.time + 1f;
+            while (Time.time < end && _player.IsGrounded) yield return null; // primero deja de estar en el suelo
+            Assert.IsFalse(_player.IsGrounded, "debe empezar a caer");
+            end = Time.time + 4f;
+            while (Time.time < end && !_player.IsGrounded) yield return null; // y luego aterriza
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator Fall_From16Metres_Kills_FacedownWithItsOwnAnimation_ThenRespawns()
+        {
+            yield return LoadScene();
+            Vector3 spawn = _player.transform.position;
+            Transform visual = _player.GetComponentInChildren<CharacterWalkAnimator>().transform;
+            Assert.IsFalse(_player.IsDead);
+
+            yield return DropFrom(16f);
+            Assert.IsTrue(_player.IsDead, "caer desde 16 m mata");
+            Assert.AreEqual(DeathKind.Fall, _player.DeathKind, "con la animación de caída, no la del tajo");
+            Assert.AreEqual(1, _player.FallDeaths);
+            Assert.AreEqual(0, Object.FindFirstObjectByType<PlayerStealthTarget>().TimesCaught, "no cuenta como captura de un guardia");
+            Assert.Greater(_player.LastFallDrop, 15f);
+
+            // Se derrumba de bruces: su cara mira al suelo, no al cielo como al caer de espaldas.
+            float end = Time.time + 1.4f;
+            while (Time.time < end) yield return null;
+            Assert.Greater(Vector3.Dot(visual.forward, Vector3.down), 0.9f, "de bruces");
+            Assert.Greater(Vector3.Angle(visual.up, Vector3.up), 80f, "tendido");
+
+            var sideObject = new GameObject("CamaraCaida");
+            Camera side = sideObject.AddComponent<Camera>();
+            side.depth = 50f;
+            Vector3 right = Vector3.Cross(Vector3.up, _player.DeathDirection);
+            sideObject.transform.position = _player.transform.position + right * 3.2f + Vector3.up * 1.2f;
+            sideObject.transform.LookAt(_player.transform.position + Vector3.up * 0.3f);
+            yield return null;
+            yield return Capture("play_muerte_caida.png");
+            Object.Destroy(sideObject);
+
+            end = Time.time + 3f;
+            while (Time.time < end && _player.IsDead) yield return null;
+            yield return null;
+            yield return null;
+            Assert.IsFalse(_player.IsDead, "reaparece");
+            Assert.Less(Vector3.Distance(_player.transform.position, spawn), 0.5f);
+            Assert.Less(Vector3.Angle(visual.up, Vector3.up), 1f, "de pie");
+        }
+
+        [UnityTest]
+        public IEnumerator Fall_From12Metres_IsSurvived()
+        {
+            yield return LoadScene();
+            yield return DropFrom(12f);
+            Assert.IsFalse(_player.IsDead, "12 m se aguantan");
+            Assert.Greater(_player.LastFallDrop, 11f);
+            Assert.Less(_player.LastFallDrop, 15f);
+            Assert.AreEqual(0, _player.FallDeaths);
+        }
+
+        [UnityTest]
         public IEnumerator Cape_NeverCrossesTheBody_WhenJumping_AndOpensWhenFalling()
         {
             yield return LoadScene(); // quieto en el sitio de salida: ningún obstáculo cerca que convierta el salto en parkour

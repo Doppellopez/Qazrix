@@ -358,6 +358,7 @@ namespace Qazrix.World
             if (openingMaterial != null && terrain != null)
                 triangles += BuildOpeningMesh(FootprintOpenings.Place(_parts, ground, towerRules, 3.0, machicolations, machicolationRules));
             if (machicolations.Count > 0) triangles += BuildMachicolationMeshes(machicolations, machicolationRules);
+            if (withColliders && machicolations.Count > 0) BuildMachicolationColliders(machicolations, machicolationRules);
 
             ChunkCount = chunks.Count;
             TriangleCount = triangles;
@@ -393,6 +394,35 @@ namespace Qazrix.World
             }
             return triangles;
         }
+
+        /// <summary>
+        /// Suelo y pretil de cada matacán, para poder posarse dentro. Van en la capa <see cref="MachicolationLayer"/>:
+        /// el cuerpo y el suelo las pisan, pero la trepada no las toma por pared (ver PlayerWallClimb), así que subir
+        /// por la fachada sigue pasando junto al matacán como antes.
+        /// </summary>
+        private void BuildMachicolationColliders(List<Machicolation> machicolations, MachicolationRules rules)
+        {
+            var root = new GameObject("Ciudad_Matacanes_Colision") { hideFlags = HideFlags.DontSave, isStatic = true };
+            root.layer = MachicolationLayer;
+            root.transform.SetParent(transform, false);
+            foreach (Machicolation m in machicolations)
+            {
+                var normal = new Vector3(m.NormalX, 0f, m.NormalZ);
+                var tangent = new Vector3(m.TangentX, 0f, m.TangentZ);
+                foreach (MachicolationBox box in MachicolationColliders.Build(m, rules))
+                {
+                    var go = new GameObject(box.Name) { hideFlags = HideFlags.DontSave, isStatic = true, layer = MachicolationLayer };
+                    go.transform.SetParent(root.transform, false);
+                    go.transform.position = new Vector3((float)m.X, (float)box.CentreY, (float)m.Z)
+                        + tangent * (float)box.CentreAlong + normal * (float)box.CentreOut;
+                    go.transform.rotation = Quaternion.LookRotation(normal, Vector3.up); // x: sobre la pared, z: hacia fuera
+                    go.AddComponent<BoxCollider>().size = new Vector3((float)box.SizeAlong, (float)box.SizeY, (float)box.SizeOut);
+                }
+            }
+        }
+
+        /// <summary>Capa de las colisiones de los matacanes (sin nombre en el proyecto): la trepada no las ve.</summary>
+        public const int MachicolationLayer = 29;
 
         private Mesh MeshOf(string name, float[] flatVertices, float[] flatUvs, int[] triangles)
         {

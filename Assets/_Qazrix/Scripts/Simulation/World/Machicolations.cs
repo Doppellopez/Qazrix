@@ -23,7 +23,7 @@ namespace Qazrix.Simulation.World
     public sealed class MachicolationRules
     {
         /// <summary>Largo de la losa (m) y cuánto vuela sobre la pared (m).</summary>
-        public double SlabLength = 3.5, Overhang = 0.7;
+        public double SlabLength = 3.5, Overhang = 1.0; // vuela un metro: dentro del pretil caben los pies de una persona (se puede posar)
         /// <summary>La cara de arriba de la losa queda tanto por debajo del tejado (m); grosor de la losa (m).</summary>
         public double DropBelowRoof = 0.9, SlabThickness = 0.25;
         /// <summary>Altura (m) y grosor (m) del pretil.</summary>

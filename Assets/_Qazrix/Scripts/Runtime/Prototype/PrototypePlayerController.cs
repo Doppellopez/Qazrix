@@ -65,6 +65,78 @@ namespace Qazrix.Prototype
 
         public float CurrentHeight => IsCrouching ? crouchHeight : standHeight;
 
+        /// <summary>Un guardia le ha matado y está cayendo, tumbado o a punto de reaparecer: no responde a los mandos.</summary>
+        public bool IsDead { get; private set; }
+
+        /// <summary>Segundos desde el golpe mortal; -1 si está vivo.</summary>
+        public float DeathSeconds => IsDead ? _deathSeconds : -1f;
+
+        /// <summary>Hacia dónde cae al morir (horizontal, unitaria, en el mundo): la que va del guardia al jugador.</summary>
+        public Vector3 DeathDirection => _deathDirection;
+
+        private float _deathSeconds;
+        private Vector3 _deathDirection = Vector3.back;
+        private readonly FallTracker _fall = new FallTracker();
+
+        /// <summary>Cómo ha muerto (de un tajo o de una caída); solo vale mientras <see cref="IsDead"/>.</summary>
+        public DeathKind DeathKind { get; private set; }
+
+        /// <summary>Veces que ha muerto por caer desde 15 m o más en esta sesión.</summary>
+        public int FallDeaths { get; private set; }
+
+        /// <summary>Altura de la última caída (m) al aterrizar; 0 si aún no ha caído de ninguna altura.</summary>
+        public float LastFallDrop { get; private set; }
+
+        /// <summary>
+        /// Un guardia le alcanza desde <paramref name="attackerPosition"/>: cae hacia el lado contrario, queda tumbado un
+        /// momento (<see cref="DeathCycle"/>) y reaparece en el punto de salida. Sin mandos mientras tanto.
+        /// </summary>
+        public void Die(Vector3 attackerPosition)
+        {
+            if (IsDead) return;
+            if (_climb != null) _climb.Cancel(); // suelta la pared y la física vuelve a mandar
+            if (_leap != null) _leap.Cancel();
+            Vector3 away = transform.position - attackerPosition;
+            away.y = 0f;
+            if (away.sqrMagnitude < 0.0001f) away = -transform.forward;
+            _deathDirection = away.normalized;
+            _deathSeconds = 0f;
+            DeathKind = DeathKind.Sword;
+            IsDead = true;
+            IsRunning = false;
+            _horizontalVelocity = Vector3.zero;
+        }
+
+        /// <summary>Se mata al aterrizar tras una caída desde 15 m o más: cae de bruces, hacia donde miraba.</summary>
+        private void DieFalling()
+        {
+            if (IsDead) return;
+            FallDeaths++;
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+            _deathDirection = forward.sqrMagnitude < 0.0001f ? Vector3.forward : forward.normalized;
+            _deathSeconds = 0f;
+            DeathKind = DeathKind.Fall;
+            IsDead = true;
+            IsRunning = false;
+            _horizontalVelocity = Vector3.zero;
+        }
+
+        /// <summary>Un fotograma de muerte: sin mandos, solo la gravedad hasta que reaparece.</summary>
+        private void UpdateDeath(float dt)
+        {
+            _deathSeconds += dt;
+            _horizontalVelocity = Vector3.zero;
+            if (_controller.enabled)
+            {
+                if (IsGrounded && _verticalVelocity < 0f) _verticalVelocity = -2f;
+                _verticalVelocity += gravity * dt;
+                _controller.Move(Vector3.up * (_verticalVelocity * dt));
+                IsGrounded = _controller.isGrounded;
+            }
+            if (DeathPoses.IsFinished(DeathKind, _deathSeconds)) Respawn();
+        }
+
         /// <summary>Acción de parkour posible ahora mismo con la tecla de salto (None si no hay ninguna).</summary>
         public ParkourAction AvailableParkour => _parkour != null ? _parkour.Available : ParkourAction.None;
 
@@ -114,6 +186,12 @@ namespace Qazrix.Prototype
         {
             InputFrame input = inputReader != null ? inputReader.Read() : default;
             float dt = Time.deltaTime;
+
+            if (IsDead)
+            {
+                UpdateDeath(dt);
+                return;
+            }
 
             if (_parkour != null)
             {
@@ -190,6 +268,11 @@ namespace Qazrix.Prototype
             float fallSpeed = _verticalVelocity;
             IsGrounded = _controller.isGrounded;
             if (!wasGrounded && IsGrounded && fallSpeed < hardLandingSpeed) LastLandingTime = Time.time;
+            // Caer desde 15 m o más mata. La altura se mide desde el punto más alto en el aire: un salto de fe a un pajar
+            // (que no pasa por aquí) o un salto de obstáculo no cuentan.
+            float drop = _fall.Step(IsGrounded, transform.position.y);
+            if (drop > 0f) LastFallDrop = drop; // se queda con la última caída aunque después se ande por el suelo
+            if (FallTracker.IsFatal(drop)) DieFalling();
             IsRunning = input.Run && !IsCrouching && IsGrounded && HorizontalSpeed > walkSpeed + 0.2f;
             if ((flags & CollisionFlags.Above) != 0 && _verticalVelocity > 0f) _verticalVelocity = 0f;
 
@@ -336,6 +419,9 @@ namespace Qazrix.Prototype
             _controller.enabled = true;
             _horizontalVelocity = Vector3.zero;
             _verticalVelocity = 0f;
+            IsDead = false;
+            _deathSeconds = 0f;
+            _fall.Reset(transform.position.y);
         }
     }
 }

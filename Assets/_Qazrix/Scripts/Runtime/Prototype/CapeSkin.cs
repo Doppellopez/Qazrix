@@ -86,6 +86,36 @@ namespace Qazrix.Prototype
                 if (joint == null) continue;
                 _vertices[v] = transform.InverseTransformPoint(joint.TransformPoint(local));
             }
+            Smooth();
+        }
+
+        private Vector3[] _scratch;
+
+        /// <summary>
+        /// Suaviza el perfil vertical: las filas de un mismo tramo se mueven rígidas, así que entre un tramo y el
+        /// siguiente quedaba un quiebro. Una media con los vecinos (varias pasadas, sin tocar el canesú ni el borde
+        /// de abajo) redondea esos quiebros y la tela se curva sin que se vean los polígonos.
+        /// </summary>
+        private void Smooth()
+        {
+            const int passes = 3;
+            int columns = CapeMeshLayout.Columns, rows = CapeMeshLayout.Rows, perLayer = rows * columns;
+            if (_scratch == null || _scratch.Length != _vertices.Length) _scratch = new Vector3[_vertices.Length];
+            for (int pass = 0; pass < passes; pass++)
+            {
+                System.Array.Copy(_vertices, _scratch, _vertices.Length);
+                for (int layer = 0; layer < CapeMeshLayout.Layers; layer++)
+                {
+                    for (int row = CapeMeshLayout.YokeRows; row < rows - 1; row++)
+                    {
+                        for (int column = 0; column < columns; column++)
+                        {
+                            int i = layer * perLayer + row * columns + column;
+                            _vertices[i] = 0.25f * _scratch[i - columns] + 0.5f * _scratch[i] + 0.25f * _scratch[i + columns];
+                        }
+                    }
+                }
+            }
         }
     }
 }

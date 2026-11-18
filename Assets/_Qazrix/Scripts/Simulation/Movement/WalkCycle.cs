@@ -24,7 +24,7 @@ namespace Qazrix.Simulation.Movement
         public static float Advance(float phase, float speed, float deltaSeconds)
         {
             if (speed < StillSpeed || deltaSeconds <= 0f) return phase;
-            phase += speed * deltaSeconds / StrideLength;
+            phase += speed * deltaSeconds / RunCycle.StrideLength(speed); // más largo al correr
             return phase - (float)Math.Floor(phase);
         }
 

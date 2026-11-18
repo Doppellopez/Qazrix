@@ -36,7 +36,7 @@ namespace Qazrix.Simulation.Movement
         public const float YokeHalfWidth = 0.26f;
 
         /// <summary>Filas por tramo: una en el borde de arriba y otra a media altura (más una final abajo del todo).</summary>
-        public const int RowsPerSegment = 2;
+        public const int RowsPerSegment = 4;
 
         /// <summary>Filas totales de cada cara: el canesú, dos por tramo y la del borde inferior.</summary>
         public const int Rows = YokeRows + CapeSim.Segments * RowsPerSegment + 1;

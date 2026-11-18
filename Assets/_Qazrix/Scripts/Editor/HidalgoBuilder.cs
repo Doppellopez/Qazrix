@@ -124,6 +124,7 @@ namespace Qazrix.EditorTools
 
             var animator = visual.gameObject.AddComponent<CharacterWalkAnimator>();
             animator.Configure(characterRoot, body, leftLeg, rightLeg, leftArm, rightArm);
+            animator.SetBody(model); // al correr el modelo se inclina hacia delante y rebota
             return animator;
         }
 
@@ -132,13 +133,16 @@ namespace Qazrix.EditorTools
             Transform pivot = Pivot(name, model, new Vector3(x, 0.90f, 0f));
             // El calzón es lo más ancho del personaje: 30 cm por pierna, recogido en una banda bajo la rodilla.
             Part("Calzon", PrimitiveType.Sphere, pivot, new Vector3(0f, -0.26f, 0f), new Vector3(0.30f, 0.56f, 0.32f), breeches);
-            Part("Banda", PrimitiveType.Cylinder, pivot, new Vector3(0f, -0.53f, 0f), new Vector3(0.15f, 0.02f, 0.15f), leather);
-            Part("Canya", PrimitiveType.Cylinder, pivot, new Vector3(0f, -0.70f, 0f), new Vector3(0.13f, 0.16f, 0.13f), leather);
+            // Rodilla: del calzón para abajo la pierna cuelga de este nodo, que se dobla al correr (CharacterWalkAnimator).
+            // Las posiciones son las de antes menos 0,53 m, así que en reposo todo queda donde estaba.
+            Transform knee = Pivot("Rodilla", pivot, new Vector3(0f, -0.53f, 0f));
+            Part("Banda", PrimitiveType.Cylinder, knee, new Vector3(0f, 0f, 0f), new Vector3(0.15f, 0.02f, 0.15f), leather);
+            Part("Canya", PrimitiveType.Cylinder, knee, new Vector3(0f, -0.17f, 0f), new Vector3(0.13f, 0.16f, 0.13f), leather);
             // Borde doblado de la bota, algo más ancho que la caña.
-            Part("Bota_borde", PrimitiveType.Cylinder, pivot, new Vector3(0f, -0.605f, 0f), new Vector3(0.165f, 0.025f, 0.165f), leather);
+            Part("Bota_borde", PrimitiveType.Cylinder, knee, new Vector3(0f, -0.075f, 0f), new Vector3(0.165f, 0.025f, 0.165f), leather);
             // Pie como cápsula tumbada (puntera redonda) sobre una suela fina; el fondo queda en y = -0,90.
-            Part("Pie", PrimitiveType.Capsule, pivot, new Vector3(0f, -0.845f, 0.055f), new Vector3(0.10f, 0.125f, 0.10f), leather, new Vector3(90f, 0f, 0f));
-            Part("Suela", PrimitiveType.Cube, pivot, new Vector3(0f, -0.89f, 0.06f), new Vector3(0.105f, 0.02f, 0.27f), sole);
+            Part("Pie", PrimitiveType.Capsule, knee, new Vector3(0f, -0.315f, 0.055f), new Vector3(0.10f, 0.125f, 0.10f), leather, new Vector3(90f, 0f, 0f));
+            Part("Suela", PrimitiveType.Cube, knee, new Vector3(0f, -0.36f, 0.06f), new Vector3(0.105f, 0.02f, 0.27f), sole);
             return pivot;
         }
 
@@ -147,10 +151,12 @@ namespace Qazrix.EditorTools
             Transform pivot = Pivot(name, model, new Vector3(x, 1.43f, 0f));
             // Manga abullonada arriba, antebrazo más ceñido, puño de lino y mano aplanada con pulgar.
             Part("Manga", PrimitiveType.Capsule, pivot, new Vector3(0f, -0.15f, 0f), new Vector3(0.14f, 0.17f, 0.14f), sleeve);
-            Part("Antebrazo", PrimitiveType.Capsule, pivot, new Vector3(0f, -0.38f, 0f), new Vector3(0.10f, 0.15f, 0.10f), sleeve);
-            Part("Puno", PrimitiveType.Cylinder, pivot, new Vector3(0f, -0.525f, 0f), new Vector3(0.11f, 0.014f, 0.11f), linen);
-            Part("Mano", PrimitiveType.Sphere, pivot, new Vector3(0f, -0.60f, 0f), new Vector3(0.085f, 0.11f, 0.055f), skin);
-            Part("Pulgar", PrimitiveType.Sphere, pivot, new Vector3(Mathf.Sign(x) * -0.03f, -0.585f, 0.025f), new Vector3(0.028f, 0.05f, 0.028f), skin);
+            // Codo: del antebrazo para abajo cuelga de este nodo, que se dobla al correr (posiciones de antes menos 0,30 m).
+            Transform elbow = Pivot("Codo", pivot, new Vector3(0f, -0.30f, 0f));
+            Part("Antebrazo", PrimitiveType.Capsule, elbow, new Vector3(0f, -0.08f, 0f), new Vector3(0.10f, 0.15f, 0.10f), sleeve);
+            Part("Puno", PrimitiveType.Cylinder, elbow, new Vector3(0f, -0.225f, 0f), new Vector3(0.11f, 0.014f, 0.11f), linen);
+            Part("Mano", PrimitiveType.Sphere, elbow, new Vector3(0f, -0.30f, 0f), new Vector3(0.085f, 0.11f, 0.055f), skin);
+            Part("Pulgar", PrimitiveType.Sphere, elbow, new Vector3(Mathf.Sign(x) * -0.03f, -0.285f, 0.025f), new Vector3(0.028f, 0.05f, 0.028f), skin);
             return pivot;
         }
     }

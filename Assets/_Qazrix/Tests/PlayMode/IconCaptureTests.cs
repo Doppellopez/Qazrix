@@ -5,6 +5,7 @@ using Qazrix.AI;
 using Qazrix.Prototype;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
@@ -16,7 +17,7 @@ namespace Qazrix.Tests.PlayMode
     /// (<c>icono_variante_A/B/C.png</c>) y deja la primera como <c>icono_origen.png</c>; <c>GameIcon</c> (menú Qazrix → Build) la
     /// recorta, la centra y genera el PNG, el .ico y el icono del proyecto.
     /// </summary>
-    public sealed class IconCaptureTests
+    public sealed class IconCaptureTests : InputTestFixture // aísla el estado de entrada: sin esto las pruebas siguientes fallan al activar sus acciones
     {
         private const string ScenePath = "Assets/_Qazrix/Scenes/Prototype/Prototype.unity";
         public const string SourcePath = "Reports/QA/icono_origen.png";

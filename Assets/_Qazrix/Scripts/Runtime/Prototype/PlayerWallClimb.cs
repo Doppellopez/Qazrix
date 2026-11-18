@@ -20,6 +20,9 @@ namespace Qazrix.Prototype
         [SerializeField] private float roofInset = 0.45f;    // cuánto entra en el tejado al encaramarse
         [SerializeField] private LayerMask wallMask = ~0;
 
+        /// <summary>Lo que cuenta como pared o suelo al trepar: todo menos las losas de los matacanes, que se pisan pero no se escalan.</summary>
+        private int ClimbMask => wallMask.value & ~(1 << Qazrix.World.CityBlocks.MachicolationLayer);
+
         private CharacterController _controller;
         private Vector3 _into;          // dirección horizontal hacia dentro de la pared
         private bool _mantling;
@@ -142,7 +145,7 @@ namespace Qazrix.Prototype
 
             float vertical = ClimbRules.VerticalSpeed(move.y, limits) * deltaTime;
             if (vertical < 0f && Physics.Raycast(position + Vector3.up * 0.3f, Vector3.down, out RaycastHit floor,
-                    0.3f - vertical + 0.05f, wallMask, QueryTriggerInteraction.Ignore))
+                    0.3f - vertical + 0.05f, ClimbMask, QueryTriggerInteraction.Ignore))
             {
                 // Ha llegado al suelo bajando.
                 transform.position = new Vector3(position.x, floor.point.y, position.z);
@@ -161,7 +164,7 @@ namespace Qazrix.Prototype
             // Ya no hay pared a la altura de las manos: es el borde. Se busca el tejado para subirse.
             Vector3 over = position + _into * (_controller.radius + wallGap + roofInset);
             if (vertical >= 0f && Physics.Raycast(over + Vector3.up * (limits.GrabHeight + 1.2f), Vector3.down, out RaycastHit roof,
-                    2.6f, wallMask, QueryTriggerInteraction.Ignore))
+                    2.6f, ClimbMask, QueryTriggerInteraction.Ignore))
             {
                 Vector3 landing = new Vector3(over.x, roof.point.y, over.z);
                 if (roof.normal.y > 0.7f && HasRoomAt(landing))
@@ -194,7 +197,7 @@ namespace Qazrix.Prototype
         private bool FindWall(Vector3 feet, Vector3 direction, float distance, out RaycastHit hit)
         {
             Vector3 origin = feet + Vector3.up * limits.GrabHeight - direction * 0.05f;
-            return Physics.Raycast(origin, direction, out hit, distance + 0.05f, wallMask, QueryTriggerInteraction.Ignore);
+            return Physics.Raycast(origin, direction, out hit, distance + 0.05f, ClimbMask, QueryTriggerInteraction.Ignore);
         }
 
         private void SnapTo(RaycastHit wall)
@@ -214,7 +217,7 @@ namespace Qazrix.Prototype
             float radius = _controller.radius * 0.8f;
             Vector3 bottom = feet + Vector3.up * (radius + 0.1f);
             Vector3 top = feet + Vector3.up * (_controller.height - radius);
-            return !Physics.CheckCapsule(bottom, top, radius, wallMask, QueryTriggerInteraction.Ignore);
+            return !Physics.CheckCapsule(bottom, top, radius, ClimbMask, QueryTriggerInteraction.Ignore);
         }
 
         private static Float3 ToFloat3(Vector3 v) => new Float3(v.x, v.y, v.z);

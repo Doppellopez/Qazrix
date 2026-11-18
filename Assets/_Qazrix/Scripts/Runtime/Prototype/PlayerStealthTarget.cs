@@ -22,16 +22,22 @@ namespace Qazrix.Prototype
 
         public override float BodyHeight => Player.CurrentHeight;
 
-        public override float Exposure => StealthRules.Exposure(Player.IsCrouching);
+        public override float Exposure => Player.IsDead ? 0f : StealthRules.Exposure(Player.IsCrouching);
 
-        public override float NoiseRadius => StealthRules.NoiseRadius(
+        public override float NoiseRadius => Player.IsDead ? 0f : StealthRules.NoiseRadius(
             Player.HorizontalSpeed, Player.IsCrouching, Player.IsRunning,
             Time.time - Player.LastLandingTime < LandingNoiseSeconds);
 
-        public override void Caught()
+        public override bool IsDown => Player.IsDead;
+
+        public override void Caught() => Caught(transform.position - transform.forward);
+
+        public override void Caught(Vector3 attackerPosition)
         {
+            if (Player.IsDead) return; // ya está en el suelo
             TimesCaught++;
-            Player.Respawn(); // por ahora ser alcanzado devuelve al punto de salida (checkpoint único)
+            // Cae a cuchilladas y, tras quedar tumbado un momento, reaparece en el punto de salida (checkpoint único).
+            Player.Die(attackerPosition);
         }
     }
 }

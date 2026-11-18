@@ -22,5 +22,11 @@ namespace Qazrix.AI
 
         /// <summary>Un guardia le ha alcanzado.</summary>
         public abstract void Caught();
+
+        /// <summary>Un guardia le ha alcanzado desde ese punto del mundo (de ahí sabe hacia dónde caer). Por defecto, igual que <see cref="Caught()"/>.</summary>
+        public virtual void Caught(Vector3 attackerPosition) => Caught();
+
+        /// <summary>Si ya ha caído y está tumbado o reapareciendo: no se le vuelve a alcanzar ni a ver.</summary>
+        public virtual bool IsDown => false;
     }
 }

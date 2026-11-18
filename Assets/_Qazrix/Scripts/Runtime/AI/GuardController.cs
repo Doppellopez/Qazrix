@@ -35,6 +35,7 @@ namespace Qazrix.AI
         [SerializeField] private float catchDistance = 0.85f; // alcance de contacto en horizontal: los dos cuerpos casi se tocan
         [SerializeField] private float bodyHeight = 1.9f;     // altura del guardia: con la del jugador decide si de verdad le toca
         [SerializeField] private float lookAroundDegreesPerSecond = 60f;
+        [SerializeField] private float strikePauseSeconds = 1.4f; // se queda quieto tras dar el tajo, mientras el jugador cae
 
         [Header("Navegación")]
         [SerializeField] private float repathSeconds = 0.4f;
@@ -49,6 +50,7 @@ namespace Qazrix.AI
         private Vector3 _post;
         private Quaternion _postRotation;
         private Vector3 _lastKnown;
+        private float _frozenUntil = -1f;
 
         private NavMeshPath _path;
         private Vector3[] _corners = new Vector3[0];
@@ -107,7 +109,8 @@ namespace Qazrix.AI
 
             Sense(out float visibility, out bool heard);
             _machine.Tick(Time.deltaTime, new GuardPercept(visibility, heard, IsAtPost()));
-            Act(visibility);
+            if (Time.time < _frozenUntil) _controller.SimpleMove(Vector3.zero); // acaba de dar el tajo: se queda mirando al caído
+            else Act(visibility);
             UpdateIndicator();
 
             // Persiguiendo, lleva el brazo y la cimitarra en alto; en cualquier otro estado, abajo.
@@ -154,10 +157,14 @@ namespace Qazrix.AI
                 case AlertState.Alert:
                     MoveTo(_lastKnown, runSpeed);
                     // Solo si le toca: pasar por encima o por debajo del guardia (un tejado, otro piso) no le captura.
-                    if (visibility > 0f && StealthRules.Touches(FlatDistance(transform.position, target.transform.position),
+                    if (visibility > 0f && !target.IsDown && StealthRules.Touches(FlatDistance(transform.position, target.transform.position),
                             transform.position.y, bodyHeight, target.transform.position.y, target.BodyHeight, catchDistance))
                     {
-                        target.Caught();
+                        // Tajo con la cimitarra: el jugador cae hacia atrás y el guardia se queda un momento quieto.
+                        if (_animator == null) _animator = GetComponentInChildren<CharacterWalkAnimator>();
+                        if (_animator != null) _animator.PlayStrike();
+                        target.Caught(transform.position);
+                        _frozenUntil = Time.time + strikePauseSeconds;
                         _machine.GiveUp();
                     }
                     break;
