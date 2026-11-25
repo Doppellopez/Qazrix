@@ -5,12 +5,12 @@ using static Qazrix.EditorTools.CharacterKit;
 namespace Qazrix.EditorTools
 {
     /// <summary>
-    /// Modelo del guardia de la ciudad: un hombre corpulento de la guardia andalusí, con turbante,
+    /// Modelo del guardia de la ciudad: un hombre fuerte, de pecho ancho y barriga marcada, de la guardia andalusí, con turbante,
     /// túnica larga ceñida por una faja, calzones anchos y un sable curvo en la mano derecha.
     /// Primitivas de Unity y texturas generadas por código; sustituto hasta tener modelo esculpido.
     ///
-    /// Criterio (spec §2.3): es un guardia concreto, no «el» andalusí. La corpulencia es un rasgo de
-    /// este personaje y se representa con dignidad, sin caricatura. Otros guardias deben variar en
+    /// Criterio (spec §2.3): es un guardia concreto, no «el» andalusí. Complexión fuerte y proporciones
+    /// creíbles (D77; corpulento en D43, delgado en D75, ahora intermedio con barriga), con dignidad y sin caricatura. Otros guardias deben variar en
     /// complexión, edad e indumentaria. [RESEARCH] El sable curvo es un anacronismo probable para
     /// 1229 (las espadas almohades documentadas son sobre todo rectas): se mantiene por decisión de
     /// dirección y queda anotado para revisión histórica (D43).
@@ -35,17 +35,17 @@ namespace Qazrix.EditorTools
             Transform model = Pivot("Guardia_modelo", guard, Vector3.zero);
 
             // --- Tronco: pecho ancho y vientre prominente bajo la túnica ---
-            Part("Pecho", PrimitiveType.Capsule, model, new Vector3(0f, 1.30f, 0f), new Vector3(0.52f, 0.26f, 0.36f), robe);
-            Part("Vientre", PrimitiveType.Sphere, model, new Vector3(0f, 1.06f, 0.05f), new Vector3(0.66f, 0.52f, 0.60f), robe);
-            Part("Falda_tunica", PrimitiveType.Cylinder, model, new Vector3(0f, 0.72f, 0.01f), new Vector3(0.60f, 0.17f, 0.50f), robe);
-            Part("Faja", PrimitiveType.Cylinder, model, new Vector3(0f, 0.98f, 0.03f), new Vector3(0.66f, 0.06f, 0.59f), sash);
-            Part("Faja_nudo", PrimitiveType.Cube, model, new Vector3(0.22f, 0.88f, 0.20f), new Vector3(0.09f, 0.26f, 0.05f), sash, new Vector3(0f, 0f, -8f));
+            Part("Pecho", PrimitiveType.Capsule, model, new Vector3(0f, 1.30f, 0f), new Vector3(0.47f, 0.26f, 0.31f), robe);
+            Part("Vientre", PrimitiveType.Sphere, model, new Vector3(0f, 1.07f, 0.04f), new Vector3(0.52f, 0.46f, 0.44f), robe);
+            Part("Falda_tunica", PrimitiveType.Cylinder, model, new Vector3(0f, 0.72f, 0.02f), new Vector3(0.50f, 0.17f, 0.40f), robe);
+            Part("Faja", PrimitiveType.Cylinder, model, new Vector3(0f, 0.98f, 0.035f), new Vector3(0.52f, 0.055f, 0.42f), sash);
+            Part("Faja_nudo", PrimitiveType.Cube, model, new Vector3(0.19f, 0.88f, 0.20f), new Vector3(0.085f, 0.26f, 0.045f), sash, new Vector3(0f, 0f, -8f));
 
             // --- Cabeza: turbante de varias vueltas, barba cerrada ---
             Part("Cuello", PrimitiveType.Cylinder, model, new Vector3(0f, 1.55f, 0f), new Vector3(0.16f, 0.05f, 0.16f), skin);
-            Part("Cabeza", PrimitiveType.Sphere, model, new Vector3(0f, 1.68f, 0.01f), new Vector3(0.25f, 0.26f, 0.25f), skin);
-            Part("Papada", PrimitiveType.Sphere, model, new Vector3(0f, 1.59f, 0.05f), new Vector3(0.21f, 0.12f, 0.18f), skin);
-            Part("Barba", PrimitiveType.Sphere, model, new Vector3(0f, 1.61f, 0.08f), new Vector3(0.20f, 0.15f, 0.13f), beard);
+            Part("Cabeza", PrimitiveType.Sphere, model, new Vector3(0f, 1.68f, 0.01f), new Vector3(0.235f, 0.255f, 0.235f), skin);
+            Part("Papada", PrimitiveType.Sphere, model, new Vector3(0f, 1.59f, 0.045f), new Vector3(0.19f, 0.11f, 0.16f), skin);
+            Part("Barba", PrimitiveType.Sphere, model, new Vector3(0f, 1.61f, 0.075f), new Vector3(0.18f, 0.13f, 0.12f), beard);
             Part("Bigote", PrimitiveType.Cube, model, new Vector3(0f, 1.665f, 0.125f), new Vector3(0.11f, 0.02f, 0.02f), beard);
             Part("Nariz", PrimitiveType.Cube, model, new Vector3(0f, 1.695f, 0.13f), new Vector3(0.035f, 0.055f, 0.045f), skin);
             Part("Turbante_base", PrimitiveType.Cylinder, model, new Vector3(0f, 1.79f, 0f), new Vector3(0.30f, 0.045f, 0.30f), turban);
@@ -54,14 +54,16 @@ namespace Qazrix.EditorTools
             Part("Turbante_cola", PrimitiveType.Cube, model, new Vector3(-0.12f, 1.62f, -0.13f), new Vector3(0.09f, 0.30f, 0.025f), turban, new Vector3(-8f, 0f, 6f));
 
             // --- Piernas: calzones anchos y botas blandas ---
-            Transform leftLeg = Leg("Pierna_izq", model, -0.15f, breeches, leather);
-            Transform rightLeg = Leg("Pierna_der", model, 0.15f, breeches, leather);
+            Transform leftLeg = Leg("Pierna_izq", model, -0.135f, breeches, leather);
+            Transform rightLeg = Leg("Pierna_der", model, 0.135f, breeches, leather);
 
             // --- Brazos ---
-            Transform leftArm = Arm("Brazo_izq", model, -0.34f, robe, skin);
-            Transform rightArm = Arm("Brazo_der", model, 0.34f, robe, skin);
+            Transform leftArm = Arm("Brazo_izq", model, -0.30f, robe, skin);
+            Transform rightArm = Arm("Brazo_der", model, 0.30f, robe, skin);
             rightArm.localRotation = Quaternion.identity;
             BuildSabre(rightArm, steel, brass, leather);
+
+            AddLowDetail(model); // de lejos, mallas sencillas: cada guardia pasa de ~430.000 triángulos a ~10.000 (D74)
 
             var animator = model.gameObject.AddComponent<CharacterWalkAnimator>();
             // El brazo derecho no se balancea: lleva el sable.
@@ -98,21 +100,23 @@ namespace Qazrix.EditorTools
         private static Transform Leg(string name, Transform model, float x, Material breeches, Material leather)
         {
             Transform pivot = Pivot(name, model, new Vector3(x, 0.86f, 0f));
-            Part("Calzon", PrimitiveType.Sphere, pivot, new Vector3(0f, -0.30f, 0f), new Vector3(0.34f, 0.62f, 0.36f), breeches);
-            // Rodilla: de la banda para abajo la pierna cuelga de este nodo, que se dobla al correr (posiciones de antes menos 0,58 m).
-            Transform knee = Pivot("Rodilla", pivot, new Vector3(0f, -0.58f, 0f));
-            Part("Banda", PrimitiveType.Cylinder, knee, new Vector3(0f, 0f, 0f), new Vector3(0.17f, 0.02f, 0.17f), leather);
-            Part("Bota", PrimitiveType.Cylinder, knee, new Vector3(0f, -0.12f, 0f), new Vector3(0.15f, 0.12f, 0.15f), leather);
-            Part("Pie", PrimitiveType.Cube, knee, new Vector3(0f, -0.24f, 0.07f), new Vector3(0.13f, 0.08f, 0.30f), leather);
-            Part("Punta", PrimitiveType.Sphere, knee, new Vector3(0f, -0.22f, 0.22f), new Vector3(0.11f, 0.09f, 0.10f), leather);
+            Part("Calzon", PrimitiveType.Sphere, pivot, new Vector3(0f, -0.21f, 0f), new Vector3(0.29f, 0.44f, 0.31f), breeches);
+            // Rodilla a media pierna (0,43 m del suelo): el nodo se dobla al correr y saltar.
+            Transform knee = Pivot("Rodilla", pivot, new Vector3(0f, -0.43f, 0f));
+            Part("Rotula", PrimitiveType.Sphere, knee, new Vector3(0f, 0f, 0.04f), new Vector3(0.17f, 0.16f, 0.17f), breeches);
+            Part("Calzon_bajo", PrimitiveType.Sphere, knee, new Vector3(0f, -0.05f, 0f), new Vector3(0.20f, 0.20f, 0.20f), breeches);
+            Part("Banda", PrimitiveType.Cylinder, knee, new Vector3(0f, -0.15f, 0f), new Vector3(0.15f, 0.02f, 0.15f), leather);
+            Part("Bota", PrimitiveType.Cylinder, knee, new Vector3(0f, -0.27f, 0f), new Vector3(0.13f, 0.12f, 0.13f), leather);
+            Part("Pie", PrimitiveType.Cube, knee, new Vector3(0f, -0.39f, 0.07f), new Vector3(0.115f, 0.08f, 0.29f), leather);
+            Part("Punta", PrimitiveType.Sphere, knee, new Vector3(0f, -0.37f, 0.22f), new Vector3(0.10f, 0.085f, 0.095f), leather);
             return pivot;
         }
 
         private static Transform Arm(string name, Transform model, float x, Material sleeve, Material skin)
         {
             Transform pivot = Pivot(name, model, new Vector3(x, 1.46f, 0f));
-            Part("Manga", PrimitiveType.Capsule, pivot, new Vector3(0f, -0.27f, 0f), new Vector3(0.17f, 0.29f, 0.17f), sleeve);
-            Part("Mano", PrimitiveType.Sphere, pivot, new Vector3(0f, -0.59f, 0f), new Vector3(0.11f, 0.12f, 0.11f), skin);
+            Part("Manga", PrimitiveType.Capsule, pivot, new Vector3(0f, -0.27f, 0f), new Vector3(0.145f, 0.29f, 0.145f), sleeve);
+            Part("Mano", PrimitiveType.Sphere, pivot, new Vector3(0f, -0.59f, 0f), new Vector3(0.095f, 0.115f, 0.095f), skin);
             return pivot;
         }
     }

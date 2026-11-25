@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Qazrix.Gameplay;
 using Qazrix.Simulation.World;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -53,6 +54,46 @@ namespace Qazrix.World
         // Ventanas y saeteras dibujadas sobre las fachadas; sin material no se ponen (escalinatas).
         // La textura lleva la ventana en la mitad izquierda y la saetera en la derecha.
         [SerializeField] private Material openingMaterial;
+
+        /// <summary>Foto de un edificio concreto, usada como textura de todas sus paredes (punto en metros locales dentro de él).</summary>
+        [Serializable]
+        public sealed class FacadePhoto
+        {
+            public string name;
+            public Vector2 point;
+            public Material material; // su textura es la foto, ya recortada y con repetición activada
+        }
+
+        [SerializeField] private FacadePhoto[] facadePhotos = Array.Empty<FacadePhoto>();
+
+        /// <summary>Fotos de edificios (solo con huellas poligonales); hay que llamar a <see cref="Build"/> después.</summary>
+        public void SetFacadePhotos(FacadePhoto[] photos) => facadePhotos = photos ?? Array.Empty<FacadePhoto>();
+
+        [SerializeField] private int[] wallParts = new int[0];
+
+        [SerializeField] private Vector2[] doorPoints = new Vector2[0];
+        private readonly List<DoorPlacement> _doors = new List<DoorPlacement>();
+
+        /// <summary>
+        /// Puertas: en cada punto (metros locales, dentro de un edificio) se abre un hueco en la pared más cercana que dé a un espacio
+        /// libre y se pone una puerta con llave (<see cref="DoorPortal"/>). Solo con huellas poligonales; hay que llamar a <see cref="Build"/> después.
+        /// </summary>
+        public void SetDoors(Vector2[] points) => doorPoints = points ?? new Vector2[0];
+
+        /// <summary>Puertas colocadas en la última construcción.</summary>
+        public IReadOnlyList<DoorPlacement> Doors => _doors;
+
+        /// <summary>
+        /// Edificios (índices de <c>Research/Survey/city_parts.json</c>) que son muralla: infranqueables y sin escalar. Solo con huellas
+        /// poligonales; hay que llamar a <see cref="Build"/> después.
+        /// </summary>
+        public void SetWallParts(int[] ids) => wallParts = ids ?? new int[0];
+
+        /// <summary>Murallas levantadas en la última construcción.</summary>
+        public int WallPartCount { get; private set; }
+
+        /// <summary>Edificios cuyas paredes llevan una foto en la última construcción.</summary>
+        public int FacadePhotoCount { get; private set; }
 
         /// <summary>Tamaño del recuadro de cada hueco, en metros (ancho, alto).</summary>
         public static readonly Vector2 WindowSize = new Vector2(0.9f, 1.6f);
@@ -138,6 +179,10 @@ namespace Qazrix.World
         public int FilledCells { get; private set; }
         public float BuildSeconds { get; private set; }
         public bool IsReady => _roofs != null;
+
+        /// <summary>Rectángulo de la rejilla en metros locales (x = oeste, y = sur; ancho en X y fondo en Z). Vacío si aún no hay datos.</summary>
+        public Rect LocalArea => _meta == null ? new Rect() :
+            new Rect(_meta.localWestX, _meta.localNorthZ - _meta.rows * _meta.cellSize, _meta.columns * _meta.cellSize, _meta.rows * _meta.cellSize);
 
         public void Configure(TextAsset roofData, TextAsset roofMeta, Terrain ground, Material roof, Material wall,
             float stepBetweenVolumes = 0.5f)
@@ -311,8 +356,50 @@ namespace Qazrix.World
                 ? terrain.SampleHeight(new Vector3((float)x, 0f, (float)z)) + terrain.transform.position.y
                 : fallback;
 
-            List<FootprintChunk> chunks = FootprintMesher.Build(_parts, ground, sinkBelowGround,
-                chunkCells * _meta.cellSize, textureMeters > 0f ? textureMeters : 3f);
+            // Edificios con foto: sus paredes usan la imagen como material, sin deformarla (se repite a lo ancho).
+            var photoParts = new Dictionary<BuildingPart, int>();
+            var photoAspects = new List<double>();
+            var photoMaterials = new List<Material>();
+            foreach (FacadePhoto photo in facadePhotos)
+            {
+                if (photo == null || photo.material == null || photo.material.mainTexture == null) continue;
+                BuildingPart target = _index.At(photo.point.x, photo.point.y);
+                if (target == null)
+                {
+                    Debug.LogWarning($"[Qazrix] No hay edificio en ({photo.point.x:0.0}, {photo.point.y:0.0}) para la foto «{photo.name}».");
+                    continue;
+                }
+                if (photoParts.ContainsKey(target)) continue;
+                photoParts[target] = photoAspects.Count;
+                photoAspects.Add((double)photo.material.mainTexture.width / photo.material.mainTexture.height);
+                photoMaterials.Add(photo.material);
+            }
+            FacadePhotoCount = photoParts.Count;
+            var wallMaterials = new List<Material> { roofMaterial, wallMaterial };
+            wallMaterials.AddRange(photoMaterials);
+
+            // Murallas (índices de edificio de city_parts.json): van aparte, con su propio collider, para que ni se escalen ni se salven.
+            var wallList = new List<BuildingPart>();
+            foreach (int id in wallParts)
+                if (id >= 0 && id < _parts.Count && !wallList.Contains(_parts[id])) wallList.Add(_parts[id]);
+            WallPartCount = wallList.Count;
+            var wallSet = new HashSet<BuildingPart>(wallList);
+            List<BuildingPart> mainParts = wallSet.Count == 0 ? _parts : _parts.FindAll(p => !wallSet.Contains(p));
+
+            _doors.Clear();
+            foreach (Vector2 point in doorPoints)
+            {
+                DoorPlacement door = DoorPlanner.Place(_index, point.x, point.y, ground);
+                if (door == null || wallSet.Contains(door.Part))
+                {
+                    Debug.LogWarning($"[Qazrix] No hay pared libre donde abrir la puerta de ({point.x:0.0}, {point.y:0.0}).");
+                    continue;
+                }
+                _doors.Add(door);
+            }
+
+            List<FootprintChunk> chunks = FootprintMesher.Build(mainParts, ground, sinkBelowGround,
+                chunkCells * _meta.cellSize, textureMeters > 0f ? textureMeters : 3f, 3.0, photoParts, photoAspects, _doors);
 
             int triangles = 0;
             for (int n = 0; n < chunks.Count; n++)
@@ -329,22 +416,27 @@ namespace Qazrix.World
                 var mesh = new Mesh { name = $"Ciudad_{n:000}", hideFlags = HideFlags.DontSave };
                 if (vertices.Length > 65000) mesh.indexFormat = IndexFormat.UInt32;
                 mesh.vertices = vertices;
-                mesh.subMeshCount = 2;
+                mesh.subMeshCount = 2 + photoMaterials.Count;
                 mesh.SetTriangles(chunk.RoofTriangles, 0);
                 mesh.SetTriangles(chunk.WallTriangles, 1);
+                for (int k = 0; k < photoMaterials.Count; k++) mesh.SetTriangles(chunk.PhotoWallTriangles[k], 2 + k);
                 mesh.uv = uvs;
                 mesh.RecalculateNormals();
                 mesh.RecalculateTangents(); // el mapa de relieve del muro las necesita
                 mesh.RecalculateBounds();
                 _meshes.Add(mesh);
                 triangles += (chunk.RoofTriangles.Length + chunk.WallTriangles.Length) / 3;
+                for (int k = 0; k < photoMaterials.Count; k++) triangles += chunk.PhotoWallTriangles[k].Length / 3;
 
                 var go = new GameObject(mesh.name) { hideFlags = HideFlags.DontSave, isStatic = true };
                 go.transform.SetParent(transform, false);
                 go.AddComponent<MeshFilter>().sharedMesh = mesh;
-                go.AddComponent<MeshRenderer>().sharedMaterials = new[] { roofMaterial, wallMaterial };
+                go.AddComponent<MeshRenderer>().sharedMaterials = wallMaterials.ToArray();
                 if (withColliders) go.AddComponent<MeshCollider>().sharedMesh = mesh;
             }
+
+            if (wallList.Count > 0) triangles += BuildWalls(wallList, ground);
+            foreach (DoorPlacement door in _doors) BuildDoor(door);
 
             // Unos pocos matacanes (visuales, sin colisión), en torres y en algunos edificios altos.
             var towerRules = new FacadeOpeningRules();
@@ -355,14 +447,126 @@ namespace Qazrix.World
             MachicolationCount = machicolations.Count;
             _machicolations = machicolations;
 
+            // Sin ventanas dibujadas sobre las paredes que ya llevan la foto (la foto tiene las suyas).
+            var partsWithoutPhoto = _parts.FindAll(part => !photoParts.ContainsKey(part));
             if (openingMaterial != null && terrain != null)
-                triangles += BuildOpeningMesh(FootprintOpenings.Place(_parts, ground, towerRules, 3.0, machicolations, machicolationRules));
+            {
+                List<FacadeOpening> openings = FootprintOpenings.Place(partsWithoutPhoto, ground, towerRules, 3.0, machicolations, machicolationRules);
+                // Ni ventanas ni saeteras sobre el hueco de una puerta ni a su lado inmediato.
+                openings.RemoveAll(o => _doors.Exists(d =>
+                    (o.X - d.X) * (o.X - d.X) + (o.Z - d.Z) * (o.Z - d.Z) < (d.Width * 0.5 + 1.0) * (d.Width * 0.5 + 1.0)
+                    && o.NormalX * d.NormalX + o.NormalZ * d.NormalZ > 0.9));
+                triangles += BuildOpeningMesh(openings);
+            }
             if (machicolations.Count > 0) triangles += BuildMachicolationMeshes(machicolations, machicolationRules);
             if (withColliders && machicolations.Count > 0) BuildMachicolationColliders(machicolations, machicolationRules);
 
             ChunkCount = chunks.Count;
             TriangleCount = triangles;
             BuildSeconds = Time.realtimeSinceStartup - start;
+        }
+
+        /// <summary>
+        /// La hoja de una puerta en su hueco: de madera, sobre goznes en un lado, con un collider sólido y un disparador algo mayor
+        /// para poder interactuar con ella (<see cref="DoorPortal"/>: solo se abre con la llave).
+        /// </summary>
+        private void BuildDoor(DoorPlacement d)
+        {
+            var normal = new Vector3((float)d.NormalX, 0f, (float)d.NormalZ);
+            var root = new GameObject("Puerta") { hideFlags = HideFlags.DontSave };
+            root.transform.SetParent(transform, false);
+            root.transform.SetPositionAndRotation(new Vector3((float)d.X, (float)d.GroundY, (float)d.Z), Quaternion.LookRotation(normal, Vector3.up));
+
+            float width = (float)d.Width, height = (float)d.Height;
+            var hinge = new GameObject("Goznes").transform;
+            hinge.SetParent(root.transform, false);
+            hinge.localPosition = new Vector3(width * 0.5f, 0f, -0.04f); // goznes a la derecha de quien la mira desde fuera
+
+            var leaf = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            leaf.name = "Hoja";
+            leaf.transform.SetParent(hinge, false);
+            leaf.transform.localPosition = new Vector3(-width * 0.5f, height * 0.5f, 0f);
+            leaf.transform.localScale = new Vector3(width - 0.04f, height - 0.02f, 0.12f);
+            var wood = new Material(wallMaterial) { name = "Puerta_Madera" };
+            foreach (string property in new[] { "_BaseMap", "_MainTex", "_BumpMap" })
+                if (wood.HasProperty(property)) wood.SetTexture(property, null);
+            if (wood.HasProperty("_BaseColor")) wood.SetColor("_BaseColor", new Color(0.30f, 0.18f, 0.09f));
+            if (wood.HasProperty("_Color")) wood.SetColor("_Color", new Color(0.30f, 0.18f, 0.09f));
+            leaf.GetComponent<MeshRenderer>().sharedMaterial = wood;
+
+            var zone = root.AddComponent<BoxCollider>(); // delante de la puerta: ahí se pulsa para abrirla
+            zone.isTrigger = true;
+            zone.center = new Vector3(0f, height * 0.5f, 0.6f);
+            zone.size = new Vector3(width + 0.6f, height, 1.4f);
+
+            var portal = root.AddComponent<DoorPortal>();
+            portal.Configure(hinge, leaf.GetComponent<Collider>(), 1f); // gira hacia fuera
+        }
+
+        /// <summary>
+        /// La muralla: sus paredes y tejado (mismos materiales que el resto) con collider propio, más una barrera invisible sobre
+        /// el tejado (<see cref="WallBarrier"/>). Todo cuelga de «Ciudad_Muralla», marcado como <see cref="UnbreachableWall"/>: la
+        /// trepada no lo toma por pared escalable.
+        /// </summary>
+        private int BuildWalls(List<BuildingPart> walls, Func<double, double, float> ground)
+        {
+            var root = new GameObject("Ciudad_Muralla") { hideFlags = HideFlags.DontSave, isStatic = true };
+            root.transform.SetParent(transform, false);
+            root.AddComponent<UnbreachableWall>();
+
+            int triangles = 0;
+            List<FootprintChunk> chunks = FootprintMesher.Build(walls, ground, sinkBelowGround,
+                chunkCells * _meta.cellSize, textureMeters > 0f ? textureMeters : 3f);
+            for (int n = 0; n < chunks.Count; n++)
+            {
+                FootprintChunk chunk = chunks[n];
+                var vertices = new Vector3[chunk.VertexCount];
+                var uvs = new Vector2[chunk.VertexCount];
+                for (int v = 0; v < vertices.Length; v++)
+                {
+                    vertices[v] = new Vector3(chunk.Vertices[v * 3], chunk.Vertices[v * 3 + 1], chunk.Vertices[v * 3 + 2]);
+                    uvs[v] = new Vector2(chunk.Uvs[v * 2], chunk.Uvs[v * 2 + 1]);
+                }
+                var mesh = new Mesh { name = $"Muralla_{n:000}", hideFlags = HideFlags.DontSave };
+                if (vertices.Length > 65000) mesh.indexFormat = IndexFormat.UInt32;
+                mesh.vertices = vertices;
+                mesh.subMeshCount = 2;
+                mesh.SetTriangles(chunk.RoofTriangles, 0);
+                mesh.SetTriangles(chunk.WallTriangles, 1);
+                mesh.uv = uvs;
+                mesh.RecalculateNormals();
+                mesh.RecalculateTangents();
+                mesh.RecalculateBounds();
+                _meshes.Add(mesh);
+                triangles += (chunk.RoofTriangles.Length + chunk.WallTriangles.Length) / 3;
+
+                var go = new GameObject(mesh.name) { hideFlags = HideFlags.DontSave, isStatic = true };
+                go.transform.SetParent(root.transform, false);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                go.AddComponent<MeshRenderer>().sharedMaterials = new[] { roofMaterial, wallMaterial };
+                if (withColliders) go.AddComponent<MeshCollider>().sharedMesh = mesh;
+            }
+
+            if (withColliders)
+            {
+                WallBarrierMesh barrier = WallBarrier.Build(walls);
+                if (barrier.VertexCount > 0)
+                {
+                    var vertices = new Vector3[barrier.VertexCount];
+                    for (int v = 0; v < vertices.Length; v++)
+                        vertices[v] = new Vector3(barrier.Vertices[v * 3], barrier.Vertices[v * 3 + 1], barrier.Vertices[v * 3 + 2]);
+                    var mesh = new Mesh { name = "Muralla_Barrera", hideFlags = HideFlags.DontSave };
+                    mesh.vertices = vertices;
+                    mesh.SetTriangles(barrier.Triangles, 0);
+                    mesh.RecalculateBounds();
+                    _meshes.Add(mesh);
+
+                    var go = new GameObject(mesh.name) { hideFlags = HideFlags.DontSave, isStatic = true };
+                    go.transform.SetParent(root.transform, false);
+                    go.AddComponent<MeshCollider>().sharedMesh = mesh; // sin MeshRenderer: invisible
+                }
+            }
+            return triangles;
         }
 
         /// <summary>Matacanes de la ciudad: una malla de piedra (material del muro) y otra con los recuadros oscuros del suelo. Sin colisionador.</summary>
@@ -525,6 +729,8 @@ namespace Qazrix.World
             _index = null;
             _machicolations = null;
             MachicolationCount = 0;
+            FacadePhotoCount = 0;
+            _doors.Clear();
         }
 
         private static void DestroyNow(UnityEngine.Object target)

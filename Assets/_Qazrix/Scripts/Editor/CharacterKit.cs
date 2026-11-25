@@ -86,6 +86,45 @@ namespace Qazrix.EditorTools
             return mesh;
         }
 
+        /// <summary>
+        /// Nivel de detalle bajo para un modelo ya construido (D74): junto a cada pieza de alta resolución se añade una copia con la
+        /// malla sencilla de Unity (mismos pivotes y material), y un LODGroup en <paramref name="model"/> enseña la de alta cerca,
+        /// la sencilla a media distancia y nada muy lejos. Las animaciones no cambian: las copias cuelgan de los mismos pivotes.
+        /// </summary>
+        public static LODGroup AddLowDetail(Transform model, float nearTransition = 0.12f, float cullTransition = 0.012f)
+        {
+            var high = new List<Renderer>();
+            var low = new List<Renderer>();
+            foreach (MeshRenderer r in model.GetComponentsInChildren<MeshRenderer>())
+            {
+                var filter = r.GetComponent<MeshFilter>();
+                if (filter == null || filter.sharedMesh == null || !filter.sharedMesh.name.StartsWith("Qazrix_")) continue; // solo las mallas de alta resolución
+                string kind = filter.sharedMesh.name.Substring("Qazrix_".Length); // Sphere, Capsule, Cylinder, Cube
+                var simple = Resources.GetBuiltinResource<Mesh>(kind + ".fbx");
+                if (simple == null) continue;
+
+                var copy = new GameObject(r.name + "_LOD1");
+                copy.transform.SetParent(r.transform.parent, false);
+                copy.transform.localPosition = r.transform.localPosition;
+                copy.transform.localRotation = r.transform.localRotation;
+                copy.transform.localScale = r.transform.localScale;
+                copy.AddComponent<MeshFilter>().sharedMesh = simple;
+                var copyRenderer = copy.AddComponent<MeshRenderer>();
+                copyRenderer.sharedMaterial = r.sharedMaterial;
+                high.Add(r);
+                low.Add(copyRenderer);
+            }
+
+            var group = model.gameObject.AddComponent<LODGroup>();
+            group.SetLODs(new[]
+            {
+                new LOD(nearTransition, high.ToArray()),
+                new LOD(cullTransition, low.ToArray())
+            });
+            group.RecalculateBounds();
+            return group;
+        }
+
         /// <summary>Nodo vacío que sirve de pivote (cadera, hombro, empuñadura).</summary>
         public static Transform Pivot(string name, Transform parent, Vector3 position, Vector3 euler = default)
         {

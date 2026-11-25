@@ -407,6 +407,7 @@ namespace Qazrix.Tests.PlayMode
                 {
                     Mesh mesh = filter.sharedMesh;
                     Assert.IsNotNull(mesh, $"{who}: {filter.name} sin malla");
+                    if (filter.name.EndsWith("_LOD1")) continue; // copias sencillas del nivel de detalle lejano (D74)
                     if (!mesh.name.StartsWith("Qazrix_")) { others++; continue; } // marcas sueltas (señal del guardia)
                     string primitive = mesh.name.Substring("Qazrix_".Length);
                     Mesh builtIn = Resources.GetBuiltinResource<Mesh>(primitive + ".fbx");
@@ -419,6 +420,7 @@ namespace Qazrix.Tests.PlayMode
                 Assert.GreaterOrEqual(ours, original * 10, $"{who}: debe tener al menos diez veces los triángulos ({ours} frente a {original})");
                 Assert.LessOrEqual(others, 3, $"{who}: casi todas las piezas deben llevar la malla nueva");
             }
+            Assert.IsNotNull(_guard.GetComponentInChildren<LODGroup>(), "el guardia tiene nivel de detalle: mallas sencillas de lejos");
             yield return Capture("play_hidalgo_alta_resolucion.png");
         }
 
@@ -442,10 +444,36 @@ namespace Qazrix.Tests.PlayMode
             float off = Vector3.Cross(along, toTip).magnitude;
             Assert.Greater(off, 0.15f, "la punta debe desviarse de la recta de la empuñadura");
 
-            // Es más ancho que el hidalgo.
+            // Es fuerte y con barriga, pero no una bola: su vientre es ancho (más de 0,40 m) y no pasa de 1,3 veces el sayo del hidalgo (D77).
             float guardWidth = parts.First(p => p.name == "Vientre").bounds.size.x;
             float playerWidth = _player.GetComponentsInChildren<Renderer>().First(p => p.name == "Sayo").bounds.size.x;
-            Assert.Greater(guardWidth, playerWidth * 1.3f, "el guardia es corpulento");
+            Assert.Greater(guardWidth, 0.40f, "el guardia tiene barriga");
+            Assert.Less(guardWidth, playerWidth * 1.3f, "pero sin exagerar");
+
+            yield return new WaitForEndOfFrame();
+            Vector3 target = _guard.transform.position + Vector3.up * 1.0f;
+            foreach (var (label, direction) in new[] { ("frente", _guard.transform.forward), ("tres_cuartos", (_guard.transform.forward + _guard.transform.right).normalized) })
+            {
+                var go = new GameObject("CamaraGuardia");
+                var cam = go.AddComponent<Camera>();
+                go.transform.position = target + direction * 3.6f + Vector3.up * 0.4f;
+                go.transform.LookAt(target);
+                cam.fieldOfView = 50f;
+                var rt = new RenderTexture(640, 800, 24);
+                cam.targetTexture = rt;
+                cam.Render();
+                RenderTexture previous = RenderTexture.active;
+                RenderTexture.active = rt;
+                var tex = new Texture2D(640, 800, TextureFormat.RGB24, false);
+                tex.ReadPixels(new Rect(0, 0, 640, 800), 0, 0);
+                tex.Apply();
+                RenderTexture.active = previous;
+                System.IO.Directory.CreateDirectory("Reports/QA");
+                System.IO.File.WriteAllBytes($"Reports/QA/play_guardia_{label}.png", tex.EncodeToPNG());
+                Object.Destroy(tex);
+                rt.Release();
+                Object.Destroy(go);
+            }
         }
     }
 }

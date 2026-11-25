@@ -7,7 +7,7 @@ namespace Qazrix.EditorTools
     public static class ProjectInfo
     {
         public const string ProductName = "Qazrix";
-        public const string GameVersion = "0.1";
+        public const string GameVersion = "0.2";
         public const string ExpectedUnityPrefix = "6000.3.";
 
         [MenuItem("Qazrix/Aplicar versión y nombre del producto", priority = 2)]

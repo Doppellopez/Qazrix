@@ -208,6 +208,7 @@ namespace Qazrix.Prototype
 
         private static bool IsClimbable(Collider surface)
         {
+            if (surface.GetComponentInParent<UnbreachableWall>() != null) return false; // la muralla no se escala
             var blocks = surface.GetComponentInParent<CityBlocks>();
             return blocks != null && blocks.Climbable;
         }

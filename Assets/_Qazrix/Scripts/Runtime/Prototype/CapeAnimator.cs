@@ -82,7 +82,11 @@ namespace Qazrix.Prototype
             _lastPosition = position;
             _hasLast = true;
 
-            _sim.Step(Time.deltaTime, _forward, _vertical, _lateral, LegBackSwing(), _forwardAccel, _verticalAccel, _lateralAccel);
+            // Viento leve del oeste: el aire que nota la capa es el que sopla menos el que provoca su propio avance. Con viento a
+            // favor queda pegada a la espalda; de cara o de lado se levanta y ondea aunque esté parado.
+            Qazrix.Simulation.World.Wind.RelativeToBody(Time.time, root.eulerAngles.y, out float windForward, out float windRight);
+
+            _sim.Step(Time.deltaTime, _forward - windForward, _vertical, _lateral - windRight, LegBackSwing(), _forwardAccel, _verticalAccel, _lateralAccel);
             for (int i = 0; i < segments.Length && i < CapeSim.Segments; i++)
             {
                 if (segments[i] != null) segments[i].localRotation = Quaternion.Euler(_sim.Lift(i), 0f, _sim.Sway(i));

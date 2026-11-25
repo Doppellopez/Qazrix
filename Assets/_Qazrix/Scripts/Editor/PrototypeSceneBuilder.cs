@@ -199,7 +199,7 @@ namespace Qazrix.EditorTools
         /// la carga un NavMeshSurface al arrancar la escena.
         /// </summary>
         /// <param name="root">Objeto en el origen y sin girar que llevará el NavMeshSurface.</param>
-        internal static void BakeNavMesh(GameObject root, Bounds bounds, string assetPath)
+        internal static NavMeshData BakeNavMesh(GameObject root, Bounds bounds, string assetPath, float voxelSize = 0f, float agentRadius = 0.4f)
         {
             Physics.SyncTransforms();
             var sources = new List<NavMeshBuildSource>();
@@ -207,10 +207,15 @@ namespace Qazrix.EditorTools
                 new List<NavMeshBuildMarkup>(), sources);
 
             NavMeshBuildSettings settings = NavMesh.GetSettingsByID(0);
-            settings.agentRadius = 0.4f;
+            settings.agentRadius = agentRadius;
             settings.agentHeight = 1.8f;
             settings.agentClimb = 0.3f;
             settings.agentSlope = 40f;
+            if (voxelSize > 0f) // zonas muy grandes: vóxeles más gruesos para que la malla y su cálculo sigan siendo manejables
+            {
+                settings.overrideVoxelSize = true;
+                settings.voxelSize = voxelSize;
+            }
 
             NavMeshData data = UnityEngine.AI.NavMeshBuilder.BuildNavMeshData(settings, sources, bounds, Vector3.zero, Quaternion.identity);
             if (data == null) throw new InvalidOperationException("No se pudo calcular la malla de navegación.");
@@ -223,6 +228,7 @@ namespace Qazrix.EditorTools
             var surface = root.AddComponent<NavMeshSurface>();
             surface.navMeshData = data;
             EditorUtility.SetDirty(surface);
+            return data;
         }
 
         /// <summary>Carta que se recoge con la tecla de interactuar.</summary>
@@ -233,7 +239,7 @@ namespace Qazrix.EditorTools
             go.transform.SetParent(parent, false);
             go.transform.position = position;
             go.transform.rotation = Quaternion.Euler(0f, 25f, 0f);
-            go.transform.localScale = new Vector3(0.35f, 0.06f, 0.25f);
+            go.transform.localScale = new Vector3(0.6f, 0.05f, 0.42f);
             go.GetComponent<MeshRenderer>().sharedMaterial = material;
             go.GetComponent<BoxCollider>().isTrigger = true; // se encuentra, pero no estorba el paso
 

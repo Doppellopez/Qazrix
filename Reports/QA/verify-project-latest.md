@@ -1,6 +1,6 @@
 # VerifyProject
 
-- Fecha: 2026-11-18 08:06
+- Fecha: 2026-11-25 17:38
 - Unity: 6000.3.6f1
 - Modo: headless
 - Errores: 0 · Avisos: 1
@@ -9,7 +9,7 @@
 |---|---|---|
 | Compilación | Ok | Sin errores de compilación. |
 | Versión de Unity | Ok | 6000.3.6f1 (Unity 6.3 LTS). |
-| Versión del juego | Ok | Qazrix v0.1 |
+| Versión del juego | Ok | Qazrix v0.2 |
 | Render pipeline | Warning | UniversalRenderPipelineAsset (Assets/_Qazrix/Settings/URP/Qazrix_URP.asset), provisional: D06 sigue abierta hasta el benchmark URP vs HDRP. |
 | Input System | Ok | Paquete Input System activo. |
 | Serialización | Ok | Force Text. |

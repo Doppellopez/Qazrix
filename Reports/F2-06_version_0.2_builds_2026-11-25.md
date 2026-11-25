@@ -1,0 +1,12 @@
+## Incremento F2-06: versión 0.2, builds y subida
+
+- **Objetivo/gate:** compilar la 0.2 y subir los cambios a GitHub (petición de Jorge).
+- **Cambios de código/escenas/assets:** pruebas PlayMode de la capa y del velo: miden la media de un ciclo del velo (6,4 s) en vez de un fotograma, sin guardias en la de la capa; en la de inercia el tirón pasa de 6 a 20 m/s² y se exige que el velo suba 7° (antes 1°). El juego no cambia.
+- **Comandos ejecutados:** tests PlayMode; `BuildMobile.BuildAndroidBatch` (con `TEMP=C:\jt`), `BuildLinux.BuildBatch`, `BuildWindows.BuildBatch`; compresión con WinRAR.
+- **Pruebas:** aprobadas EditMode 379/379 (antes del cambio de versión) y VerifyProject sin errores. PlayMode 65/66: falla `Guards_StartOnTheGround_InRandomSpotsOfTheOldTown_ChosenAnewEachGame` (un guardia a 28,84 m del jugador; pide 29), que depende del reparto al azar; no se ha tocado. Las dos de viento pasan; una simulación de sus fórmulas en 4 000 instantes da margen en todos (peor caso: capa 2,22° sobre 1,5°, velo 4,77° sobre 2°, tirón 11,1° sobre 7°). Esa misma simulación daba fallo a las versiones antiguas en el 5,9 % (capa) y el 16,9 % (velo) de los instantes.
+- **Build y plataforma:** versión 0.2, los tres sin errores ni avisos. `Builds/Windows` y `Builds/Qazrix_Windows_0.2.rar` (70,3 MB); `Builds/Linux` y `Builds/Qazrix_Linux_0.2.rar` (68,8 MB); `Builds/Android/Qazrix.apk` (60,4 MB, de desarrollo, firmado con la clave de depuración). La carpeta `Builds` estaba vacía antes de compilar. El exe de Windows arrancó y cargó la ciudad sin errores, y se cerró con código 0 antes de 25 s. Linux y Android sin ejecutar. iOS no se ha pedido.
+- **Evidencia:** `Reports/QA/build-*-latest.md`, `Reports/QA/playmode-results.xml`.
+- **Derechos/licencias de activos nuevos:** ninguno añadido al repositorio sin fila. Quedan fuera de git, sin registrar: `Assets/Textura santa María.jpg` (lleva marca de Adobe Stock: no se puede publicar), `Assets/Resources/Santa María.jpg` y `.png` (metadatos de OpenAI) y `Assets/Resources/RedPol_2009_WEB`. Ojo: lo que está en `Resources` entra en los builds locales. DATA-001..003 siguen con el texto de licencia pendiente.
+- **Decisiones tomadas:** D80. Subida a `main` con el repositorio **público**, decidida por Jorge tras avisarle.
+- **Problemas conocidos:** nada jugado a mano; `README.md` y `CLAUDE.md` siguen con el estado antiguo y dan el repositorio por privado; `Design/Caceres_Digital_Santa_Maria` es un repositorio aparte y no se incluye.
+- **Próximo paso más pequeño:** probar los builds en cada plataforma.

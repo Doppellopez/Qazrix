@@ -81,6 +81,28 @@ namespace Qazrix.Prototype
         /// <summary>Cómo ha muerto (de un tajo o de una caída); solo vale mientras <see cref="IsDead"/>.</summary>
         public DeathKind DeathKind { get; private set; }
 
+        /// <summary>Vidas de la partida: tres al empezar (la que se juega y dos extra); cada muerte gasta una.</summary>
+        public Qazrix.Simulation.Gameplay.LifeCounter Lives { get; } = new Qazrix.Simulation.Gameplay.LifeCounter();
+
+        private float _gameOverSeconds = -1f;
+
+        /// <summary>Segundos desde que se acabó la última vida (la pantalla de fin de partida); -1 mientras quedan vidas.</summary>
+        public float GameOverSeconds => _gameOverSeconds;
+
+        /// <summary>Se acabó la última vida: empieza la pantalla de fin de partida (el juego se oscurece y sale el mensaje).</summary>
+        private void BeginGameOver()
+        {
+            if (_gameOverSeconds < 0f) _gameOverSeconds = 0f;
+        }
+
+        /// <summary>Sin vidas y tras la pantalla de fin de partida: vuelve a empezar la escena con las tres.</summary>
+        private void RestartRun()
+        {
+            Lives.Reset();
+            UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            UnityEngine.SceneManagement.SceneManager.LoadScene(scene.buildIndex >= 0 ? scene.buildIndex : 0);
+        }
+
         /// <summary>Veces que ha muerto por caer desde 15 m o más en esta sesión.</summary>
         public int FallDeaths { get; private set; }
 
@@ -103,6 +125,7 @@ namespace Qazrix.Prototype
             _deathSeconds = 0f;
             DeathKind = DeathKind.Sword;
             IsDead = true;
+            Lives.Lose();
             IsRunning = false;
             _horizontalVelocity = Vector3.zero;
         }
@@ -118,6 +141,7 @@ namespace Qazrix.Prototype
             _deathSeconds = 0f;
             DeathKind = DeathKind.Fall;
             IsDead = true;
+            Lives.Lose();
             IsRunning = false;
             _horizontalVelocity = Vector3.zero;
         }
@@ -134,7 +158,17 @@ namespace Qazrix.Prototype
                 _controller.Move(Vector3.up * (_verticalVelocity * dt));
                 IsGrounded = _controller.isGrounded;
             }
-            if (DeathPoses.IsFinished(DeathKind, _deathSeconds)) Respawn();
+            if (_gameOverSeconds >= 0f)
+            {
+                _gameOverSeconds += dt;
+                if (Qazrix.Simulation.Gameplay.GameOverScreen.IsFinished(_gameOverSeconds)) RestartRun();
+                return;
+            }
+            if (DeathPoses.IsFinished(DeathKind, _deathSeconds))
+            {
+                if (Lives.IsGameOver) BeginGameOver(); // se ha visto caer: se queda tumbado mientras todo se oscurece
+                else Respawn();
+            }
         }
 
         /// <summary>Acción de parkour posible ahora mismo con la tecla de salto (None si no hay ninguna).</summary>
@@ -277,7 +311,19 @@ namespace Qazrix.Prototype
             if ((flags & CollisionFlags.Above) != 0 && _verticalVelocity > 0f) _verticalVelocity = 0f;
 
             // Caer fuera del mundo no debe dejar al jugador perdido (spec §6.1).
-            if (transform.position.y < _spawnPosition.y - respawnFallDistance) Respawn();
+            if (transform.position.y < _spawnPosition.y - respawnFallDistance)
+            {
+                Lives.Lose(); // caer fuera del mundo también cuesta una vida
+                if (Lives.IsGameOver)
+                {
+                    // Sin cuerpo que ver tumbado: se queda quieto (sin mandos) mientras sale la pantalla de fin de partida.
+                    IsDead = true;
+                    DeathKind = DeathKind.Fall;
+                    _deathSeconds = Qazrix.Simulation.Movement.DeathCycle.TotalSeconds;
+                    BeginGameOver();
+                }
+                else Respawn();
+            }
         }
 
         private void FinishClimb()
@@ -407,6 +453,22 @@ namespace Qazrix.Prototype
                 visual.localScale = new Vector3(visual.localScale.x, height * 0.5f, visual.localScale.z);
                 visual.localPosition = new Vector3(0f, height * 0.5f, 0f);
             }
+        }
+
+        /// <summary>
+        /// Lleva al jugador a otro sitio sin que cuente como caída ni como muerte (el pasadizo bajo la ciudad). No cambia el punto
+        /// de reaparición.
+        /// </summary>
+        public void TeleportTo(Vector3 position, Quaternion rotation)
+        {
+            if (_climb != null) _climb.Cancel();
+            if (_leap != null) _leap.Cancel();
+            _controller.enabled = false;
+            transform.SetPositionAndRotation(position, rotation);
+            _controller.enabled = true;
+            _horizontalVelocity = Vector3.zero;
+            _verticalVelocity = 0f;
+            _fall.Reset(transform.position.y);
         }
 
         /// <summary>Devuelve al jugador al punto de salida (caída fuera del mundo o captura).</summary>

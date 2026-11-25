@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Qazrix.Input;
 using Qazrix.Simulation.Gameplay;
+using Qazrix.World;
 using UnityEngine;
 
 namespace Qazrix.Prototype
@@ -11,7 +12,7 @@ namespace Qazrix.Prototype
     /// y pinta en una textura; el norte queda arriba y el jugador se dibuja como una flecha en el centro.
     ///
     /// Solo muestra lo que el jugador ya ha visto: el terreno se descubre en un radio alrededor de él mientras
-    /// camina (lo no explorado queda en negro), las cartas aparecen cuando se ven sin nada por medio, y los
+    /// camina (lo no explorado queda en negro), las cartas no se dibujan, y los
     /// guardias se dibujan donde se los vio por última vez (más apagados si ahora no están a la vista).
     /// El descubrimiento se acumula también con el mapa cerrado; la cámara solo renderiza con el mapa abierto.
     /// </summary>
@@ -62,15 +63,91 @@ namespace Qazrix.Prototype
 
         public bool HasMark => _marks.Count > 0;
 
+        // Objetivo fijo de la partida: una X roja en la parte antigua, lejos del punto de salida (la plaza). Se ve en el mapa tras recoger la carta.
+        private const float ObjectiveMinDistance = 110f;
+        private const float ObjectiveMaxDistance = 190f;
+        private const float ObjectiveBuildingRadius = 18f;
+        private bool _objectiveTried;
+        private Vector3 _spawn;
+        private bool _hasSpawn;
+        private Vector3? _objective;
+
+        private Gameplay.PlayerInteractor _interactor;
+
+        /// <summary>El punto elegido para la X roja; null si la escena no tiene ciudad.</summary>
+        public Vector3? Objective => _objective;
+
+        private Gameplay.ObjectiveContact _contact;
+
+        /// <summary>El jugador ya ha tocado a la mujer del velo: la X del objetivo desaparece del mapa.</summary>
+        public bool ObjectiveReached => _contact != null && _contact.Touched;
+
+        /// <summary>La X solo aparece cuando el jugador ya ha recogido la carta (el mapa del tesoro) y hasta que toca a la mujer que espera en ella.</summary>
+        public bool ObjectiveRevealed => _objective.HasValue && !ObjectiveReached && _interactor != null && _interactor.ItemsCollected > 0;
+
+        private void EnsureObjective()
+        {
+            if (_objectiveTried) return;
+            // Se elige al recoger la carta, no al cargar: así la ciudad (huellas poligonales incluidas) ya está completa.
+            if (_interactor == null || _interactor.ItemsCollected == 0) return;
+            CityBlocks city = null;
+            foreach (CityBlocks c in FindObjectsByType<CityBlocks>(FindObjectsSortMode.None))
+                if (c.name != "Escalinata") { city = c; break; }
+            if (city == null) return; // aún no está cargada la ciudad (o la escena no la tiene): se reintenta
+            _objectiveTried = true;
+
+            Vector3 origin = _spawn; // la salida, no donde esté el jugador ahora: la X no debe cambiar según dónde recojas la carta
+            // Rumbo y distancia al azar en cada partida; el primero que cae dentro del casco y en un claro.
+            for (int attempt = 0; attempt < 80; attempt++)
+            {
+                float rad = Random.value * 2f * Mathf.PI;
+                float distance = Mathf.Lerp(ObjectiveMinDistance, ObjectiveMaxDistance, Random.value);
+                float x = origin.x + Mathf.Sin(rad) * distance, z = origin.z + Mathf.Cos(rad) * distance;
+                if (city.IsClear(x, z, ObjectiveBuildingRadius)) continue; // en las afueras, sin edificios alrededor
+                Vector2 open = city.FindOpen(x, z, 3f, 20f);
+                if (!city.IsClear(open.x, open.y, 3f) || !city.IsClear(open.x, open.y, 2f)) continue; // dos radios: la rejilla se muestrea distinto en cada uno
+                _objective = new Vector3(open.x, origin.y, open.y);
+                // La mujer del velo violeta espera en la X (está en la escena desactivada).
+                Gameplay.ObjectiveContact contact = FindFirstObjectByType<Gameplay.ObjectiveContact>(FindObjectsInactive.Include);
+                _contact = contact;
+                if (contact != null) contact.PlaceAt(_objective.Value, origin);
+                Debug.Log($"[Qazrix] Objetivo del mapa en ({open.x:0.0}, {open.y:0.0}), a {Vector2.Distance(new Vector2(origin.x, origin.z), open):0} m de la salida");
+                return;
+            }
+            Debug.LogWarning("[Qazrix] Ningún punto del casco cumple las condiciones para el objetivo del mapa.");
+        }
+
         public int MarkCount => _marks.Count;
+
+        /// <summary>Abre el mapa para ver la X del objetivo (si ya se ha elegido).</summary>
+        public bool OpenObjective()
+        {
+            if (!ObjectiveRevealed) return false;
+            if (!_open && _input != null && _player != null) SetOpen(true);
+            return true;
+        }
+
+        /// <summary>Marca un punto con una cruz roja sin abrir el mapa (si ya hay una cruz ahí, no repite). Devuelve true si la ha puesto.</summary>
+        public bool AddMark(Vector3 world)
+        {
+            foreach (Vector3 m in _marks)
+                if ((m.x - world.x) * (m.x - world.x) + (m.z - world.z) * (m.z - world.z) < 1f) return false;
+            _marks.Add(world);
+            return true;
+        }
+
+        /// <summary>¿Hay una cruz roja a menos de un metro de ese punto?</summary>
+        public bool HasMarkAt(Vector3 world)
+        {
+            foreach (Vector3 m in _marks)
+                if ((m.x - world.x) * (m.x - world.x) + (m.z - world.z) * (m.z - world.z) < 1f) return true;
+            return false;
+        }
 
         /// <summary>Marca un punto con una cruz roja y abre el mapa para verlo.</summary>
         public void OpenAt(Vector3 world)
         {
-            bool known = false;
-            foreach (Vector3 m in _marks)
-                if ((m.x - world.x) * (m.x - world.x) + (m.z - world.z) * (m.z - world.z) < 1f) known = true;
-            if (!known) _marks.Add(world);
+            AddMark(world);
             if (!_open && _input != null && _player != null) SetOpen(true);
         }
 
@@ -93,6 +170,9 @@ namespace Qazrix.Prototype
         {
             if (_input == null || _player == null) return;
 
+            if (!_hasSpawn) { _spawn = _player.position; _hasSpawn = true; }
+            if (_interactor == null) _interactor = _player.GetComponent<Gameplay.PlayerInteractor>();
+            EnsureObjective();
             Track();
 
             // Con otro panel abierto (controles, inventario) el bloqueo ya está puesto: el mapa no se abre encima.
@@ -267,7 +347,9 @@ namespace Qazrix.Prototype
 
         private void DrawMarks(Rect frame)
         {
-            foreach (Vector3 mark in _marks)
+            var all = new List<Vector3>(_marks);
+            if (ObjectiveRevealed) all.Add(_objective.Value);
+            foreach (Vector3 mark in all)
             {
                 Vector3 d = mark - _player.position;
                 if (MapProjection.Contains(d.x, d.z, HalfExtent))
@@ -290,16 +372,7 @@ namespace Qazrix.Prototype
 
         private void DrawMarkers(Rect frame)
         {
-            // Cartas ya vistas y todavía sin recoger.
-            foreach (Gameplay.LetterPickup letter in _seenLetters)
-            {
-                if (letter == null || letter.Collected) continue;
-                if (!ToScreen(letter.transform.position, frame, out Vector2 c)) continue;
-                Matrix4x4 saved = GUI.matrix;
-                GUIUtility.RotateAroundPivot(45f, c); // rombo
-                Square(c, 5f, new Color(1f, 0.95f, 0.6f));
-                GUI.matrix = saved;
-            }
+            // Las cartas no se dibujan en el mapa: hay que encontrarlas.
 
             // Guardias vistos: flecha roja donde se los vio por última vez, hacia donde miraban; apagada si ahora no se ven.
             foreach (KeyValuePair<AI.GuardController, Sighting> entry in _guardSightings)
@@ -321,7 +394,13 @@ namespace Qazrix.Prototype
             EnsureCamera();
             Vector3 p = _player.position;
             _camera.transform.position = new Vector3(p.x, p.y + 300f, p.z);
+            // La cámara del mapa fotografía la escena: la carta (un tablero en el suelo) saldría como una mancha. Se oculta un instante.
+            var hidden = new List<Renderer>();
+            foreach (Gameplay.LetterPickup letter in FindObjectsByType<Gameplay.LetterPickup>(FindObjectsSortMode.None))
+                foreach (Renderer r in letter.GetComponentsInChildren<Renderer>())
+                    if (r.enabled) { r.enabled = false; hidden.Add(r); }
             _camera.Render();
+            foreach (Renderer r in hidden) if (r != null) r.enabled = true;
             BuildMask();
         }
 
@@ -381,7 +460,7 @@ namespace Qazrix.Prototype
 
             GUI.Label(new Rect(frame.x + side * 0.5f - 6f, frame.y + 2f, 24f, 22f), "<b>N</b>", _label);
             GUI.Label(new Rect(frame.x, frame.yMax + 6f, side, 24f),
-                "<color=#ffd633>▲ tú</color>  <color=#f2261f>▲ guardia visto</color>  <color=#fff2a0>◆ carta vista</color>  <color=#ff3030>✕ marca</color>  · negro: sin explorar · cerrar: M", _label);
+                "<color=#ffd633>▲ tú</color>  <color=#f2261f>▲ guardia visto</color>  <color=#ff3030>✕ marca</color>  · negro: sin explorar · cerrar: M", _label);
         }
     }
 }

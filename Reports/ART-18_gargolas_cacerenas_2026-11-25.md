@@ -1,0 +1,23 @@
+## Incremento ART-18: gárgolas cacereñas
+
+- **Objetivo/gate:** encargo de Jorge (paquete `Qazrix_gargolas_ampliado.zip`): las 32 gárgolas del catálogo como prefabs independientes, con variantes erosionadas y de escala moderada, modeladas a partir de las fotos y sin usarlas como textura.
+- **Cambios de código/escenas/assets:**
+  - `Tools/Art/gargoyles/make_gargoyles.py` y `catalogo.csv`: generador en Blender (masas unidas por vóxeles, huecos, desgaste; textura de granito, líquen, musgo y oclusión pintada por código).
+  - `Assets/_Qazrix/Art/Environment/Gargoyles/`: 64 FBX, 64 texturas de 512 px, 64 materiales y 64 prefabs (unos 28 MB).
+  - `GargoyleBuilder` (menú Qazrix → Arte → Crear prefabs de gárgolas; lote `GargoyleBuilder.BuildBatch`), `GargoyleInfo` (edificio, motivo, fuente y autor en cada prefab) y `GargoylePrefabTests`.
+  - Cada prefab: origen en la cara del muro, sale hacia +Z, dos niveles de detalle (7 000 y 1 400 triángulos), sin colisionador.
+  - Variantes `_Erosionada`: formas romas, melladuras y picaduras; las impares reducidas (0,84–0,90) y las pares ampliadas (1,10–1,18).
+  - **Ninguna escena modificada: las gárgolas aún no aparecen en el juego.**
+- **Comandos ejecutados:** `blender -b --factory-startup -P Tools/Art/gargoyles/make_gargoyles.py -- --out <carpeta>`; copia de `Models/` y `Textures/` al proyecto; `GargoyleBuilder.BuildBatch`; tests EditMode; `VerifyProject.RunBatch`.
+- **Pruebas:** aprobadas: 373/373 EditMode (3 nuevas), VerifyProject 0 errores y 1 aviso (URP provisional, D06). Una prueba nueva falló la primera vez (la 11 erosionada vuela 37 cm y el mínimo estaba en 40); se bajó el mínimo a 35 cm. No ejecutadas: PlayMode (no cambia ninguna escena ni código de juego), builds y juego a mano.
+- **Build y plataforma:** sin build nuevo.
+- **Evidencia:** `Reports/QA/gargolas.png` y `Reports/QA/gargolas_erosionadas.png`. Comparación foto/modelo en `Research/Referencias_gargolas/comparacion_fotos_modelos.jpg` (local, fuera de git; los renders son de Blender).
+- **Derechos/licencias de activos nuevos:** COM-008 (fotos de Alfonso Soler, CC BY según revisión de Jorge; versión por anotar; la página no muestra marca de licencia en su código) y GEN-007 (modelos y texturas propios). Citar a Alfonso Soler en los créditos. Las fotos solo se usaron como referencia y están ignoradas por git. Las galerías complementarias del paquete no se consultaron.
+- **Decisiones tomadas:** D78.
+- **Problemas conocidos:**
+  - Son interpretaciones estilizadas, no réplicas: proporciones y detalle tallado mucho más simples que en las originales.
+  - Muchos perros y leones se parecen entre sí y recuerdan a osos (orejas redondas). Las que más se apartan de su foto: 9, 13, 15, 16, 19, 20, 26 y 32.
+  - La 31 figura como «querubín» en el catálogo y en el pie de foto, pero la foto parece una cabeza de león rizada; se modeló según la foto y se conserva el nombre.
+  - La 28 aparece en el blog como figura onanista; se modeló como figura acuclillada, sin detalle sexual.
+  - Los nombres se asignaron a mano: el script del paquete encontró 34 imágenes (dos son iconos) y no clasificó ninguna; el orden de las 32 coincide con los pies de foto del blog.
+- **Próximo paso más pequeño:** colocar unas pocas en las cornisas de `Z01_Relieve` (decidiendo dónde y si estorban al trepar) y revisarlas en el juego.

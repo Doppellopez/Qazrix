@@ -10,6 +10,8 @@ namespace Qazrix.Simulation.World
         public float[] Uvs;           // u, v seguidos
         public int[] RoofTriangles;
         public int[] WallTriangles;
+        /// <summary>Paredes de los edificios con foto: una lista de triángulos por foto (vacía si no hay fotos).</summary>
+        public int[][] PhotoWallTriangles = new int[0][];
 
         public int VertexCount => Vertices.Length / 3;
     }
@@ -26,9 +28,15 @@ namespace Qazrix.Simulation.World
         /// <param name="chunkMetres">Lado (m) de cada trozo de malla.</param>
         /// <param name="metersPerTile">Metros que cubre una repetición de la textura.</param>
         /// <param name="maxSegment">Largo máximo (m) de cada tramo de muro.</param>
+        /// <param name="photoParts">Edificios cuyas paredes llevan una foto en vez del muro de piedra: parte → número de foto.</param>
+        /// <param name="photoAspects">Ancho / alto de cada foto; la foto se repite a lo ancho sin deformarse.</param>
+        /// <param name="doors">Puertas: en cada una se deja un hueco en el muro, con el dintel de piedra encima.</param>
         public static List<FootprintChunk> Build(List<BuildingPart> parts, Func<double, double, float> groundAt, float sink,
-            double chunkMetres, float metersPerTile, double maxSegment = 3.0)
+            double chunkMetres, float metersPerTile, double maxSegment = 3.0,
+            IReadOnlyDictionary<BuildingPart, int> photoParts = null, IReadOnlyList<double> photoAspects = null,
+            IReadOnlyList<DoorPlacement> doors = null)
         {
+            int photoCount = photoAspects?.Count ?? 0;
             if (parts == null) throw new ArgumentNullException(nameof(parts));
             if (groundAt == null) throw new ArgumentNullException(nameof(groundAt));
             if (chunkMetres <= 0.0 || !(metersPerTile > 0f) || maxSegment <= 0.0) throw new ArgumentException("Tamaños no válidos.");
@@ -37,9 +45,11 @@ namespace Qazrix.Simulation.World
             foreach (BuildingPart part in parts)
             {
                 long key = ((long)Math.Floor(part.Centre.X / chunkMetres) << 32) ^ ((long)Math.Floor(part.Centre.Z / chunkMetres) & 0xffffffffL);
-                if (!builders.TryGetValue(key, out Builder b)) builders[key] = b = new Builder();
+                if (!builders.TryGetValue(key, out Builder b)) builders[key] = b = new Builder(photoCount);
                 AddRoof(b, part, metersPerTile);
-                AddWalls(b, part, groundAt, sink, metersPerTile, maxSegment);
+                int photo = -1;
+                if (photoParts != null && photoParts.TryGetValue(part, out int found) && found >= 0 && found < photoCount) photo = found;
+                AddWalls(b, part, groundAt, sink, metersPerTile, maxSegment, photo, photo >= 0 ? photoAspects[photo] : 0.0, doors);
             }
 
             var chunks = new List<FootprintChunk>();
@@ -51,7 +61,8 @@ namespace Qazrix.Simulation.World
                     Vertices = b.Vertices.ToArray(),
                     Uvs = b.Uvs.ToArray(),
                     RoofTriangles = b.Roof.ToArray(),
-                    WallTriangles = b.Wall.ToArray()
+                    WallTriangles = b.Wall.ToArray(),
+                    PhotoWallTriangles = Array.ConvertAll(b.Photos, l => l.ToArray())
                 });
             }
             return chunks;
@@ -63,6 +74,13 @@ namespace Qazrix.Simulation.World
             public readonly List<float> Uvs = new List<float>();
             public readonly List<int> Roof = new List<int>();
             public readonly List<int> Wall = new List<int>();
+            public readonly List<int>[] Photos;
+
+            public Builder(int photoCount)
+            {
+                Photos = new List<int>[photoCount];
+                for (int i = 0; i < photoCount; i++) Photos[i] = new List<int>();
+            }
 
             public int Add(double x, double y, double z, double u, double v)
             {
@@ -97,10 +115,15 @@ namespace Qazrix.Simulation.World
         }
 
         private static void AddWalls(Builder b, BuildingPart part, Func<double, double, float> groundAt, float sink,
-            float metersPerTile, double maxSegment)
+            float metersPerTile, double maxSegment, int photo, double photoAspect, IReadOnlyList<DoorPlacement> doors)
         {
-            foreach (Vec2[] loop in part.Loops)
+            // Con foto: una repetición de la imagen cubre la altura del edificio y mide alto × proporción de ancho.
+            List<int> walls = photo >= 0 ? b.Photos[photo] : b.Wall;
+            double photoHeight = Math.Max(1.0, part.RoofHeight - groundAt(part.Centre.X, part.Centre.Z));
+            double photoBase = part.RoofHeight - photoHeight;
+            for (int loopIndex = 0; loopIndex < part.Loops.Count; loopIndex++)
             {
+                Vec2[] loop = part.Loops[loopIndex];
                 double along = 0.0;
                 for (int i = 0; i < loop.Length; i++)
                 {
@@ -111,18 +134,48 @@ namespace Qazrix.Simulation.World
                     double nx = dz / length, nz = -dx / length;
 
                     int segments = Math.Max(1, (int)Math.Ceiling(length / maxSegment));
-                    for (int s = 0; s < segments; s++)
+                    // Puerta en este lado (solo en el contorno exterior y sin foto): se parte el muro en sus bordes y el tramo del
+                    // hueco queda abierto hasta el dintel.
+                    DoorPlacement door = null;
+                    if (doors != null && loopIndex == 0 && photo < 0)
+                        foreach (DoorPlacement d in doors)
+                            if (d.Part == part && d.EdgeIndex == i) { door = d; break; }
+                    var cuts = new List<double>();
+                    for (int s = 0; s <= segments; s++) cuts.Add((double)s / segments);
+                    if (door != null)
                     {
-                        double t0 = (double)s / segments, t1 = (double)(s + 1) / segments;
+                        cuts.Add(door.AlongStart / length);
+                        cuts.Add((door.AlongStart + door.Width) / length);
+                        cuts.Sort();
+                    }
+                    for (int s = 0; s + 1 < cuts.Count; s++)
+                    {
+                        double t0 = cuts[s], t1 = cuts[s + 1];
+                        if (t1 - t0 < 1e-9) continue;
                         double ax = p.X + dx * t0, az = p.Z + dz * t0, bx = p.X + dx * t1, bz = p.Z + dz * t1;
                         float top = part.RoofHeight;
                         float aBase = Math.Min(groundAt(ax, az) - sink, top), bBase = Math.Min(groundAt(bx, bz) - sink, top);
-                        double u0 = (along + length * t0) / metersPerTile, u1 = (along + length * t1) / metersPerTile;
+                        if (door != null)
+                        {
+                            double mid = (t0 + t1) * 0.5 * length;
+                            if (mid > door.AlongStart && mid < door.AlongStart + door.Width)
+                            {
+                                // Sobre el hueco: solo el dintel, desde lo alto de la puerta hasta el tejado.
+                                float lintel = (float)door.TopY;
+                                if (lintel >= top - 0.05f) continue;
+                                aBase = bBase = lintel;
+                            }
+                        }
+                        double tile = photo >= 0 ? photoHeight * photoAspect : metersPerTile;
+                        double u0 = (along + length * t0) / tile, u1 = (along + length * t1) / tile;
+                        double vTop = photo >= 0 ? (top - photoBase) / photoHeight : top / metersPerTile;
+                        double vA = photo >= 0 ? (aBase - photoBase) / photoHeight : aBase / metersPerTile;
+                        double vB = photo >= 0 ? (bBase - photoBase) / photoHeight : bBase / metersPerTile;
 
-                        int aT = b.Add(ax, top, az, u0, top / metersPerTile), bT = b.Add(bx, top, bz, u1, top / metersPerTile);
-                        int aB = b.Add(ax, aBase, az, u0, aBase / metersPerTile), bB = b.Add(bx, bBase, bz, u1, bBase / metersPerTile);
-                        b.Triangle(b.Wall, bB, bT, aT, nx, 0, nz);
-                        b.Triangle(b.Wall, bB, aT, aB, nx, 0, nz);
+                        int aT = b.Add(ax, top, az, u0, vTop), bT = b.Add(bx, top, bz, u1, vTop);
+                        int aB = b.Add(ax, aBase, az, u0, vA), bB = b.Add(bx, bBase, bz, u1, vB);
+                        b.Triangle(walls, bB, bT, aT, nx, 0, nz);
+                        b.Triangle(walls, bB, aT, aB, nx, 0, nz);
                     }
                     along += length;
                 }

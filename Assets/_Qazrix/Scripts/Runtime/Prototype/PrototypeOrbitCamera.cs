@@ -70,6 +70,9 @@ namespace Qazrix.Prototype
             target = followTarget;
         }
 
+        /// <summary>Grados de giro de la cámara por píxel arrastrado con el dedo.</summary>
+        private const float TouchDegreesPerPixel = 0.12f;
+
         private void Start()
         {
             _currentDistance = distance;
@@ -91,6 +94,7 @@ namespace Qazrix.Prototype
             float dt = Time.deltaTime;
             Vector2 look = input.LookStick * (stickDegreesPerSecond * dt);
             if (Cursor.lockState == CursorLockMode.Locked) look += input.LookPointer * mouseDegreesPerPixel;
+            look += input.LookTouch * TouchDegreesPerPixel; // arrastrar con el dedo (Android e iOS)
 
             _yaw += look.x;
 

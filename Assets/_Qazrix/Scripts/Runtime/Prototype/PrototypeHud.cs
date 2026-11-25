@@ -179,10 +179,73 @@ namespace Qazrix.Prototype
 
             InventoryEntry entry = entries[index];
             SetInventoryOpen(false);
-            _map.OpenAt(new Vector3(entry.MarkX, 0f, entry.MarkZ));
+            // Ya has tocado a la mujer del velo: la carta no vuelve a marcar nada. La llave sí señala el alcázar.
+            if (_map.ObjectiveReached && entry.Id == "carta") return;
+            // La carta señala la X del objetivo (al azar en cada partida); si aún no hay, el punto fijo guardado en la carta.
+            if (!_map.OpenObjective()) _map.OpenAt(new Vector3(entry.MarkX, 0f, entry.MarkZ));
+        }
+
+        /// <summary>Icono de una vida extra: la cabeza del hidalgo (Assets/Resources/UI/Vida_Hidalgo.png, generado por LifeIconBuilder).</summary>
+        public const string LifeIconResource = "UI/Vida_Hidalgo";
+        public const float LifeIconSize = 40f, LifeIconGap = 6f, LifeIconMargin = 16f;
+
+        private Texture2D _lifeIcon;
+        private bool _lifeIconTried;
+
+        /// <summary>Rectángulo de la vida extra número <paramref name="index"/> (0 = la más a la derecha) en una pantalla de ese ancho.</summary>
+        public static Rect LifeIconRect(int index, float screenWidth)
+        {
+            float x = screenWidth - LifeIconMargin - (index + 1) * LifeIconSize - index * LifeIconGap;
+            return new Rect(x, LifeIconMargin, LifeIconSize, LifeIconSize);
+        }
+
+        /// <summary>Las vidas de reserva (sin contar la que se juega) como cabezas pequeñas del protagonista, arriba a la derecha.</summary>
+        private void DrawExtraLives()
+        {
+            if (player == null) return;
+            int extra = player.Lives.ExtraLives;
+            if (extra <= 0) return;
+            if (!_lifeIconTried)
+            {
+                _lifeIconTried = true;
+                _lifeIcon = Resources.Load<Texture2D>(LifeIconResource);
+                if (_lifeIcon == null) Debug.LogWarning($"[Qazrix] Falta el icono de vida: Resources/{LifeIconResource} (menú Qazrix → Arte → Icono de vida).");
+            }
+            if (_lifeIcon == null) return;
+            for (int i = 0; i < extra; i++)
+                GUI.DrawTexture(LifeIconRect(i, Screen.width), _lifeIcon, ScaleMode.ScaleToFit, true);
+        }
+
+        private GUIStyle _gameOverStyle;
+
+        /// <summary>Fin de partida: velo oscuro sobre todo el juego y el mensaje en el centro.</summary>
+        private void DrawGameOver()
+        {
+            if (player == null || player.GameOverSeconds < 0f) return;
+            float seconds = player.GameOverSeconds;
+
+            Color saved = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, Qazrix.Simulation.Gameplay.GameOverScreen.Darkness(seconds));
+            GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), Texture2D.whiteTexture);
+
+            if (_gameOverStyle == null)
+            {
+                _gameOverStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, wordWrap = true };
+            }
+            _gameOverStyle.fontSize = Mathf.Max(22, Mathf.RoundToInt(Screen.height * 0.055f));
+            _gameOverStyle.normal.textColor = Color.white;
+            GUI.color = new Color(1f, 1f, 1f, Qazrix.Simulation.Gameplay.GameOverScreen.TextAlpha(seconds));
+            GUI.Label(new Rect(Screen.width * 0.08f, 0f, Screen.width * 0.84f, Screen.height), Qazrix.Simulation.Gameplay.GameOverScreen.Message, _gameOverStyle);
+            GUI.color = saved;
         }
 
         private void OnGUI()
+        {
+            DrawMain();
+            DrawGameOver(); // lo último: tapa también el panel de depuración y el inventario
+        }
+
+        private void DrawMain()
         {
             if (_style == null)
             {
@@ -190,6 +253,7 @@ namespace Qazrix.Prototype
                 _style.normal.textColor = Color.white;
             }
 
+            DrawExtraLives();
             if (_inventoryOpen) DrawInventory();
             if (!visible) return;
 

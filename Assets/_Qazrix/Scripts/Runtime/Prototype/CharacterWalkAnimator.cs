@@ -93,6 +93,46 @@ namespace Qazrix.Prototype
         /// <summary>¿Está agachándose a recoger algo?</summary>
         public bool IsPickingUp => _pickupSeconds >= 0f;
 
+        // Recibir la llave de Zahra: alarga la mano derecha, la lleva al pecho y la guarda en la camisa (KeyHandoverCycle).
+        private float _keySeconds = -1f;
+
+        /// <summary>Empieza el gesto de tomar la llave y guardarla en la camisa con la mano derecha.</summary>
+        public void PlayKeyHandover() => _keySeconds = 0f;
+
+        // Dar la llave al capitán: se la saca de la camisa y alarga la mano derecha hacia él (KeyGiveCycle).
+        private float _giveSeconds = -1f;
+
+        /// <summary>Empieza el gesto de sacar la llave de la camisa y dársela a alguien con la mano derecha.</summary>
+        public void PlayKeyGive() => _giveSeconds = 0f;
+
+        /// <summary>¿Está dando la llave?</summary>
+        public bool IsGivingKey => _giveSeconds >= 0f;
+
+        /// <summary>Segundos desde que empezó a dar la llave; -1 si no está en ello.</summary>
+        public float GiveSeconds => _giveSeconds;
+
+        /// <summary>¿Está recibiendo la llave?</summary>
+        public bool IsReceivingKey => _keySeconds >= 0f;
+
+        /// <summary>Segundos desde que empezó la entrega de la llave; -1 si no está en ella.</summary>
+        public float KeySeconds => _keySeconds;
+
+        private Transform _rightHand;
+
+        /// <summary>La mano derecha del modelo (bajo el codo); null si el modelo no la tiene.</summary>
+        public Transform RightHand
+        {
+            get
+            {
+                if (_rightHand == null && rightArm != null)
+                {
+                    Transform elbow = rightArm.Find("Codo");
+                    if (elbow != null) _rightHand = elbow.Find("Mano");
+                }
+                return _rightHand;
+            }
+        }
+
         /// <summary>Segundos desde que empezó el gesto de recoger; -1 si no está en él.</summary>
         public float PickupSeconds => _pickupSeconds;
 
@@ -258,6 +298,32 @@ namespace Qazrix.Prototype
             }
             if (!swingRightArm && !bothArms) targetRightArm = 0f; // para trepar hacen falta las dos manos
 
+            // Recibir la llave: la mano derecha manda sobre lo demás mientras dura el gesto (el cuerpo está quieto).
+            float? keyElbow = null;
+            if (_keySeconds >= 0f)
+            {
+                _keySeconds += Time.deltaTime;
+                // Solo acaba al terminar el ciclo: el juego está parado mientras dura, y un pequeño desajuste del suelo no debe cortarlo.
+                if (KeyHandoverCycle.IsFinished(_keySeconds) || climbing || diving) _keySeconds = -1f;
+            }
+            if (_keySeconds >= 0f)
+            {
+                targetRightArm = KeyHandoverCycle.HeroArm(_keySeconds);
+                keyElbow = KeyHandoverCycle.HeroElbow(_keySeconds);
+            }
+
+            // Dar la llave: misma mano, al revés (del pecho hacia el capitán).
+            if (_giveSeconds >= 0f)
+            {
+                _giveSeconds += Time.deltaTime;
+                if (KeyGiveCycle.IsFinished(_giveSeconds) || climbing || diving) _giveSeconds = -1f;
+            }
+            if (_giveSeconds >= 0f)
+            {
+                targetRightArm = KeyGiveCycle.HeroArm(_giveSeconds);
+                keyElbow = KeyGiveCycle.HeroElbow(_giveSeconds);
+            }
+
             // Con el arma en alto (el guardia que persigue) el brazo derecho sube y la hoja apunta arriba y adelante.
             if (weaponGrip != null)
             {
@@ -281,7 +347,8 @@ namespace Qazrix.Prototype
             _leftLeg = Mathf.MoveTowards(_leftLeg, targetLeftLeg, step);
             _rightLeg = Mathf.MoveTowards(_rightLeg, targetRightLeg, step);
             _leftArm = Mathf.MoveTowards(_leftArm, targetLeftArm, step);
-            _rightArm = Mathf.MoveTowards(_rightArm, targetRightArm, _strikeSeconds >= 0f ? step * 3f : step); // el tajo es rápido
+            // El tajo es rápido; el gesto de la llave ya viene suavizado por su ciclo, así que la mano lo sigue sin retraso.
+            _rightArm = (_keySeconds >= 0f || _giveSeconds >= 0f) ? targetRightArm : Mathf.MoveTowards(_rightArm, targetRightArm, _strikeSeconds >= 0f ? step * 3f : step);
 
             // Girar en X negativo lleva el extremo de la extremidad hacia delante (+Z).
             Apply(leftLeg, _leftLeg);
@@ -291,7 +358,7 @@ namespace Qazrix.Prototype
             // El puño del arma cuelga del brazo: se le suma el giro del brazo para que la hoja quede donde toca.
             if (weaponGrip != null) weaponGrip.localRotation = Quaternion.Euler(WeaponRaise.GripAngle(_raise, _rightArm), 0f, 0f);
 
-            ApplyRun(walkingOnGround ? speed : 0f, step, airLeftKnee, airRightKnee, pickupWeight);
+            ApplyRun(walkingOnGround ? speed : 0f, step, airLeftKnee, airRightKnee, pickupWeight, keyElbow);
         }
 
         /// <summary>
@@ -377,7 +444,7 @@ namespace Qazrix.Prototype
         }
 
         /// <summary>Rodillas, codos, inclinación y rebote del andar y el correr; todo vuelve a cero en el aire, trepando o parado.</summary>
-        private void ApplyRun(float speed, float step, float? kneeLeftOverride = null, float? kneeRightOverride = null, float? pickupWeight = null)
+        private void ApplyRun(float speed, float step, float? kneeLeftOverride = null, float? kneeRightOverride = null, float? pickupWeight = null, float? rightElbowOverride = null)
         {
             if (!_jointsFound)
             {
@@ -405,7 +472,7 @@ namespace Qazrix.Prototype
             if (_rightKnee != null) _rightKnee.localRotation = Quaternion.Euler(_rightKneeAngle, 0f, 0f);
             // El brazo del arma del guardia no se dobla: la hoja apunta donde toca.
             if (_leftElbow != null) _leftElbow.localRotation = Quaternion.Euler(-_elbowAngle, 0f, 0f);
-            if (_rightElbow != null) _rightElbow.localRotation = Quaternion.Euler(-(swingRightArm ? _elbowAngle : 0f), 0f, 0f);
+            if (_rightElbow != null) _rightElbow.localRotation = Quaternion.Euler(-(rightElbowOverride ?? (swingRightArm ? _elbowAngle : 0f)), 0f, 0f);
 
             float smooth = Mathf.Clamp01(Time.deltaTime * 10f);
             _lean = Mathf.Lerp(_lean, pickupWeight.HasValue ? PickupCycle.Lean(pickupWeight.Value) : RunCycle.Lean(speed), smooth);

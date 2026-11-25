@@ -6,6 +6,7 @@ using Qazrix.AI;
 using Qazrix.Prototype;
 using Qazrix.Simulation.AI;
 using Qazrix.Simulation.Movement;
+using Qazrix.Simulation.World;
 using Qazrix.World;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -96,7 +97,7 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator RandomLetter_IsInTheOuterRing_Clear_AndReachableOnFoot()
+        public IEnumerator RandomLetter_IsInThePlazaMayor_Clear_AndReachableOnFoot()
         {
             yield return LoadScene();
             GameObject go = GameObject.Find("Carta_Azar");
@@ -108,13 +109,40 @@ namespace Qazrix.Tests.PlayMode
             Vector3 spot = placer.Placed.Value, p = _player.transform.position;
             float flat = Vector2.Distance(new Vector2(spot.x, spot.z), new Vector2(p.x, p.z));
             Debug.Log($"[Qazrix] Carta al azar a {flat:0.0} m del jugador");
-            Assert.GreaterOrEqual(flat, 15f, "fuera del claro de la plaza");
-            Assert.LessOrEqual(flat, 56f);
+            Assert.GreaterOrEqual(flat, 5.5f, "no pegada al jugador");
+            Assert.LessOrEqual(flat, 28.5f, "dentro de la Plaza Mayor");
             Assert.IsTrue(_city.IsClear(spot.x, spot.z, 1.2f), "no está dentro de un edificio");
 
             var path = new UnityEngine.AI.NavMeshPath();
             Assert.IsTrue(UnityEngine.AI.NavMesh.CalculatePath(p, spot, UnityEngine.AI.NavMesh.AllAreas, path));
             Assert.AreEqual(UnityEngine.AI.NavMeshPathStatus.PathComplete, path.status, "se puede llegar andando");
+            yield return CaptureLookingAt(spot, "play_z01_carta_plaza.png");
+        }
+
+        /// <summary>Foto de un punto desde unos 5 m, a la altura de la cabeza de un jugador que se acerca (cámara temporal).</summary>
+        private IEnumerator CaptureLookingAt(Vector3 target, string fileName, float distance = 3.5f, float height = 1.8f, float fov = 60f)
+        {
+            yield return new WaitForEndOfFrame();
+            var go = new GameObject("CamaraCarta");
+            var cam = go.AddComponent<Camera>();
+            Vector3 toward = new Vector3(target.x - _player.transform.position.x, 0f, target.z - _player.transform.position.z).normalized;
+            go.transform.position = target - toward * distance + Vector3.up * height;
+            go.transform.LookAt(target);
+            cam.fieldOfView = fov;
+            var rt = new RenderTexture(960, 540, 24);
+            cam.targetTexture = rt;
+            cam.Render();
+            RenderTexture previous = RenderTexture.active;
+            RenderTexture.active = rt;
+            var tex = new Texture2D(960, 540, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, 960, 540), 0, 0);
+            tex.Apply();
+            RenderTexture.active = previous;
+            Directory.CreateDirectory("Reports/QA");
+            File.WriteAllBytes("Reports/QA/" + fileName, tex.EncodeToPNG());
+            Object.Destroy(tex);
+            rt.Release();
+            Object.Destroy(go);
         }
 
         /// <summary>Foto desde un lado del jugador (una cámara temporal: desde detrás el cuerpo tapa las piernas).</summary>
@@ -186,6 +214,620 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator TheMap_MarksAnObjectiveFarFromThePlaza_OnlyAfterPickingUpTheLetter()
+        {
+            yield return LoadScene();
+            var panel = Object.FindFirstObjectByType<PrototypeHud>().GetComponent<MapPanel>();
+            for (int i = 0; i < 5; i++) yield return null;
+            Assert.IsFalse(panel.ObjectiveRevealed, "antes de recoger la carta no se enseña ninguna X");
+            var letter = GameObject.Find("Carta_Azar").GetComponent<Qazrix.Gameplay.LetterPickup>();
+            _player.GetComponent<Qazrix.Gameplay.PlayerInteractor>().BeginPickup(letter);
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.PickupCycle.Duration + 0.3f);
+            for (int i = 0; i < 5; i++) yield return null;
+            Assert.IsTrue(panel.ObjectiveRevealed, "tras recogerla, la X aparece");
+            Vector3 o = panel.Objective.Value, p = _player.transform.position;
+            Assert.Greater(Vector2.Distance(new Vector2(o.x, o.z), new Vector2(p.x, p.z)), 100f, "lejos de la plaza");
+            Assert.IsTrue(_city.IsClear(o.x, o.z, 2f), "no dentro de un edificio");
+            Assert.IsFalse(_city.IsClear(o.x, o.z, 18f), "en el casco antiguo, con edificios alrededor");
+
+            var contact = Object.FindFirstObjectByType<Qazrix.Gameplay.ObjectiveContact>(FindObjectsInactive.Include);
+            Assert.IsNotNull(contact, "la escena tiene a la mujer del velo");
+            Assert.IsTrue(contact.gameObject.activeInHierarchy, "aparece al salir la X");
+            Assert.Less(Vector2.Distance(new Vector2(contact.transform.position.x, contact.transform.position.z), new Vector2(o.x, o.z)), 0.5f, "justo en la X");
+            yield return CaptureLookingAt(contact.transform.position + Vector3.up * 1.1f, "play_z01_contacto.png");
+            yield return CaptureLookingAt(contact.transform.position + Vector3.up * 0.95f, "play_z01_contacto_cerca.png", 2.6f, 1.1f, 45f);
+        }
+
+        [UnityTest]
+        public IEnumerator TheHero_HasThreeLives_EachDeathCostsOne_AndTheLastRestartsTheRun()
+        {
+            yield return LoadScene();
+            var hud = Object.FindFirstObjectByType<PrototypeHud>();
+            Assert.AreEqual(3, _player.Lives.Lives, "empieza con tres vidas");
+            Assert.AreEqual(2, _player.Lives.ExtraLives, "la que juega y dos extra");
+
+            // Dos cabezas pequeñas arriba a la derecha, alineadas a la derecha y sin solaparse.
+            Rect first = PrototypeHud.LifeIconRect(0, 1920f), second = PrototypeHud.LifeIconRect(1, 1920f);
+            Assert.AreEqual(1920f - PrototypeHud.LifeIconMargin, first.xMax, 0.01f);
+            Assert.AreEqual(PrototypeHud.LifeIconMargin, first.y, 0.01f);
+            Assert.LessOrEqual(second.xMax, first.xMin, "una al lado de la otra");
+            Assert.IsNotNull(Resources.Load<Texture2D>(PrototypeHud.LifeIconResource), "el icono de vida está en Resources");
+            Directory.CreateDirectory("Reports/QA");
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_vidas.png"); // las dos cabezas del HUD
+            yield return null;
+            yield return null;
+
+            for (int death = 1; death <= 2; death++)
+            {
+                _player.Die(_player.transform.position + Vector3.forward * 2f);
+                Assert.AreEqual(3 - death, _player.Lives.Lives, $"la muerte {death} gasta una vida");
+                yield return new WaitForSeconds(Qazrix.Simulation.Movement.DeathCycle.TotalSeconds + 0.6f);
+                Assert.IsFalse(_player.IsDead, "tras la muerte reaparece mientras queden vidas");
+            }
+            Assert.AreEqual(1, _player.Lives.Lives);
+            Assert.AreEqual(0, _player.Lives.ExtraLives, "ya no queda ninguna de reserva");
+
+            // La tercera muerte acaba la partida: la escena vuelve a empezar con las tres vidas.
+            _player.Die(_player.transform.position + Vector3.forward * 2f);
+            Assert.IsTrue(_player.Lives.IsGameOver);
+            Assert.AreEqual(-1f, _player.GameOverSeconds, "hasta que termina el gesto de caer no sale la pantalla");
+
+            // Cuando acaba de caer, el juego se oscurece y sale el mensaje.
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.DeathCycle.TotalSeconds + Qazrix.Simulation.Gameplay.GameOverScreen.FadeSeconds + 0.5f);
+            Assert.GreaterOrEqual(_player.GameOverSeconds, Qazrix.Simulation.Gameplay.GameOverScreen.FadeSeconds, "pantalla de fin de partida en marcha");
+            Assert.IsTrue(_player.IsDead, "sigue sin mandos mientras se lee el mensaje");
+            Assert.Greater(Qazrix.Simulation.Gameplay.GameOverScreen.Darkness(_player.GameOverSeconds), 0.9f, "todo oscuro");
+            Directory.CreateDirectory("Reports/QA");
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_fin_de_partida.png"); // con el HUD (IMGUI) encima
+            yield return null;
+            yield return null;
+
+            yield return new WaitForSeconds(Qazrix.Simulation.Gameplay.GameOverScreen.TotalSeconds);
+            for (int i = 0; i < 10; i++) yield return null;
+            var fresh = Object.FindFirstObjectByType<PrototypePlayerController>();
+            Assert.IsNotNull(fresh);
+            Assert.AreEqual(3, fresh.Lives.Lives, "partida nueva con las tres vidas");
+            Assert.IsFalse(fresh.IsDead);
+        }
+
+        /// <summary>
+        /// Media de un ángulo de la ropa durante un ciclo completo del velo. El viento y los vaivenes dependen del reloj (y el de
+        /// Zahra empieza en un punto al azar): comparar un solo fotograma hacía que el resultado dependiera del momento.
+        /// </summary>
+        private static IEnumerator AverageOverWindCycle(System.Func<float> angle, System.Action<float> result)
+        {
+            float sum = 0f, time = 0f;
+            while (time < Qazrix.Simulation.Movement.ContactIdle.VeilPeriod)
+            {
+                yield return null;
+                sum += angle() * Time.deltaTime;
+                time += Time.deltaTime;
+            }
+            result(sum / time);
+        }
+
+        [UnityTest]
+        public IEnumerator TheCape_ReactsToTheWestWind_FacingIntoItLiftsMoreThanWithItAtTheBack()
+        {
+            yield return LoadScene();
+            var cape = _player.GetComponentInChildren<CapeAnimator>();
+            Assert.IsNotNull(cape, "el hidalgo tiene capa");
+            int last = Qazrix.Simulation.Movement.CapeSim.Segments - 1;
+            // Sin guardias: durante la medida podrían alcanzarle y recolocarle.
+            foreach (GuardController guard in Object.FindObjectsByType<GuardController>(FindObjectsSortMode.None))
+                guard.gameObject.SetActive(false);
+
+            float headwind = 0f, tailwind = 0f;
+            _player.transform.rotation = Quaternion.Euler(0f, 270f, 0f); // mirando al oeste: el viento sopla de cara
+            yield return new WaitForSeconds(2.5f);
+            yield return AverageOverWindCycle(() => cape.Lift(last), mean => headwind = mean);
+            _player.transform.rotation = Quaternion.Euler(0f, 90f, 0f); // mirando al este: el viento por la espalda
+            yield return new WaitForSeconds(2.5f);
+            yield return AverageOverWindCycle(() => cape.Lift(last), mean => tailwind = mean);
+            Assert.Greater(headwind, tailwind + 1.5f, $"de cara se levanta más ({headwind:0.0}° contra {tailwind:0.0}° de media)");
+        }
+
+        [UnityTest]
+        public IEnumerator TheVeiledWomansClothes_ReactToTheWindAndToInertia()
+        {
+            yield return LoadScene();
+            var letter = GameObject.Find("Carta_Azar").GetComponent<Qazrix.Gameplay.LetterPickup>();
+            _player.GetComponent<Qazrix.Gameplay.PlayerInteractor>().BeginPickup(letter);
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.PickupCycle.Duration + 0.3f);
+            for (int i = 0; i < 5; i++) yield return null;
+
+            var contact = Object.FindFirstObjectByType<Qazrix.Gameplay.ObjectiveContact>();
+            Transform veil = contact.transform.Find("Contacto_modelo/Torso_pivote/Velo_pivote");
+            Transform skirt = contact.transform.Find("Contacto_modelo/Falda_pivote");
+            Transform drape = contact.transform.Find("Contacto_modelo/Torso_pivote/Cuello_pivote/Gasa_pivote");
+            Assert.IsNotNull(veil, "pivote del velo");
+            Assert.IsNotNull(skirt, "pivote del bajo de la túnica");
+            Assert.IsNotNull(drape, "pivote de la gasa del rostro");
+            Assert.IsNotNull(skirt.Find("Falda_baja"), "el bajo cuelga de su pivote");
+
+            // Viento: de cara (mirando al oeste) el velo se levanta más que con el viento a favor (mirando al este).
+            float VeilAngle() => Mathf.DeltaAngle(0f, veil.localEulerAngles.x);
+            float headwind = 0f, tailwind = 0f;
+            contact.transform.rotation = Quaternion.Euler(0f, 270f, 0f);
+            yield return new WaitForSeconds(2.5f);
+            yield return AverageOverWindCycle(VeilAngle, mean => headwind = mean);
+            contact.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+            yield return new WaitForSeconds(2.5f);
+            yield return AverageOverWindCycle(VeilAngle, mean => tailwind = mean);
+            Assert.Greater(headwind, tailwind + 2f, $"el velo se levanta con el viento de cara ({headwind:0.0}° contra {tailwind:0.0}° de media)");
+
+            // Inercia: si la mueven hacia delante con aceleración, el velo se queda atrás (se levanta más).
+            Vector3 start = contact.transform.position;
+            float rest = Mathf.DeltaAngle(0f, veil.localEulerAngles.x);
+            float peak = rest;
+            float speed = 0f;
+            // Un tirón fuerte (20 m/s²): su efecto (unos 14°) destaca sobre el vaivén propio del velo, que solo no llega a 7°.
+            for (float t = 0f; t < 0.8f; t += Time.deltaTime)
+            {
+                speed += 20f * Time.deltaTime;
+                contact.transform.position += contact.transform.forward * (speed * Time.deltaTime);
+                yield return null;
+                peak = Mathf.Max(peak, Mathf.DeltaAngle(0f, veil.localEulerAngles.x));
+            }
+            Assert.Greater(peak, rest + 7f, $"al acelerar, la tela se queda atrás ({rest:0.0}° → {peak:0.0}°)");
+            contact.transform.position = start;
+        }
+
+        [UnityTest]
+        public IEnumerator TouchingZahra_SheGivesTheKey_HeTakesItAndTucksItInHisShirt()
+        {
+            yield return LoadScene();
+            var interactor = _player.GetComponent<Qazrix.Gameplay.PlayerInteractor>();
+            var letter = GameObject.Find("Carta_Azar").GetComponent<Qazrix.Gameplay.LetterPickup>();
+            interactor.BeginPickup(letter);
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.PickupCycle.Duration + 0.3f);
+            for (int i = 0; i < 5; i++) yield return null;
+
+            var contact = Object.FindFirstObjectByType<Qazrix.Gameplay.ObjectiveContact>();
+            var handover = contact.GetComponent<Qazrix.Gameplay.KeyHandover>();
+            var hero = _player.GetComponentInChildren<CharacterWalkAnimator>();
+            Transform zahraArm = contact.transform.Find("Contacto_modelo/Torso_pivote/Brazo_der");
+            Assert.IsNotNull(handover, "Zahra sabe dar la llave");
+            Assert.IsNotNull(zahraArm);
+            Assert.IsNotNull(hero.RightHand, "el hidalgo tiene mano derecha");
+            Assert.IsFalse(handover.Started, "aún no la ha tocado");
+            Assert.AreEqual(0, interactor.Inventory.CountOf(Qazrix.Gameplay.KeyHandover.KeyItemId), "sin llave todavía");
+
+            // La toca: se coloca a 0,9 m de ella.
+            Vector3 woman = contact.transform.position;
+            _player.transform.position = woman + new Vector3(0.9f, 0.1f, 0f);
+            Physics.SyncTransforms();
+            for (int i = 0; i < 4; i++) yield return null;
+            Assert.IsTrue(handover.Started, "al tocarla empieza la entrega");
+            Assert.IsNotNull(GameObject.Find("Llave"), "ella tiene la llave en la mano");
+
+            // Ofrece: con el brazo extendido y la llave, antes de que él la tome.
+            yield return new WaitForSeconds(0.85f - handover.Seconds);
+            float zahraArmX = Mathf.DeltaAngle(0f, zahraArm.localEulerAngles.x);
+            Assert.Less(zahraArmX, -60f, $"Zahra extiende el brazo ({zahraArmX:0}°)");
+            Directory.CreateDirectory("Reports/QA");
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_llave_ofrece.png");
+            yield return null;
+
+            // Él alarga la mano y la llave pasa de una a otra.
+            yield return new WaitForSeconds(1.15f - handover.Seconds);
+            Assert.Greater(hero.RightArmAngle, 40f, $"el protagonista alarga el brazo ({hero.RightArmAngle:0}°)");
+            Vector3 keyAt = GameObject.Find("Llave").transform.position;
+            Assert.Less(Vector3.Distance(keyAt, hero.RightHand.position), 0.25f, "la llave ya llega a su mano");
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_llave_toma.png");
+            yield return null;
+
+            // La lleva al pecho (codo muy doblado) y se ve a punto de guardarla.
+            yield return new WaitForSeconds(1.95f - handover.Seconds);
+            Assert.IsNotNull(GameObject.Find("Llave"), "todavía a la vista, en su mano");
+            Assert.AreEqual(0, interactor.Inventory.CountOf(Qazrix.Gameplay.KeyHandover.KeyItemId), "aún no está guardada");
+            Assert.Greater(hero.ElbowAngle + 0f, -1f);
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_llave_pecho.png");
+            yield return null;
+
+            // Guardada en la camisa: desaparece de la mano y entra en el inventario; todo vuelve a su sitio.
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.KeyHandoverCycle.TotalSeconds + 0.3f - handover.Seconds);
+            for (int i = 0; i < 3; i++) yield return null;
+            Assert.IsTrue(handover.Delivered);
+            Assert.IsNull(GameObject.Find("Llave"), "la llave ya está dentro de la camisa");
+            Assert.AreEqual(1, interactor.Inventory.CountOf(Qazrix.Gameplay.KeyHandover.KeyItemId), "la llave está en el inventario");
+
+            // Al coger la llave aparece una X en el mapa, sobre el antiguo alcázar (Palacio de las Veletas).
+            var map = Object.FindFirstObjectByType<PrototypeHud>().GetComponent<MapPanel>();
+            Vector2 alcazar = Qazrix.Gameplay.MapPoints.OldAlcazar;
+            Assert.IsTrue(map.HasMarkAt(new Vector3(alcazar.x, 0f, alcazar.y)), "X en el antiguo alcázar");
+            Assert.IsTrue(_city.HasBuildingAt(alcazar.x, alcazar.y) || _city.HasBuildingAt(alcazar.x + 6f, alcazar.y - 6f), "el punto cae sobre el casco, junto a un edificio");
+            Qazrix.Simulation.Gameplay.InventoryEntry keyEntry = interactor.Inventory.Entries[interactor.Inventory.Entries.Count - 1];
+            Assert.AreEqual(Qazrix.Gameplay.KeyHandover.KeyItemId, keyEntry.Id);
+            Assert.IsTrue(keyEntry.HasMark, "la llave señala un punto del mapa");
+            Assert.AreEqual(alcazar.x, keyEntry.MarkX, 0.01f);
+            Assert.AreEqual(alcazar.y, keyEntry.MarkZ, 0.01f);
+            Assert.Less(Mathf.Abs(Mathf.DeltaAngle(0f, zahraArm.localEulerAngles.x)), 5f, "Zahra baja el brazo");
+            Assert.Less(Mathf.Abs(hero.RightArmAngle), 5f, "el protagonista baja el brazo");
+            Assert.IsFalse(hero.IsReceivingKey);
+        }
+
+        [UnityTest]
+        public IEnumerator TheCityWalls_AreSolid_CannotBeClimbed_AndHaveAnInvisibleBarrierOnTop()
+        {
+            yield return LoadScene();
+            Assert.AreEqual(Z01GeoBuilder_WallIds.Length, _city.WallPartCount, "las murallas del plano están levantadas");
+            GameObject wallRoot = GameObject.Find("Ciudad_Muralla");
+            Assert.IsNotNull(wallRoot, "la muralla va aparte del resto de edificios");
+            Assert.IsNotNull(wallRoot.GetComponent<UnbreachableWall>(), "marcada como infranqueable");
+            Assert.IsNotNull(wallRoot.GetComponentInChildren<MeshCollider>(), "sólida");
+
+            Transform barrier = wallRoot.transform.Find("Muralla_Barrera");
+            Assert.IsNotNull(barrier, "tiene barrera invisible");
+            Assert.IsNull(barrier.GetComponent<MeshRenderer>(), "invisible");
+
+            // Cada muralla tiene la barrera a su altura: un rayo horizontal diez metros por encima de su tejado la toca.
+            foreach (int id in Z01GeoBuilder_WallIds)
+            {
+                BuildingPart wall = _city.Parts[id];
+                var centre = new Vector3((float)wall.Centre.X, wall.RoofHeight + 10f, (float)wall.Centre.Z);
+                bool hitBarrier = false;
+                foreach (Vector3 dir in new[] { Vector3.right, Vector3.left, Vector3.forward, Vector3.back })
+                {
+                    RaycastHit[] hits = Physics.RaycastAll(centre - dir * 120f, dir, 240f, ~0, QueryTriggerInteraction.Ignore);
+                    foreach (RaycastHit h in hits) if (h.collider.name == "Muralla_Barrera") hitBarrier = true;
+                }
+                Assert.IsTrue(hitBarrier, $"la barrera cubre la muralla {id}");
+            }
+
+            // Ninguna pared de la muralla se puede escalar; las de los demás edificios, sí.
+            var climb = _player.GetComponent<PlayerWallClimb>();
+            Assert.IsNotNull(climb);
+            var isClimbable = typeof(PlayerWallClimb).GetMethod("IsClimbable", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            foreach (MeshCollider c in wallRoot.GetComponentsInChildren<MeshCollider>())
+                Assert.IsFalse((bool)isClimbable.Invoke(null, new object[] { c }), $"{c.name} no se escala");
+            MeshCollider ordinary = _city.GetComponentsInChildren<MeshCollider>().First(c => c.GetComponentInParent<UnbreachableWall>() == null);
+            Assert.IsTrue((bool)isClimbable.Invoke(null, new object[] { ordinary }), "los edificios normales siguen siendo escalables");
+        }
+
+        private static readonly int[] Z01GeoBuilder_WallIds = { 148, 170, 315, 344 };
+
+        [UnityTest]
+        public IEnumerator TheAlcazarDoor_OpensOnlyWithTheKey()
+        {
+            yield return LoadScene();
+            Assert.AreEqual(1, _city.Doors.Count, "hay una puerta en el antiguo alcázar");
+            DoorPlacement placement = _city.Doors[0];
+            Vector2 alcazar = Qazrix.Gameplay.MapPoints.OldAlcazar;
+            Assert.Less(Vector2.Distance(new Vector2((float)placement.X, (float)placement.Z), alcazar), 40f, "cerca de la X del alcázar");
+
+            var door = _city.GetComponentInChildren<Qazrix.Gameplay.DoorPortal>();
+            Assert.IsNotNull(door, "la puerta es interactuable");
+            var interactor = _player.GetComponent<Qazrix.Gameplay.PlayerInteractor>();
+            for (int i = 0; i < 3; i++) yield return null;
+            Assert.AreEqual(Qazrix.Gameplay.DoorPortal.PromptWithoutKey, door.Prompt, "sin llave avisa de que está cerrada");
+            Assert.IsTrue(door.CanInteract);
+
+            // Cerrada: un rayo a la altura del pecho por el hueco choca con la hoja; sobre el dintel, con la pared.
+            var normal = new Vector3((float)placement.NormalX, 0f, (float)placement.NormalZ);
+            Vector3 threshold = new Vector3((float)placement.X, (float)placement.GroundY, (float)placement.Z);
+            bool Blocked(float height) => Physics.Raycast(threshold + normal * 2f + Vector3.up * height, -normal, 2.6f, ~0, QueryTriggerInteraction.Ignore);
+            Assert.IsTrue(Blocked(1.2f), "cerrada, la hoja tapa el hueco");
+            Assert.IsTrue(Blocked((float)placement.Height + 0.6f), "sobre el dintel hay pared");
+
+            // Sin la llave no se abre por mucho que se intente.
+            door.Interact(interactor);
+            yield return new WaitForSeconds(0.3f);
+            Assert.IsFalse(door.Opened, "sin llave no se abre");
+
+            // Con la llave se abre, gira y deja pasar.
+            interactor.Inventory.Add(Qazrix.Gameplay.KeyHandover.KeyItemId, "Llave");
+            for (int i = 0; i < 3; i++) yield return null;
+            Assert.AreEqual(Qazrix.Gameplay.DoorPortal.PromptWithKey, door.Prompt, "con llave ofrece abrirla");
+            door.Interact(interactor);
+            Assert.IsTrue(door.Opened);
+            yield return new WaitForSeconds(Qazrix.Gameplay.DoorPortal.OpenSeconds + 0.3f);
+            Assert.AreEqual(Qazrix.Gameplay.DoorPortal.OpenDegrees, door.Angle, 0.5f, "la hoja ha girado del todo");
+            Assert.IsFalse(Blocked(1.2f), "abierta, se puede pasar por el hueco");
+            Assert.IsTrue(Blocked((float)placement.Height + 0.6f), "el dintel sigue ahí");
+            Assert.IsFalse(door.CanInteract, "una vez abierta ya no hay nada que pulsar");
+        }
+
+        [UnityTest]
+        public IEnumerator TheAlcazarPassage_RunsUnderTheWall_AndLeadsToTheTreasureOrchard()
+        {
+            yield return LoadScene();
+            var tunnel = Object.FindFirstObjectByType<Qazrix.Gameplay.PassageTunnel>();
+            Assert.IsNotNull(tunnel, "la escena tiene el pasadizo");
+            for (int i = 0; i < 20 && !tunnel.Built; i++) yield return null;
+            Assert.IsTrue(tunnel.Built, "se construye al empezar");
+
+            // Del alcázar a la huerta, pasando bajo la muralla 170 (más de 500 m).
+            Vector2 orchard = Qazrix.Gameplay.MapPoints.TreasureOrchard;
+            Vector2 alcazar = Qazrix.Gameplay.MapPoints.OldAlcazar;
+            Assert.AreEqual(3, tunnel.Route.Count, "alcázar, bajo la muralla y huerta");
+            Assert.Less(Vector2.Distance(tunnel.Route[0], alcazar), 12f, "empieza tras la puerta del alcázar");
+            BuildingPart wall = _city.Parts[Z01GeoBuilder_PassageWall];
+            Assert.Less(Vector2.Distance(tunnel.Route[1], new Vector2((float)wall.Centre.X, (float)wall.Centre.Z)), 0.01f, "pasa por debajo de la muralla");
+            Assert.Less(Vector2.Distance(tunnel.Route[2], orchard), 0.01f, "acaba en la huerta");
+            Assert.Greater(tunnel.Length, 500f, "es un pasadizo largo de verdad");
+
+            GameObject tube = GameObject.Find("Pasadizo_Tunel");
+            Assert.IsNotNull(tube.GetComponent<MeshCollider>(), "el tubo es sólido");
+            Assert.Less(tube.GetComponent<MeshRenderer>().bounds.max.y, Qazrix.Gameplay.PassageTunnel.FloorY + 4f, "va muy por debajo del relieve");
+
+            var interactor = _player.GetComponent<Qazrix.Gameplay.PlayerInteractor>();
+            Qazrix.Gameplay.PassageStairs Find(string name) => GameObject.Find(name).GetComponent<Qazrix.Gameplay.PassageStairs>();
+
+            // Baja por la trampilla del alcázar: fundido y aparece al principio del tubo.
+            Find("Trampilla_alcazar").Interact(interactor);
+            yield return new WaitForSeconds(Qazrix.Gameplay.ScreenFade.OutSeconds + Qazrix.Gameplay.ScreenFade.HoldSeconds + Qazrix.Gameplay.ScreenFade.InSeconds + 0.4f);
+            Assert.Less(_player.transform.position.y, Qazrix.Gameplay.PassageTunnel.FloorY + 2f, "ya está bajo tierra");
+            Assert.IsTrue(_player.IsGrounded, "pisa el suelo del pasadizo");
+            Assert.Greater(_player.transform.position.y, Qazrix.Gameplay.PassageTunnel.FloorY - 0.6f, "sin atravesar el suelo");
+            Directory.CreateDirectory("Reports/QA");
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_pasadizo_inicio.png");
+            yield return null;
+            yield return null;
+
+            // El tubo aguanta al jugador en toda su longitud: a lo largo del eje, en la curva bajo la muralla y al final.
+            Vector2 a = tunnel.Route[0], b = tunnel.Route[1], c = tunnel.Route[2];
+            foreach (Vector2 p in new[] { Vector2.Lerp(a, b, 0.5f), b + (a - b).normalized * 2.5f, b + (c - b).normalized * 2.5f, Vector2.Lerp(b, c, 0.5f), c - (c - b).normalized * 3f })
+            {
+                _player.TeleportTo(new Vector3(p.x, Qazrix.Gameplay.PassageTunnel.FloorY + 0.3f, p.y), Quaternion.identity);
+                yield return new WaitForSeconds(0.6f);
+                Assert.IsTrue(_player.IsGrounded, $"pisa el suelo en ({p.x:0}, {p.y:0})");
+                Assert.Greater(_player.transform.position.y, Qazrix.Gameplay.PassageTunnel.FloorY - 0.6f, $"no atraviesa el suelo en ({p.x:0}, {p.y:0})");
+                Assert.Less(_player.transform.position.y, Qazrix.Gameplay.PassageTunnel.FloorY + 1.2f, $"no sale del tubo en ({p.x:0}, {p.y:0})");
+            }
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_pasadizo_final.png");
+            yield return null;
+            yield return null;
+
+            // Sube a la huerta por la escalera del final.
+            Find("Escalera_huerta").Interact(interactor);
+            yield return new WaitForSeconds(Qazrix.Gameplay.ScreenFade.OutSeconds + Qazrix.Gameplay.ScreenFade.HoldSeconds + Qazrix.Gameplay.ScreenFade.InSeconds + 0.5f);
+            Vector3 at = _player.transform.position;
+            Assert.Greater(at.y, Qazrix.Gameplay.PassageTunnel.FloorY + 30f, "de vuelta en la superficie");
+            Assert.Less(Vector2.Distance(new Vector2(at.x, at.z), orchard), 6f, "en la huerta del tesoro");
+            Assert.IsNotNull(GameObject.Find("Huerta_del_tesoro"), "la huerta tiene sus árboles y el cofre");
+            // La guarnición espera a la salida: un capitán y 50 soldados con el emblema de San Jorge en el escudo.
+            var garrison = tunnel.Garrison;
+            Assert.IsNotNull(garrison, "hay guarnición a la salida");
+            Assert.AreEqual(50, garrison.SoldierCount, "50 soldados");
+            Assert.IsTrue(garrison.HasCaptain, "y un capitán");
+            Assert.AreEqual(1, garrison.GetComponentsInChildren<Transform>().Count(t => t.name == Qazrix.Gameplay.OrchardGarrison.CaptainName));
+            Assert.AreEqual(50, garrison.GetComponentsInChildren<Transform>().Count(t => t.name == Qazrix.Gameplay.OrchardGarrison.SoldierName));
+            Transform captainT = garrison.GetComponentsInChildren<Transform>().First(t => t.name == Qazrix.Gameplay.OrchardGarrison.CaptainName);
+            Transform soldierT = garrison.GetComponentsInChildren<Transform>().First(t => t.name == Qazrix.Gameplay.OrchardGarrison.SoldierName);
+            Assert.Less(Vector3.Distance(captainT.position, at), Vector3.Distance(soldierT.position, at), "el capitán está más cerca de la salida");
+            Assert.Greater(Vector3.Dot(captainT.forward, (at - captainT.position).normalized), 0.95f, "el capitán mira a quien sale");
+            Assert.IsNotNull(captainT.GetComponent<CapsuleCollider>(), "son sólidos");
+            // El capitán se nota: lleva muchos más adornos que un soldado (cresta y pluma en el yelmo, cruz en el pecho, gorguera,
+            // hombreras, cinto con hebilla, capa con ribete dorado, escudo con borde y espada con empuñadura de oro).
+            int captainParts = captainT.GetComponentsInChildren<MeshRenderer>().Length, soldierParts = soldierT.GetComponentsInChildren<MeshRenderer>().Length;
+            Assert.GreaterOrEqual(captainParts, soldierParts + 12, $"el capitán tiene más piezas ({captainParts} contra {soldierParts})");
+            foreach (string ornament in new[] { "Yelmo_cresta", "Penacho", "Penacho_pluma", "Cruz_vertical", "Cruz_horizontal", "Gola", "Hombrera", "Cinto_ancho",
+                "Hebilla", "Capa", "Capa_ribete", "Escudo_borde", "Espada_guarda", "Espada_pomo" })
+                Assert.IsTrue(captainT.GetComponentsInChildren<Transform>().Any(t => t.name == ornament), $"el capitán lleva «{ornament}»");
+            Assert.IsFalse(soldierT.GetComponentsInChildren<Transform>().Any(t => t.name == "Penacho" || t.name == "Capa"), "los soldados no");
+            Assert.Greater(captainT.Find("Modelo").localScale.y, soldierT.Find("Modelo").localScale.y, "y es algo más alto");
+            Texture2D shield = garrison.ShieldTexture;
+            Assert.IsNotNull(shield, "escudo con el emblema");
+            Color centreColor = shield.GetPixel(shield.width / 2, shield.height / 2), corner = shield.GetPixel(shield.width / 4, shield.height / 4);
+            Assert.Greater(centreColor.r, 0.6f); Assert.Less(centreColor.g, 0.2f); Assert.Less(centreColor.b, 0.2f); // el centro: cruz roja
+            Assert.Greater(corner.r, 0.85f); Assert.Greater(corner.g, 0.85f); Assert.Greater(corner.b, 0.8f);        // un cuadrante: campo blanco
+            var shieldRenderer = soldierT.GetComponentsInChildren<MeshRenderer>().First(r => r.name == "Escudo");
+            Assert.AreSame(shield, shieldRenderer.sharedMaterial.GetTexture("_BaseMap"), "el escudo lleva la cruz de San Jorge");
+
+            // Suelo a la salida: un manto de hierba que sigue el relieve, justo sobre el terreno bajo la trampilla y alrededor.
+            GameObject floor = GameObject.Find("Huerta_suelo");
+            Assert.IsNotNull(floor, "la huerta tiene su suelo");
+            Bounds fb = floor.GetComponent<MeshRenderer>().bounds;
+            Assert.IsTrue(fb.min.x < at.x && at.x < fb.max.x && fb.min.z < at.z && at.z < fb.max.z, "el suelo cubre la salida");
+            Assert.GreaterOrEqual(fb.size.x, Qazrix.Gameplay.PassageTunnel.GroundSize - 0.1f);
+            Mesh fm = floor.GetComponent<MeshFilter>().sharedMesh;
+            foreach (Vector3 v in fm.vertices)
+            {
+                Assert.IsTrue(Physics.Raycast(new Vector3(v.x, v.y + 5f, v.z), Vector3.down, out RaycastHit under, 10f, ~0, QueryTriggerInteraction.Ignore));
+                Assert.Less(Mathf.Abs(v.y - under.point.y - Qazrix.Gameplay.PassageTunnel.GroundLift), 0.5f, "pegado al relieve, sin flotar ni hundirse");
+                break; // basta una muestra: el resto sigue el mismo cálculo
+            }
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_huerta.png");
+            yield return null;
+            yield return null;
+        }
+
+        private const int Z01GeoBuilder_PassageWall = 170;
+
+        [UnityTest]
+        public IEnumerator TouchingTheCaptain_HeGivesHimTheKey_AndHeTakesItAndPocketsIt()
+        {
+            yield return LoadScene();
+            var tunnel = Object.FindFirstObjectByType<Qazrix.Gameplay.PassageTunnel>();
+            for (int i = 0; i < 20 && !tunnel.Built; i++) yield return null;
+            Assert.IsTrue(tunnel.Built);
+            var interactor = _player.GetComponent<Qazrix.Gameplay.PlayerInteractor>();
+            var hero = _player.GetComponentInChildren<CharacterWalkAnimator>();
+
+            Transform captain = tunnel.Garrison.GetComponentsInChildren<Transform>().First(t => t.name == Qazrix.Gameplay.OrchardGarrison.CaptainName);
+            var give = captain.GetComponent<Qazrix.Gameplay.CaptainKeyGive>();
+            Transform captainArm = captain.Find("Modelo/Brazo_der_pivote");
+            Assert.IsNotNull(give, "el capitán sabe recibir la llave");
+            Assert.IsNotNull(captainArm, "con el brazo derecho articulado");
+
+            // Sin la llave, tocarlo no hace nada.
+            Vector3 front = captain.position + captain.forward * 0.9f;
+            _player.TeleportTo(front + Vector3.up * 0.1f, Quaternion.identity);
+            yield return new WaitForSeconds(0.5f);
+            Assert.IsFalse(give.Started, "sin llave no pasa nada");
+
+            // Con la llave, al tocarlo se la da.
+            interactor.Inventory.Add(Qazrix.Gameplay.KeyHandover.KeyItemId, "Llave");
+            for (int i = 0; i < 4; i++) yield return null;
+            Assert.IsTrue(give.Started, "al tocarlo, empieza a dársela");
+            Assert.IsTrue(hero.IsGivingKey);
+            Assert.AreEqual(1, interactor.Inventory.CountOf(Qazrix.Gameplay.KeyHandover.KeyItemId), "aún la lleva encima");
+
+            // Saca la llave del pecho y alarga el brazo; el capitán extiende la mano.
+            yield return new WaitForSeconds(1.0f - give.Seconds);
+            Assert.Greater(hero.RightArmAngle, 40f, $"el protagonista alarga el brazo ({hero.RightArmAngle:0}°)");
+            float captainArmX = Mathf.DeltaAngle(0f, captainArm.localEulerAngles.x);
+            Assert.Less(captainArmX, -30f, $"el capitán extiende la mano ({captainArmX:0}°)");
+            Assert.IsNotNull(GameObject.Find("Llave"), "la llave ya está fuera de la camisa");
+            Directory.CreateDirectory("Reports/QA");
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_capitan_ofrece.png");
+            yield return null;
+
+            // La llave pasa a la mano del capitán y sale del inventario.
+            yield return new WaitForSeconds(1.9f - give.Seconds);
+            Assert.AreEqual(0, interactor.Inventory.CountOf(Qazrix.Gameplay.KeyHandover.KeyItemId), "ya no la lleva él");
+            Assert.IsTrue(give.Delivered);
+            Assert.IsNotNull(GameObject.Find("Llave"), "el capitán la tiene en la mano");
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_capitan_toma.png");
+            yield return null;
+
+            // Al recibir el capitán la llave, los soldados alzan las lanzas al descompás: no todos a la vez ni al mismo ritmo.
+            var soldiers = tunnel.Garrison.Soldiers().ToArray();
+            Assert.AreEqual(50, soldiers.Length, "50 soldados con lanza");
+            Assert.IsTrue(tunnel.Garrison.SpearsRaised);
+            yield return new WaitForSeconds(0.9f);
+            float[] weights = soldiers.Select(s => s.SaluteWeight).ToArray();
+            Assert.GreaterOrEqual(weights.Count(w => w >= 0.99f), 3, "algunos ya la tienen alzada");
+            Assert.GreaterOrEqual(weights.Count(w => w > 0.01f && w < 0.99f), 2, "otros la están subiendo");
+            Assert.GreaterOrEqual(weights.Select(w => Mathf.Round(w * 20f)).Distinct().Count(), 5, "cada uno va por un punto distinto: al descompás, no a la vez");
+            Qazrix.Gameplay.SoldierIdle raised = soldiers.First(s => s.SaluteWeight >= 0.99f);
+            Assert.Greater(raised.transform.Find("Modelo/Lanza_grupo").localPosition.y, 1.15f + SpearSalute.MaxLift * 0.9f, "la lanza sube");
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_lanzas_descompas.png");
+            yield return null;
+
+            // Se la guarda en el cinto y todo vuelve a su sitio.
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.KeyGiveCycle.TotalSeconds + 0.3f - give.Seconds);
+            for (int i = 0; i < 3; i++) yield return null;
+            Assert.IsNull(GameObject.Find("Llave"), "guardada en el cinto");
+            Assert.IsFalse(hero.IsGivingKey);
+            Assert.Less(Mathf.Abs(hero.RightArmAngle), 5f, "el protagonista baja el brazo");
+            Assert.Less(Mathf.Abs(Mathf.DeltaAngle(10f, captainArm.localEulerAngles.x)), 5f, "el capitán baja el brazo");
+        }
+
+        [UnityTest]
+        public IEnumerator TheEnding_FadesToBlack_ThenAParchmentIsHandwrittenLetterByLetter()
+        {
+            yield return LoadScene();
+            Qazrix.Gameplay.EndingSequence.TypingSpeed = 6f; // para no esperar los 16 s reales
+            var ending = Qazrix.Gameplay.EndingSequence.Instance;
+            Assert.IsFalse(ending.Started);
+            Assert.IsNotNull(Resources.Load<Font>(Qazrix.Gameplay.EndingSequence.FontResource), "la tipografía manuscrita (Caveat) está en el juego");
+            Qazrix.Gameplay.EndingSequence.Trigger();
+            yield return null;
+            Assert.IsTrue(ending.Started);
+            Assert.AreEqual(0, ending.VisibleChars, "aún no hay nada escrito");
+
+            // Primero se funde a negro; el pergamino todavía no.
+            yield return new WaitForSeconds(Qazrix.Gameplay.EndingSequence.FadeSeconds * 0.5f);
+            Assert.Greater(ending.Darkness, 0.3f); Assert.Less(ending.Darkness, 1f);
+            Assert.AreEqual(0f, ending.ParchmentAlpha, 1e-4f, "sin pergamino mientras oscurece");
+            yield return new WaitForSeconds(Qazrix.Gameplay.EndingSequence.FadeSeconds * 0.6f);
+            Assert.AreEqual(1f, ending.Darkness, 1e-3f, "todo negro");
+
+            // Sale el pergamino y se empieza a escribir letra a letra.
+            yield return new WaitForSeconds(Qazrix.Gameplay.EndingSequence.ParchmentSeconds + 0.1f);
+            Assert.AreEqual(1f, ending.ParchmentAlpha, 1e-3f);
+            int previous = ending.VisibleChars;
+            yield return new WaitForSeconds(1.0f);
+            Assert.Greater(ending.VisibleChars, previous, "se va escribiendo");
+            Assert.Less(ending.VisibleChars, Qazrix.Simulation.Gameplay.EndingText.Message.Length, "aún no ha terminado");
+            Directory.CreateDirectory("Reports/QA");
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_final_pergamino_escribiendo.png");
+            yield return null;
+
+            // Termina el texto completo y se ofrece volver a empezar.
+            float remaining = Qazrix.Simulation.Gameplay.HandwritingReveal.TotalSeconds(Qazrix.Simulation.Gameplay.EndingText.Message) / 6f;
+            yield return new WaitForSeconds(remaining + Qazrix.Gameplay.EndingSequence.HintDelay + 0.5f);
+            Assert.IsTrue(ending.TextComplete, "texto completo");
+            Assert.IsTrue(ending.WaitingForKey, "se ofrece volver a empezar");
+            Assert.IsTrue(ending.TextFits, $"el texto entero cabe en el pergamino (letra de {ending.FontSizeUsed} px, altura {ending.TextHeightUsed:0} px)");
+            Assert.GreaterOrEqual(ending.FontSizeUsed, 14, "y se lee");
+            yield return new WaitForEndOfFrame();
+            ScreenCapture.CaptureScreenshot("Reports/QA/play_final_pergamino.png");
+            yield return null;
+            Qazrix.Gameplay.EndingSequence.TypingSpeed = 1f;
+        }
+
+        [UnityTest]
+        public IEnumerator TheVeiledWoman_WaitsWithAnIdleAnimation()
+        {
+            yield return LoadScene();
+            var panel = Object.FindFirstObjectByType<PrototypeHud>().GetComponent<MapPanel>();
+            for (int i = 0; i < 5; i++) yield return null;
+            var letter = GameObject.Find("Carta_Azar").GetComponent<Qazrix.Gameplay.LetterPickup>();
+            _player.GetComponent<Qazrix.Gameplay.PlayerInteractor>().BeginPickup(letter);
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.PickupCycle.Duration + 0.3f);
+            for (int i = 0; i < 5; i++) yield return null;
+
+            var contact = Object.FindFirstObjectByType<Qazrix.Gameplay.ObjectiveContact>();
+            Assert.IsNotNull(contact.GetComponent<Qazrix.Gameplay.ContactIdleAnimator>(), "tiene animación de espera");
+            Transform head = contact.transform.Find("Contacto_modelo/Torso_pivote/Cuello_pivote");
+            Transform torso = contact.transform.Find("Contacto_modelo/Torso_pivote");
+            Assert.IsNotNull(head, "el cuello se ha montado como pivote");
+            Assert.IsNotNull(torso);
+            Assert.IsNotNull(head.Find("Cabeza"), "la cabeza cuelga del cuello");
+
+            float maxHeadMove = 0f, minLift = float.MaxValue, maxLift = float.MinValue;
+            Quaternion first = head.localRotation;
+            float end = Time.time + 5f;
+            while (Time.time < end)
+            {
+                yield return null;
+                maxHeadMove = Mathf.Max(maxHeadMove, Quaternion.Angle(first, head.localRotation));
+                minLift = Mathf.Min(minLift, torso.localPosition.y);
+                maxLift = Mathf.Max(maxLift, torso.localPosition.y);
+            }
+            Assert.Greater(maxHeadMove, 1f, "mueve la cabeza");
+            Assert.Greater(maxLift - minLift, 0.002f, "respira");
+        }
+
+        [UnityTest]
+        public IEnumerator TouchingTheVeiledWoman_RemovesTheRedCrossFromTheMap()
+        {
+            yield return LoadScene();
+            var panel = Object.FindFirstObjectByType<PrototypeHud>().GetComponent<MapPanel>();
+            for (int i = 0; i < 5; i++) yield return null;
+            var letter = GameObject.Find("Carta_Azar").GetComponent<Qazrix.Gameplay.LetterPickup>();
+            _player.GetComponent<Qazrix.Gameplay.PlayerInteractor>().BeginPickup(letter);
+            yield return new WaitForSeconds(Qazrix.Simulation.Movement.PickupCycle.Duration + 0.3f);
+            for (int i = 0; i < 5; i++) yield return null;
+            Assert.IsTrue(panel.ObjectiveRevealed, "con la carta, la X se ve");
+            var contact = Object.FindFirstObjectByType<Qazrix.Gameplay.ObjectiveContact>();
+            Assert.IsFalse(contact.Touched, "aún no la has tocado");
+
+            // Se la deja a su lado, sin tocarla, y luego pegada a ella.
+            Vector3 woman = contact.transform.position;
+            _player.transform.position = woman + new Vector3(3f, 0.1f, 0f);
+            Physics.SyncTransforms();
+            for (int i = 0; i < 5; i++) yield return null;
+            Assert.IsTrue(panel.ObjectiveRevealed, "a 3 m la X sigue");
+
+            _player.transform.position = woman + new Vector3(0.9f, 0.1f, 0f);
+            Physics.SyncTransforms();
+            for (int i = 0; i < 5; i++) yield return null;
+            Assert.IsTrue(contact.Touched, "pegado a ella, la ha tocado");
+            Assert.IsTrue(panel.ObjectiveReached);
+            Assert.IsFalse(panel.ObjectiveRevealed, "la X desaparece del mapa");
+
+            _player.transform.position = woman + new Vector3(30f, 0.1f, 0f);
+            Physics.SyncTransforms();
+            for (int i = 0; i < 5; i++) yield return null;
+            Assert.IsFalse(panel.ObjectiveRevealed, "y no vuelve al alejarse");
+        }
+
+        [UnityTest]
         public IEnumerator SelectingTheLetterInTheInventory_OpensTheMapWithARedCross()
         {
             yield return LoadScene();
@@ -212,15 +854,14 @@ namespace Qazrix.Tests.PlayMode
             for (int i = 0; i < 12; i++) yield return null;
             Assert.IsFalse(hud.IsInventoryOpen, "al elegir la carta se cierra el inventario");
             Assert.IsTrue(hud.IsMapOpen, "y se abre el mapa");
-            Assert.AreEqual(1, panel.MarkCount, "con una cruz roja");
+            Assert.IsTrue(panel.ObjectiveRevealed, "con la X roja del objetivo");
 
-            var entry = interactor.Inventory.Entries[0];
-            Vector3 p = _player.transform.position;
-            float away = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(entry.MarkX, entry.MarkZ));
-            Debug.Log($"[Qazrix] Cruz roja a {away:0} m del jugador, en ({entry.MarkX:0.0}, {entry.MarkZ:0.0})");
-            Assert.Greater(away, 25f, "no está pegada al jugador");
-            Assert.IsTrue(_city.IsClear(entry.MarkX, entry.MarkZ, 1.2f), "ni dentro de un edificio");
-            Assert.IsFalse(_city.IsClear(entry.MarkX, entry.MarkZ, 20f), "está en el interior del casco, con edificios alrededor");
+            Vector3 o = panel.Objective.Value, p = _player.transform.position;
+            float away = Vector2.Distance(new Vector2(p.x, p.z), new Vector2(o.x, o.z));
+            Debug.Log($"[Qazrix] X roja a {away:0} m del jugador, en ({o.x:0.0}, {o.z:0.0})");
+            Assert.Greater(away, 100f, "lejos de la plaza");
+            Assert.IsTrue(_city.IsClear(o.x, o.z, 1.2f), "ni dentro de un edificio");
+            Assert.IsFalse(_city.IsClear(o.x, o.z, 20f), "está en el interior del casco, con edificios alrededor");
 
             yield return Capture("play_z01_mapa_cruz.png");
         }
@@ -253,19 +894,84 @@ namespace Qazrix.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator PlazaMayor_HasTwoGuards_BothOnTheNavMesh_AndFarFromEachOther()
+        public IEnumerator Guards_StartOnTheGround_InRandomSpotsOfTheOldTown_ChosenAnewEachGame()
         {
             yield return LoadScene();
+            for (int i = 0; i < 5; i++) yield return null;
+            var scatter = Object.FindFirstObjectByType<Qazrix.Gameplay.GuardScatter>();
+            Assert.IsNotNull(scatter, "la escena reparte a los guardias");
             GuardController[] guards = Object.FindObjectsByType<GuardController>(FindObjectsSortMode.None);
-            Assert.AreEqual(2, guards.Length, "la plaza tiene dos guardias");
+            Assert.AreEqual(20, guards.Length, "2 de la plaza y 18 rondas");
+            Assert.AreEqual(guards.Length, scatter.Placed.Count, "todos han recibido un sitio al azar");
+
+            Vector3 spawn = _player.transform.position;
             foreach (GuardController g in guards)
             {
-                Assert.IsTrue(UnityEngine.AI.NavMesh.SamplePosition(g.transform.position, out _, 1.5f, UnityEngine.AI.NavMesh.AllAreas),
-                    $"{g.name} debe estar sobre la malla de navegación");
-                Assert.IsTrue(_city.IsClear(g.transform.position.x, g.transform.position.z, 0.5f), $"{g.name} no debe nacer dentro de un edificio");
-                Assert.Less(Vector3.Distance(g.transform.position, _player.transform.position), 60f, $"{g.name} está en la plaza");
+                Vector3 p = g.transform.position;
+                Assert.IsTrue(UnityEngine.AI.NavMesh.SamplePosition(p, out _, 1.5f, UnityEngine.AI.NavMesh.AllAreas), $"{g.name} sobre la malla de navegación");
+                Assert.IsTrue(_city.IsClear(p.x, p.z, 1.5f), $"{g.name} no nace dentro de un edificio");
+                Assert.IsFalse(_city.IsClear(p.x, p.z, 25f), $"{g.name} está en el casco, con edificios alrededor");
+                Assert.IsTrue(Physics.Raycast(p + Vector3.up * 0.5f, Vector3.down, out RaycastHit floor, 1.5f, ~0, QueryTriggerInteraction.Ignore), $"{g.name} pisa el suelo");
+                Assert.Less(Mathf.Abs(floor.point.y - p.y), 0.35f, $"{g.name} a ras de suelo");
+                Assert.GreaterOrEqual(Vector2.Distance(new Vector2(p.x, p.z), new Vector2(spawn.x, spawn.z)), 29f, $"{g.name} lejos del jugador");
             }
-            Assert.Greater(Vector3.Distance(guards[0].transform.position, guards[1].transform.position), 3f, "no nacen apilados");
+            // Separación en el momento de colocarlos (después ya andan su ronda y pueden acercarse unos metros).
+            Vector3[] placed = scatter.Placed.Values.ToArray();
+            for (int i = 0; i < placed.Length; i++)
+                for (int j = i + 1; j < placed.Length; j++)
+                    Assert.GreaterOrEqual(Vector3.Distance(placed[i], placed[j]), 19f, "no nacen apilados");
+
+            // Repartidos por todo el casco: cada guardia va a una casilla distinta (8 × 8 sobre la zona) mientras haya casillas con
+            // calles alcanzables; las del borde, casi sin edificios, quedan vacías y sus guardias se reparten por el resto.
+            Rect area = _city.LocalArea;
+            var cellsUsed = new System.Collections.Generic.HashSet<int>();
+            foreach (Vector3 q in placed)
+            {
+                int c = Mathf.Clamp((int)((q.x - area.xMin) / (area.width / 8f)), 0, 7);
+                int r = Mathf.Clamp((int)((q.z - area.yMin) / (area.height / 8f)), 0, 7);
+                cellsUsed.Add(r * 8 + c);
+            }
+            Assert.GreaterOrEqual(cellsUsed.Count, 15, $"guardias repartidos en casillas distintas ({cellsUsed.Count} de 20 guardias)");
+
+            // Cada partida es distinta: al recargar la escena salen en otros sitios.
+            var first = guards.Select(g => g.name + g.transform.position).OrderBy(x => x).ToArray();
+            yield return LoadScene();
+            for (int i = 0; i < 5; i++) yield return null;
+            var second = Object.FindObjectsByType<GuardController>(FindObjectsSortMode.None).Select(g => g.name + g.transform.position).OrderBy(x => x).ToArray();
+            Assert.AreNotEqual(string.Join("|", first), string.Join("|", second), "el reparto cambia de una partida a otra");
+        }
+
+        private static IEnumerator MeasureFrames(float seconds, System.Action<float, float> done)
+        {
+            for (int i = 0; i < 30; i++) yield return null; // calentamiento
+            var times = new System.Collections.Generic.List<float>();
+            float end = Time.realtimeSinceStartup + seconds;
+            while (Time.realtimeSinceStartup < end) { yield return null; times.Add(Time.unscaledDeltaTime); }
+            times.Sort();
+            done(times.Average() * 1000f, times[(int)(times.Count * 0.99f)] * 1000f);
+        }
+
+        [UnityTest]
+        public IEnumerator Perf_CityGuards_CostOfTheExtraPatrols()
+        {
+            yield return LoadScene();
+            GuardController[] patrols = Object.FindObjectsByType<GuardController>(FindObjectsSortMode.None)
+                .Where(g => g.name.StartsWith("Guardia_Ciudad")).ToArray();
+            int triangles = 0;
+            int lowTriangles = 0;
+            foreach (MeshFilter f in patrols[0].GetComponentsInChildren<MeshFilter>(true))
+            {
+                int t = f.sharedMesh.triangles.Length / 3;
+                if (f.name.EndsWith("_LOD1")) lowTriangles += t; else triangles += t;
+            }
+            int parts = patrols[0].GetComponentsInChildren<MeshRenderer>(true).Length / 2;
+
+            float withAvg = 0, withP99 = 0, withoutAvg = 0, withoutP99 = 0;
+            yield return MeasureFrames(6f, (a, p) => { withAvg = a; withP99 = p; });
+            foreach (GuardController g in patrols) g.gameObject.SetActive(false);
+            yield return MeasureFrames(6f, (a, p) => { withoutAvg = a; withoutP99 = p; });
+            Debug.Log($"[Qazrix] PERF con {patrols.Length} guardias de ronda: {withAvg:0.0} ms medios, {withP99:0.0} ms p99 ({1000f / withAvg:0} fps) · sin ellos: {withoutAvg:0.0} ms, {withoutP99:0.0} ms p99 ({1000f / withoutAvg:0} fps) · cada guardia: {parts} piezas, {triangles} triángulos de cerca y {lowTriangles} de lejos");
+            Assert.Pass();
         }
 
         [UnityTest]

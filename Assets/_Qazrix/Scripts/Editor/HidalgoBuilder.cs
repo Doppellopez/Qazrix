@@ -10,7 +10,7 @@ namespace Qazrix.EditorTools
     /// bonete, espada y calzones anchos recogidos bajo la rodilla. Está hecho con primitivas de Unity y
     /// texturas generadas por código (tela, pliegues, cuero, piel): es un sustituto con licencia propia
     /// hasta que haya un modelo esculpido (spec §7.3). Medidas en metros, pies en el origen, mirando a +Z.
-    /// Un solo pivote por extremidad: sin rodillas ni codos.
+    /// Piernas con rodilla a media pierna y rótula visible.
     /// </summary>
     public static class HidalgoBuilder
     {
@@ -132,17 +132,20 @@ namespace Qazrix.EditorTools
         {
             Transform pivot = Pivot(name, model, new Vector3(x, 0.90f, 0f));
             // El calzón es lo más ancho del personaje: 30 cm por pierna, recogido en una banda bajo la rodilla.
-            Part("Calzon", PrimitiveType.Sphere, pivot, new Vector3(0f, -0.26f, 0f), new Vector3(0.30f, 0.56f, 0.32f), breeches);
-            // Rodilla: del calzón para abajo la pierna cuelga de este nodo, que se dobla al correr (CharacterWalkAnimator).
-            // Las posiciones son las de antes menos 0,53 m, así que en reposo todo queda donde estaba.
-            Transform knee = Pivot("Rodilla", pivot, new Vector3(0f, -0.53f, 0f));
-            Part("Banda", PrimitiveType.Cylinder, knee, new Vector3(0f, 0f, 0f), new Vector3(0.15f, 0.02f, 0.15f), leather);
-            Part("Canya", PrimitiveType.Cylinder, knee, new Vector3(0f, -0.17f, 0f), new Vector3(0.13f, 0.16f, 0.13f), leather);
+            // Muslo (calzón ancho) hasta justo encima de la rodilla.
+            Part("Calzon", PrimitiveType.Sphere, pivot, new Vector3(0f, -0.20f, 0f), new Vector3(0.30f, 0.44f, 0.32f), breeches);
+            // Rodilla a media pierna (0,45 m del suelo): el nodo se dobla al correr y saltar (CharacterWalkAnimator).
+            Transform knee = Pivot("Rodilla", pivot, new Vector3(0f, -0.45f, 0f));
+            // Rótula visible y calzón corto bajo ella: el estrechamiento entre muslo y pantorrilla marca la rodilla.
+            Part("Rotula", PrimitiveType.Sphere, knee, new Vector3(0f, 0f, 0.04f), new Vector3(0.19f, 0.17f, 0.19f), breeches);
+            Part("Calzon_bajo", PrimitiveType.Sphere, knee, new Vector3(0f, -0.04f, 0f), new Vector3(0.22f, 0.12f, 0.22f), breeches);
+            Part("Banda", PrimitiveType.Cylinder, knee, new Vector3(0f, -0.08f, 0f), new Vector3(0.15f, 0.02f, 0.15f), leather);
+            Part("Canya", PrimitiveType.Cylinder, knee, new Vector3(0f, -0.25f, 0f), new Vector3(0.13f, 0.16f, 0.13f), leather);
             // Borde doblado de la bota, algo más ancho que la caña.
-            Part("Bota_borde", PrimitiveType.Cylinder, knee, new Vector3(0f, -0.075f, 0f), new Vector3(0.165f, 0.025f, 0.165f), leather);
+            Part("Bota_borde", PrimitiveType.Cylinder, knee, new Vector3(0f, -0.155f, 0f), new Vector3(0.165f, 0.025f, 0.165f), leather);
             // Pie como cápsula tumbada (puntera redonda) sobre una suela fina; el fondo queda en y = -0,90.
-            Part("Pie", PrimitiveType.Capsule, knee, new Vector3(0f, -0.315f, 0.055f), new Vector3(0.10f, 0.125f, 0.10f), leather, new Vector3(90f, 0f, 0f));
-            Part("Suela", PrimitiveType.Cube, knee, new Vector3(0f, -0.36f, 0.06f), new Vector3(0.105f, 0.02f, 0.27f), sole);
+            Part("Pie", PrimitiveType.Capsule, knee, new Vector3(0f, -0.395f, 0.055f), new Vector3(0.10f, 0.125f, 0.10f), leather, new Vector3(90f, 0f, 0f));
+            Part("Suela", PrimitiveType.Cube, knee, new Vector3(0f, -0.44f, 0.06f), new Vector3(0.105f, 0.02f, 0.27f), sole);
             return pivot;
         }
 

@@ -72,6 +72,22 @@ namespace Qazrix.Simulation.Gameplay
             _entries.Add(new InventoryEntry(id, name, count, hasMark, markX, markZ));
         }
 
+        /// <summary>Quita unidades de un objeto (lo entrega, lo gasta). Devuelve false si no hay tantas; entonces no quita nada.</summary>
+        public bool Remove(string id, int count = 1)
+        {
+            if (string.IsNullOrEmpty(id) || count <= 0) return false;
+            for (int i = 0; i < _entries.Count; i++)
+            {
+                InventoryEntry e = _entries[i];
+                if (e.Id != id) continue;
+                if (e.Count < count) return false;
+                if (e.Count == count) _entries.RemoveAt(i);
+                else _entries[i] = new InventoryEntry(id, e.Name, e.Count - count, e.HasMark, e.MarkX, e.MarkZ);
+                return true;
+            }
+            return false;
+        }
+
         public void Clear()
         {
             _entries.Clear();

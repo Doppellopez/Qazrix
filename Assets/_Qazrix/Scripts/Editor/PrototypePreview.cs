@@ -51,6 +51,27 @@ namespace Qazrix.EditorTools
             EditorApplication.Exit(code);
         }
 
+        /// <summary>-executeMethod Qazrix.EditorTools.PrototypePreview.CapturePhotosBatch (sin -nographics): los edificios con foto (Bujaco y Concatedral) desde los cuatro lados.</summary>
+        public static void CapturePhotosBatch()
+        {
+            int code = 0;
+            try
+            {
+                EditorSceneManager.OpenScene(Z01GeoBuilder.ScenePath, OpenSceneMode.Single);
+                var targets = new[] { ("bujaco", new Vector3(43.29f, 8f, 77.51f)), ("concatedral", new Vector3(124.5f, 10f, 9.5f)) };
+                var sides = new[] { ("S", new Vector3(0f, 0f, -1f)), ("N", new Vector3(0f, 0f, 1f)), ("E", new Vector3(1f, 0f, 0f)), ("O", new Vector3(-1f, 0f, 0f)) };
+                foreach (var (name, centre) in targets)
+                    foreach (var (side, dir) in sides)
+                        Capture($"Reports/QA/fotos_{name}_{side}.png", centre + dir * 38f + Vector3.up * 6f, centre, 3000f);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                code = 1;
+            }
+            EditorApplication.Exit(code);
+        }
+
         internal static void Capture(string path, Vector3 position, Vector3 lookAt, float farClip = 1000f)
         {
             const int width = 1600, height = 900;

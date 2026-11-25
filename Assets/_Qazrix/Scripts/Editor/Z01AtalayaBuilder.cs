@@ -109,14 +109,8 @@ namespace Qazrix.EditorTools
             respawn.rotation = Quaternion.LookRotation(c.Direction, Vector3.up);
             viewpoint.AddComponent<ViewpointZone>().Configure(Label, respawn);
 
-            // Pajar: montón bajo, solo visual; el trigger lo da HayLanding por geometría.
-            GameObject hayGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            hayGo.name = "Pajar";
-            UnityEngine.Object.DestroyImmediate(hayGo.GetComponent<Collider>());
-            hayGo.transform.SetParent(root, false);
-            hayGo.transform.position = c.Hay + Vector3.up * (HayHeight * 0.5f);
-            hayGo.transform.localScale = new Vector3(HayRadius * 2f, HayHeight * 0.5f, HayRadius * 2f);
-            hayGo.GetComponent<MeshRenderer>().sharedMaterial = hayMaterial;
+            // El cilindro amarillo del pajar se quitó a petición de Jorge (2026-11-24): el aterrizaje del salto de fe
+            // sigue ahí, sin dibujo, porque lo da HayLanding por geometría.
 
             // HayLanding mide desde su transform a ras de suelo, por eso va en un objeto aparte del visual.
             var landingGo = new GameObject("Pajar_Aterrizaje");

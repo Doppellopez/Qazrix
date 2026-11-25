@@ -1,0 +1,21 @@
+## Incremento ART-19: gárgolas en las cornisas de Z01
+
+- **Objetivo/gate:** colocar en el juego parte de las gárgolas de ART-18 (Jorge: «Sí, colócalas»).
+- **Cambios de código/escenas/assets:**
+  - `GargoylePlanner` (Simulation): busca paredes bajo la cornisa que den a un espacio libre, lejos de matacanes y separadas entre sí.
+  - `Z01GargoylePlacer` (menú Qazrix → Mapa → Colocar gárgolas en Z01; lote `PlaceBatch`): sustituye el objeto `Gargolas` sin regenerar la escena. `Z01GeoBuilder` lo llama al crear Z01.
+  - `Z01_Relieve.unity`: 23 prefabs nuevos (solo líneas añadidas; la malla de navegación no cambia).
+  - Pruebas `GargoylePlannerTests` (EditMode) y `GargoyleSceneTests` (PlayMode).
+- **Reparto:** 8 de la Concatedral (14–21) en el volumen del LiDAR que contiene su nave, que en el juego va unido a edificios vecinos. Las otras 15 con libertad artística, agrupadas por origen: Casa del Mono (10–12) y San Mateo (2, 5, 7, 8) cerca de la salida; Godoy (25–27) y Palacio de la Isla (28, 30) junto a Bujaco; 9, 13 y 32 entre la plaza y la Concatedral. En versión erosionada: 2, 13, 15, 17, 19 y 20. Alturas entre 5 y 15 m sobre la calle.
+- **Comandos ejecutados:** `Z01GargoylePlacer.PlaceBatch`; tests EditMode y PlayMode.
+- **Pruebas:** aprobadas 379/379 EditMode; VerifyProject 0 errores y 1 aviso (D06). PlayMode completas: **64/66**, la nueva de las gárgolas incluida. Fallan `TheCape_ReactsToTheWestWind…` (1,88° y pide más de 1,95°) y `TheVeiledWomansClothes_ReactToTheWindAndToInertia` (3,09° y pide más de 4,76°); ejecutadas las dos solas, pasan. No se ha tocado el viento ni la ropa: las dos comparan ángulos en instantes que dependen del reloj de la partida, así que parecen sensibles al momento de ejecución (la prueba nueva añade una carga de escena que lo desplaza; no se ha comprobado cómo iban antes). Corridas anteriores: la primera falló en 55 pruebas porque la nueva no aislaba los dispositivos de entrada (corregido heredando de `InputTestFixture`) y la segunda la cortó el límite de 10 minutos.
+- **Build y plataforma:** sin build nuevo.
+- **Evidencia:** `Reports/QA/gargolas_z01.png` (primer plano de las 23 desde la calle) y `Reports/QA/gargolas_z01_concatedral.png`.
+- **Derechos/licencias de activos nuevos:** ninguno nuevo (COM-008 y GEN-007 de ART-18).
+- **Decisiones tomadas:** D79.
+- **Problemas conocidos:**
+  - Sin jugar a mano.
+  - No tienen colisionador: no se puede pisar ni agarrarse a ellas, y al trepar por esa pared o asomar por el tejado el personaje las atraviesa.
+  - Los edificios del juego no son los de origen (salvo la Concatedral, y de forma aproximada).
+  - A ras de calle se ven pequeñas en las fachadas altas.
+- **Próximo paso más pequeño:** que Jorge las recorra en Play y diga si cambia el tamaño, el sitio o el número.

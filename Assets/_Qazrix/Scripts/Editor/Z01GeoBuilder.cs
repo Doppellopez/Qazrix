@@ -97,21 +97,21 @@ namespace Qazrix.EditorTools
             Vector2 spawn = city.FindOpen(SpawnHint.x, SpawnHint.y, 12f);
             float sx = spawn.x, sz = spawn.y;
 
-            // Dos obstáculos de parkour hundidos en el relieve, para que la pendiente no deje huecos:
-            // un murete de 0,5 m para saltar y una plataforma de 1 m para trepar.
+            // Un obstáculo de parkour hundido en el relieve, para que la pendiente no deje huecos: un murete de 0,5 m
+            // para saltar. La plataforma naranja de 1 m para trepar se quitó a petición de Jorge (2026-11-24).
             Transform play = new GameObject("Zona_de_juego").transform;
             const float sunk = 2f;
             float wallTop = Ground(sx, sz + 6f) + 0.5f;
             PrototypeSceneBuilder.Box("Murete", play, block, new Vector3(sx, wallTop - (0.5f + sunk) * 0.5f, sz + 6f), new Vector3(3f, 0.5f + sunk, 0.4f))
                 .gameObject.AddComponent<ParkourMarker>().Configure(ParkourKind.Vault);
-            float deckTop = Ground(sx - 8f, sz + 6f) + 1f;
-            PrototypeSceneBuilder.Box("Plataforma", play, pole, new Vector3(sx - 8f, deckTop - (1f + sunk) * 0.5f, sz + 6f), new Vector3(4f, 1f + sunk, 4f))
-                .gameObject.AddComponent<ParkourMarker>().Configure(ParkourKind.Climb);
 
-            // Malla de navegación en un cuadrado alrededor del punto de salida: incluye calles y edificios.
+            // Malla de navegación de todo el casco antiguo (la rejilla de tejados entera): los guardias patrullan por toda la ciudad.
             var navigation = new GameObject("Navegacion");
-            PrototypeSceneBuilder.BakeNavMesh(navigation,
-                new Bounds(new Vector3(sx, Ground(sx, sz), sz), new Vector3(PlayAreaSide, 160f, PlayAreaSide)), NavMeshPath);
+            Bounds cityBounds = CityBounds(terrainGrid, meta);
+            UnityEngine.AI.NavMeshData navData = PrototypeSceneBuilder.BakeNavMesh(navigation, cityBounds, NavMeshPath, NavVoxelSize, NavAgentRadius);
+            // En el editor la malla recién calculada no está cargada hasta que se añade: sin esto las consultas de alcance no ven nada.
+            UnityEngine.AI.NavMeshDataInstance navInstance = UnityEngine.AI.NavMesh.AddNavMeshData(navData);
+            Debug.Log($"[Qazrix] Malla de navegación sobre {cityBounds.size.x:0}×{cityBounds.size.z:0} m");
 
             // El jugador nace en el claro, medio metro por encima del relieve.
             float groundY = Ground(sx, sz);
@@ -124,20 +124,21 @@ namespace Qazrix.EditorTools
             player.Configure(cameraRig, player.transform.Find("Visual"), input);
             EditorUtility.SetDirty(player);
 
-            // Carta sobre la plataforma y checkpoint al otro lado del murete.
-            LetterPickup platformLetter = PrototypeSceneBuilder.CreateLetter(play, pole, new Vector3(sx - 8f, deckTop + 0.25f, sz + 6f));
+            // Una sola carta (más abajo), al azar en cada partida; checkpoint al otro lado del murete.
 
             // Lo que dice la carta: un punto en el interior de la ciudad, que se ve con una cruz roja en el mapa.
             Vector3 meeting = ChooseMeetingPoint(city, new Vector2(sx, sz), new Vector3(sx, groundY, sz), Ground);
-            platformLetter.SetMark(meeting);
-            EditorUtility.SetDirty(platformLetter);
             Debug.Log($"[Qazrix] La carta señala el punto ({meeting.x:0.0}, {meeting.z:0.0}), a {Vector2.Distance(new Vector2(sx, sz), new Vector2(meeting.x, meeting.z)):0} m de la salida");
-            // Segunda carta: cambia de sitio en cada ejecución, en la zona exterior de la plaza (RandomLetterPlacer).
-            LetterPickup randomLetter = PrototypeSceneBuilder.CreateLetter(play, pole, new Vector3(sx + 20f, groundY + 0.3f, sz));
+            // La carta: cambia de sitio en cada ejecución, en la zona exterior de la plaza (RandomLetterPlacer).
+            LetterPickup randomLetter = PrototypeSceneBuilder.CreateLetter(play,
+                PrototypeSceneBuilder.GetOrCreateMaterial("Proto_Carta", new Color(0.97f, 0.93f, 0.76f)), // pergamino claro: se ve sobre el empedrado
+                new Vector3(sx + 20f, groundY + 0.03f, sz));
             randomLetter.name = "Carta_Azar";
-            randomLetter.SetMark(meeting); // las dos cartas dicen lo mismo
+            randomLetter.SetMark(meeting);
             randomLetter.gameObject.AddComponent<RandomLetterPlacer>().Configure(randomLetter, city, player.transform);
             EditorUtility.SetDirty(randomLetter);
+            // La mujer del velo violeta que espera en la X del mapa: desactivada hasta que el mapa elige el punto (D72).
+            EditorUtility.SetDirty(ContactModelBuilder.Build(play));
             PrototypeSceneBuilder.CreateCheckpoint(play, "tras el murete", new Vector3(sx, Ground(sx, sz + 9f) + 1f, sz + 9f), new Vector3(4f, 2.4f, 2f));
 
             // Atalaya en la Torre de Bujaco con salto de fe a un pajar en la calle (F2-04, D55).
@@ -172,6 +173,18 @@ namespace Qazrix.EditorTools
                 .ToArray();
             PrototypeSceneBuilder.CreateGuard("Guardia_2", guardBody, signal, player.GetComponent<StealthTarget>(), route2);
 
+            // Guardias de ronda por toda la parte antigua: una ronda por cada zona del casco, lejos de la plaza (D73).
+            CreateCityPatrols(city, cityBounds, new Vector2(sx, sz), spawnOnMesh, Ground, guardBody, signal, player.GetComponent<StealthTarget>());
+            UnityEngine.AI.NavMesh.RemoveNavMeshData(navInstance);
+
+            // Al jugar, todos los guardias se reparten por la parte antigua en sitios al azar (D76): las rondas de arriba son el respaldo.
+            var scatter = new GameObject("Dispersion_guardias").AddComponent<GuardScatter>();
+            scatter.Configure(city, player.transform);
+            EditorUtility.SetDirty(scatter);
+
+            // Gárgolas bajo las cornisas (D79): decorativas, sin colisionador.
+            Z01GargoylePlacer.Place(city, terrain, new Vector2(sx, sz));
+
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene, ScenePath))
@@ -181,6 +194,96 @@ namespace Qazrix.EditorTools
             AssetDatabase.SaveAssets();
             Debug.Log($"[Qazrix] Escena Z01 creada: {ScenePath} · relieve {terrainGrid.Min:0.0}–{terrainGrid.Max:0.0} m · {points.Count} puntos de control · {terrain.name}");
             Debug.Log($"[Qazrix] Ciudad: {city.BuiltCells} m² construidos, {city.ChunkCount} trozos, {city.TriangleCount} triángulos, {city.BuildSeconds:0.00} s · salida en ({sx:0.0}, {sz:0.0})");
+        }
+
+        /// <summary>Vóxel de la malla de navegación de toda la ciudad (m): más grueso que el de la plaza sola para que el cálculo sea viable.</summary>
+        public const float NavVoxelSize = 0.1f;
+
+        /// <summary>Radio del agente en la malla de la ciudad: las calles son de 1 a 2 m y con 0,4 m quedaban cerradas (el cuerpo del guardia mide 0,3 m).</summary>
+        public const float NavAgentRadius = 0.3f;
+
+        [Serializable]
+        private sealed class RoofsGrid
+        {
+            public int columns, rows;
+            public float cellSize, localWestX, localNorthZ;
+        }
+
+        /// <summary>Caja que cubre la rejilla de tejados (todo el casco antiguo) y el relieve bajo ella, con margen para los edificios.</summary>
+        private static Bounds CityBounds(HeightGrid terrainGrid, Z01GeoData.Meta meta)
+        {
+            var grid = JsonUtility.FromJson<RoofsGrid>(AssetDatabase.LoadAssetAtPath<TextAsset>(RoofsMetaPath).text);
+            float width = grid.columns * grid.cellSize, depth = grid.rows * grid.cellSize;
+            float low = (float)(terrainGrid.Min - meta.originHeight), high = (float)(terrainGrid.Max - meta.originHeight);
+            return new Bounds(
+                new Vector3(grid.localWestX + width * 0.5f, (low + high) * 0.5f + 20f, grid.localNorthZ - depth * 0.5f),
+                new Vector3(width, high - low + 80f, depth));
+        }
+
+        /// <summary>Distancia mínima a la salida para que una zona del casco tenga ronda propia (la plaza ya tiene dos guardias).</summary>
+        private const float PatrolMinDistance = 80f;
+        private const float PatrolCell = 40f;
+        /// <summary>Distancia mínima entre los centros de dos rondas, para repartirlas y no acumular guardias en un barrio.</summary>
+        private const float PatrolSpacing = 50f;
+        private const int PatrolMaxGuards = 18; // 2 en la plaza + 18 rondas = 20 guardias (a petición de Jorge, 2026-11-24)
+        private const float PatrolRadius = 45f; // rondas más largas (antes 28 m)
+        private const int PatrolPoints = 5;
+
+        /// <summary>
+        /// Una ronda de cinco puntos alrededor del centro de cada celda de 110 m con edificios, lejos de la plaza. Cada punto se
+        /// lleva a un claro alcanzable andando desde la salida: así ningún guardia se queda parado en una zona cerrada.
+        /// </summary>
+        private static void CreateCityPatrols(CityBlocks city, Bounds area, Vector2 spawn, Vector3 spawnOnMesh,
+            Func<float, float, float> ground, Material body, Material signal, StealthTarget target)
+        {
+            var path = new UnityEngine.AI.NavMeshPath();
+            int created = 0;
+            var centers = new List<Vector2>();
+            for (float cz = area.min.z + PatrolCell * 0.5f; cz < area.max.z; cz += PatrolCell)
+            {
+                for (float cx = area.min.x + PatrolCell * 0.5f; cx < area.max.x; cx += PatrolCell)
+                {
+                    if (Vector2.Distance(new Vector2(cx, cz), spawn) < PatrolMinDistance) continue;
+                    if (city.IsClear(cx, cz, 30f)) continue; // sin edificios cerca: fuera del casco
+                    if (created >= PatrolMaxGuards || centers.Any(c => Vector2.Distance(c, new Vector2(cx, cz)) < PatrolSpacing)) continue;
+
+                    var route = new List<Vector3>();
+                    for (int i = 0; i < PatrolPoints; i++)
+                    {
+                        float angle = 2f * Mathf.PI * i / PatrolPoints + created * 0.9f; // cada ronda gira distinto
+                        Vector3 p = ReachableOpenPoint(city, new Vector2(cx + Mathf.Cos(angle) * PatrolRadius, cz + Mathf.Sin(angle) * PatrolRadius), spawnOnMesh, ground);
+                        if (!UnityEngine.AI.NavMesh.SamplePosition(p, out UnityEngine.AI.NavMeshHit onMesh, 1.5f, UnityEngine.AI.NavMesh.AllAreas)) continue;
+                        if (!CanReach(spawnOnMesh, onMesh.position, path)) continue;
+                        if (route.Any(q => Vector3.Distance(q, onMesh.position) < 8f)) continue;
+                        route.Add(onMesh.position);
+                    }
+                    if (route.Count < 3) continue; // zona cerrada o sin calles alcanzables: otra celda cercana lo cubrirá
+
+                    created++;
+                    centers.Add(new Vector2(cx, cz));
+                    PrototypeSceneBuilder.CreateGuard($"Guardia_Ciudad_{created}", body, signal, target, route.ToArray());
+                }
+            }
+            Debug.Log($"[Qazrix] Guardias de ronda por la ciudad: {created}");
+        }
+
+        /// <summary>
+        /// ¿Se llega andando de un punto a otro? Un camino largo se devuelve cortado (PathPartial) por el límite de nodos de Unity:
+        /// se encadenan tramos, cada uno desde donde acabó el anterior, hasta llegar o quedarse atascado.
+        /// </summary>
+        private static bool CanReach(Vector3 from, Vector3 to, UnityEngine.AI.NavMeshPath path)
+        {
+            Vector3 current = from;
+            for (int hop = 0; hop < 80; hop++)
+            {
+                if (!UnityEngine.AI.NavMesh.CalculatePath(current, to, UnityEngine.AI.NavMesh.AllAreas, path)) return false;
+                if (path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete) return true;
+                if (path.status != UnityEngine.AI.NavMeshPathStatus.PathPartial || path.corners.Length == 0) return false;
+                Vector3 end = path.corners[path.corners.Length - 1];
+                if (Vector3.Distance(end, current) < 1f) return false; // no sale del sitio: zona cerrada
+                current = end;
+            }
+            return false;
         }
 
         /// <summary>
@@ -202,8 +305,7 @@ namespace Qazrix.EditorTools
                     var point = new Vector3(c.x, ground(c.x, c.y) + 0.1f, c.y);
                     if (!hasStart) return point;
                     if (!UnityEngine.AI.NavMesh.SamplePosition(point, out UnityEngine.AI.NavMeshHit onMesh, 1.5f, UnityEngine.AI.NavMesh.AllAreas)) continue;
-                    if (UnityEngine.AI.NavMesh.CalculatePath(start.position, onMesh.position, UnityEngine.AI.NavMesh.AllAreas, path)
-                        && path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+                    if (CanReach(start.position, onMesh.position, path))
                         return onMesh.position + Vector3.up * 0.1f; // a la altura de la malla: sobre peldaños, el terreno queda más bajo
                 }
             }
@@ -252,6 +354,16 @@ namespace Qazrix.EditorTools
         /// <summary>Metros de corte en diagonal de cada esquina de un edificio.</summary>
         public const float CityFootprintChamfer = 2f;
 
+        /// <summary>
+        /// Edificios de la ciudad que son muralla: infranqueables y sin escalar (a petición de Jorge, 2026-11-24). Son los números del plano
+        /// <c>Reports/QA/plano_muralla</c> (índice en <c>Research/Survey/city_parts.json</c>, que escribe <c>CityPlanExport</c>); solo valen
+        /// mientras no cambien los datos de tejados ni las opciones de huellas.
+        /// </summary>
+        public static readonly int[] CityWallParts = { 148, 170, 315, 344 };
+
+        /// <summary>La muralla bajo la que pasa el pasadizo del alcázar a la huerta: la 170, la más cercana a la huerta.</summary>
+        public const int PassageWall = 170;
+
         private static CityBlocks CreateCity(Terrain terrain)
         {
             var roofs = AssetDatabase.LoadAssetAtPath<TextAsset>(RoofsPath);
@@ -270,10 +382,19 @@ namespace Qazrix.EditorTools
             city.FootprintTolerance = CityFootprintTolerance;
             city.FootprintChamfer = CityFootprintChamfer;
             city.WithMachicolations = true; // unos pocos matacanes en torres y edificios altos (D66)
+            city.SetDoors(new[] { Qazrix.Gameplay.MapPoints.OldAlcazar }); // puerta del antiguo alcázar: solo se abre con la llave
+            city.SetWallParts(CityWallParts); // murallas: sólidas, sin escalar y con barrera invisible encima
             city.SetOpenings(FacadeOpeningMaterial.Ensure()); // ventanas y saeteras dibujadas (GEN-003)
+            // Fotos de Bujaco y de la Concatedral como textura de su edificio: desactivadas a petición de Jorge (2026-11-24).
+            // Para volver a ponerlas: city.SetFacadePhotos(FacadePhotoMaterial.Photos()); (COM-005, COM-006).
             city.Build(); // las mallas no se guardan en la escena; hacen falta ahora para la malla de navegación
             EditorUtility.SetDirty(city);
-            Debug.Log($"[Qazrix] Fachadas: {city.WindowCount} ventanas y {city.ArrowSlitCount} saeteras");
+            // Pasadizo del alcázar a la huerta del tesoro, bajo la muralla 170: se construye al jugar (PassageTunnel), no se guarda en la escena.
+            var passage = new GameObject("Pasadizo").AddComponent<Qazrix.Gameplay.PassageTunnel>();
+            passage.Configure(city, CityWallMaterial.Ensure(), PassageWall, Qazrix.Gameplay.MapPoints.TreasureOrchard);
+            EditorUtility.SetDirty(passage);
+
+            Debug.Log($"[Qazrix] Fachadas: {city.WindowCount} ventanas y {city.ArrowSlitCount} saeteras, {city.FacadePhotoCount} fotos, {city.WallPartCount} murallas, {city.Doors.Count} puertas");
             return city;
         }
 

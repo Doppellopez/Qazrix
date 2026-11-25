@@ -92,6 +92,23 @@ namespace Qazrix.AI
             _lastKnown = position;
         }
 
+        /// <summary>Los puntos de la ronda, en orden. Se leen cada vez: se pueden mover de sitio.</summary>
+        public Transform[] Waypoints => waypoints;
+
+        /// <summary>Lo pone en otro sitio mirando hacia <paramref name="facing"/> y empieza la ronda por su primer punto.</summary>
+        public void Relocate(Vector3 position, Quaternion facing)
+        {
+            if (_controller == null) _controller = GetComponent<CharacterController>();
+            _controller.enabled = false;
+            transform.SetPositionAndRotation(position, facing);
+            _controller.enabled = true;
+            _post = position;
+            _postRotation = facing;
+            _lastKnown = position;
+            _waypointIndex = 0;
+            _pathTime = -1000f; // fuerza recalcular el camino
+        }
+
         private void Awake()
         {
             _controller = GetComponent<CharacterController>();
